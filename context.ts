@@ -4,11 +4,13 @@ import { Party } from './party';
 export interface SentenceContext {
   pageObjects: { [name: string]: PageObjectNode };
   parties: { [name: string]: Party };
+  actions: { [name: string]: (...args) => void };
 }
 
 export interface SentenceContextDef {
   pageObjects: { [name: string]: PageObjectNodeDef };
   parties: { [name: string]: Party };
+  actions: { [name: string]: (...args) => void };
 }
 
 export function resolveNode(

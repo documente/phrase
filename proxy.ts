@@ -85,6 +85,13 @@ export function proxify(sentence: ExtendedSentence | Sentence): ExtendedSentence
         return resolveSelector(rootObject, sentence, path);
       }
 
+      if (name in sentence.sentenceContext.actions) {
+        return (...args) => {
+          sentence.sentenceContext.actions[name](...args);
+          return proxify(sentence);
+        };
+      }
+
       if (name in target) {
         return target[name];
       }

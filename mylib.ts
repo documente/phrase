@@ -62,6 +62,7 @@ export default class Sentence {
         },
         {},
       ),
+      actions: { ...sentenceContext.actions },
     };
   }
 
