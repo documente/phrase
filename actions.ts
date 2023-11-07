@@ -2,6 +2,7 @@ export enum ActionKind {
   click,
   type,
   hover,
+  scroll,
 }
 
 interface BaseAction {
@@ -28,6 +29,16 @@ export function buildHoverAction(): HoverAction {
   };
 }
 
+export interface ScrollAction extends BaseAction {
+  readonly kind: ActionKind.scroll;
+}
+
+export function buildScrollAction(): ScrollAction {
+  return {
+    kind: ActionKind.scroll,
+  };
+}
+
 export interface TypeAction extends BaseAction {
   readonly kind: ActionKind.type;
 }
@@ -41,4 +52,5 @@ export function buildTypeAction(): TypeAction {
 export type Action = TypeAction
   | ClickAction
   | HoverAction
+  | ScrollAction
 ;

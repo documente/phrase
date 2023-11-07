@@ -12,7 +12,9 @@ import { SentenceContext, SentenceContextDef } from './context';
 import {
   Action,
   ActionKind,
-  buildClickAction, buildHoverAction,
+  buildClickAction,
+  buildHoverAction,
+  buildScrollAction,
   buildTypeAction,
 } from './actions';
 import {
@@ -208,6 +210,14 @@ export default class Sentence {
     return proxify(this);
   }
 
+  /**
+   * Action to click on the current object.
+   */
+  scrollTo(): ExtendedSentence {
+    this.queuedAction = buildScrollAction();
+    return proxify(this);
+  }
+
   // Action args
 
   /** Defines a text argument for actions such as `typeInto` */
@@ -295,6 +305,9 @@ export default class Sentence {
 
         this.typeText(text[0]);
         break;
+      case ActionKind.scroll:
+        this.scrollIntoView();
+        break;
       default:
         throw new Error(`Unknown action kind "${kind}"`);
     }
@@ -316,6 +329,11 @@ export default class Sentence {
 
   private typeText(text: string): ExtendedSentence {
     this.selectCurrentObject().type(text);
+    return proxify(this);
+  }
+
+  private scrollIntoView(): ExtendedSentence {
+    this.adapter.scrollIntoView(this.selectCurrentObject());
     return proxify(this);
   }
 

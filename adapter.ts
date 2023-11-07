@@ -1,6 +1,7 @@
 export interface Adapter {
   visit: (url: string) => void;
   select: (path: string[]) => TestElement;
+  scrollIntoView: (element: TestElement) => void;
 }
 
 export interface TestElement {
