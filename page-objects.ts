@@ -1,4 +1,4 @@
-import {TestElement} from './adapter';
+import Chainable = Cypress.Chainable;
 
 export type Selector = string | ((...args) => string);
 
@@ -15,7 +15,7 @@ export function hasChildren(object: any): object is Parent<any> {
 }
 
 export interface WithAssertions {
-  assertions: { [name: string]: (it: TestElement, ...args: any[]) => void };
+  assertions: { [name: string]: (it: Chainable, ...args: any[]) => void };
 }
 
 export type PageObjectNodeDef =

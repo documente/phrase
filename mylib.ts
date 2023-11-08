@@ -25,8 +25,9 @@ import {
 } from './page-objects';
 import { ExtendedSentence, proxify } from './proxy';
 import { Party } from './party';
-import {Adapter, TestElement} from './adapter';
+import {Adapter} from './adapter';
 import { toPrettyPath } from './path';
+import Chainable = Cypress.Chainable;
 
 export default class Sentence {
   readonly sentenceContext: SentenceContext;
@@ -173,6 +174,14 @@ export default class Sentence {
     return this.should('have.text', expectedText);
   }
 
+  /**
+   * Assertion to check if the current object has a given text.
+   * @param expectedText - The expected text
+   */
+  shouldContainText(expectedText: string): ExtendedSentence {
+    return this.should('contain.text', expectedText);
+  }
+
   // Actions
 
   /**
@@ -263,11 +272,11 @@ export default class Sentence {
 
       if (node == null) {
         node = this.sentenceContext.pageObjects[name];
-        selectors.push(this.flattenSelector(node.selector, path));
       } else {
         node = node.children[name];
-        selectors.push(this.flattenSelector(node.selector, path));
       }
+
+      selectors.push(this.flattenSelector(node.selector, path));
     }
 
     return selectors;
@@ -337,7 +346,7 @@ export default class Sentence {
     return proxify(this);
   }
 
-  selectCurrentObject(): TestElement {
+  selectCurrentObject(): Chainable {
     return this.adapter.select(this.flattenSelectors());
   }
 }
