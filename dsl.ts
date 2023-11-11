@@ -31,7 +31,7 @@ interface WhenI<R, P> {
 }
 
 type RootActionTarget<R, P> = {
-  [target in keyof R as R[target] extends TreeNode ? R[target] : never]: Omit<ActionTarget<R, R[target]>, '_selector'>;
+  [target in keyof R]: Omit<ActionTarget<R, R[target]>, '_selector'>;
 }
 
 type SubActionTarget<R, P> = {
