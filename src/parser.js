@@ -58,50 +58,17 @@ export class Parser {
 
     while (
       this.index < this.tokens.length &&
-      !['then'].includes(this.tokens[this.index].value)
+      this.tokens[this.index].value !== 'then'
     ) {
-      let currentAction = [];
-      let currentTarget = [];
-      let currentArgs = [];
-
       this.consumeOptional('I');
-
-      while (
-        this.index < this.tokens.length &&
-        !['on', 'then'].includes(this.tokens[this.index].value) &&
-        !isQuoted(this.tokens[this.index].value)
-      ) {
-        this.reject(['I', 'and'], 'Expected action');
-        currentAction.push(this.tokens[this.index]);
-        this.index++;
-      }
-
-      if (currentAction.length === 0) {
-        this.error('Missing action');
-      }
-
-      if (isQuoted(this.tokens[this.index]?.value)) {
-        currentArgs.push(this.tokens[this.index]);
-        this.index++;
-      }
-
-      if (this.tokens[this.index]?.value === 'on') {
-        this.index++;
-
-        while (
-          this.index < this.tokens.length &&
-          !['then', 'and'].includes(this.tokens[this.index].value) &&
-          !isQuoted(this.tokens[this.index].value)
-        ) {
-          currentTarget.push(this.tokens[this.index]);
-          this.index++;
-        }
-      }
+      const action = this.consumeAction();
+      const args = this.consumeQuotedArg();
+      const target = this.consumeTarget();
 
       actions.push({
-        target: currentTarget,
-        action: currentAction,
-        args: currentArgs,
+        target,
+        action,
+        args,
       });
 
       this.consumeOptional('and');
@@ -112,49 +79,55 @@ export class Parser {
     return actions;
   }
 
-  // private parseAction(): Action {
-  //   this.consume('I', 'Expected "I"');
-  //
-  //   const actionKind = this.tokens[this.index];
-  //   this.index++;
-  //
-  //   if (this.tokens[this.index] === 'on') {
-  //     this.index++;
-  //   } else {
-  //     throw new Error('Expected "on" but got ' + this.tokens[this.index]);
-  //   }
-  //
-  //   const targetPath: string[] = [];
-  //
-  //   while (this.index < this.tokens.length
-  //   && !['and', 'then'].includes(this.tokens[this.index])
-  //   && !isQuoted(this.tokens[this.index])) {
-  //     targetPath.push(this.tokens[this.index]);
-  //     this.index++;
-  //   }
-  //
-  //   const args: any[] = [];
-  //
-  //   if (this.index < this.tokens.length && isQuoted(this.tokens[this.index])) {
-  //     args.push(this.tokens[this.index].slice(1, -1));
-  //     this.index++;
-  //   }
-  //
-  //   if (this.tokens[this.index] === 'then') {
-  //     this.foundThen = true;
-  //     this.index++;
-  //   }
-  //
-  //   if (this.tokens[this.index] === 'and') {
-  //     this.index++;
-  //   }
-  //
-  //   return {
-  //     target: targetPath,
-  //     action: [actionKind],
-  //     args,
-  //   };
-  // }
+  consumeAction() {
+    const action = [];
+
+    while (
+      this.index < this.tokens.length &&
+      !['on', 'then'].includes(this.tokens[this.index].value) &&
+      !isQuoted(this.tokens[this.index].value)
+    ) {
+      this.reject(['I', 'and'], 'Expected action');
+      action.push(this.tokens[this.index]);
+      this.index++;
+    }
+
+    if (action.length === 0) {
+      this.error('Missing action');
+    }
+
+    return action;
+  }
+
+  consumeQuotedArg() {
+    const args = [];
+
+    if (isQuoted(this.tokens[this.index]?.value)) {
+      args.push(this.tokens[this.index]);
+      this.index++;
+    }
+
+    return args;
+  }
+
+  consumeTarget() {
+    const target = [];
+
+    if (this.tokens[this.index]?.value === 'on') {
+      this.index++;
+
+      while (
+        this.index < this.tokens.length &&
+        !['then', 'and'].includes(this.tokens[this.index].value) &&
+        !isQuoted(this.tokens[this.index].value)
+      ) {
+        target.push(this.tokens[this.index]);
+        this.index++;
+      }
+    }
+
+    return target;
+  }
 
   consume(expectedTokenValue, errorMessage) {
     if (this.tokens[this.index].value === expectedTokenValue) {
@@ -170,15 +143,6 @@ export class Parser {
     }
   }
 
-  printErrorLocation() {
-    const index = this.index;
-    const line = this.tokens[index].line;
-    const column = this.tokens[index].column;
-    const lineContent = this.sentence.split('\n')[line - 1];
-    const pointer = ' '.repeat(column - 1) + '^';
-    return `Line ${line}, column ${column}:\n${lineContent}\n${pointer}`;
-  }
-
   reject(rejectedStrings, errorMessage) {
     if (rejectedStrings.includes(this.tokens[this.index].value)) {
       this.error(errorMessage);
@@ -187,6 +151,15 @@ export class Parser {
 
   error(errorMessage) {
     throw new Error(errorMessage + '\n' + this.printErrorLocation());
+  }
+
+  printErrorLocation() {
+    const index = this.index;
+    const line = this.tokens[index].line;
+    const column = this.tokens[index].column;
+    const lineContent = this.sentence.split('\n')[line - 1];
+    const pointer = ' '.repeat(column - 1) + '^';
+    return `Line ${line}, column ${column}:\n${lineContent}\n${pointer}`;
   }
 }
 
