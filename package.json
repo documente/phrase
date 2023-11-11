@@ -1,0 +1,21 @@
+{
+  "name": "bdd-cy-lib",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/pckerneis/bdd-cy-lib.git",
+  "author": "pckerneis <pc.kerneis@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "build": "tsc",
+    "cy:open": "cypress open"
+  },
+  "files": [
+    "src"
+  ],
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.5"
+  }
+}
