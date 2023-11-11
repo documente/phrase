@@ -29,6 +29,14 @@ export class Parser {
 
   index = 0;
 
+  get currentToken() {
+    return this.tokens[this.index];
+  }
+
+  get currentValue() {
+    return this.currentToken?.value;
+  }
+
   /**
    * @param {string} sentence - sentence to parse
    * @returns {Sentence} parsed sentence
@@ -56,10 +64,7 @@ export class Parser {
   parseActions() {
     const actions = [];
 
-    while (
-      this.index < this.tokens.length &&
-      this.tokens[this.index].value !== 'then'
-    ) {
+    while (this.index < this.tokens.length && !this.matches('then')) {
       this.consumeOptional('I');
       const action = this.consumeAction();
       const args = this.consumeQuotedArg();
@@ -84,11 +89,11 @@ export class Parser {
 
     while (
       this.index < this.tokens.length &&
-      !['on', 'then'].includes(this.tokens[this.index].value) &&
-      !isQuoted(this.tokens[this.index].value)
+      !this.matches('on', 'then') &&
+      !isQuoted(this.currentValue)
     ) {
       this.reject(['I', 'and'], 'Expected action');
-      action.push(this.tokens[this.index]);
+      action.push(this.currentToken);
       this.index++;
     }
 
@@ -99,11 +104,15 @@ export class Parser {
     return action;
   }
 
+  matches(...candidates) {
+    return candidates.includes(this.currentValue);
+  }
+
   consumeQuotedArg() {
     const args = [];
 
-    if (isQuoted(this.tokens[this.index]?.value)) {
-      args.push(this.tokens[this.index]);
+    if (isQuoted(this.currentValue)) {
+      args.push(this.currentToken);
       this.index++;
     }
 
@@ -113,15 +122,15 @@ export class Parser {
   consumeTarget() {
     const target = [];
 
-    if (this.tokens[this.index]?.value === 'on') {
+    if (this.matches('on')) {
       this.index++;
 
       while (
         this.index < this.tokens.length &&
-        !['then', 'and'].includes(this.tokens[this.index].value) &&
-        !isQuoted(this.tokens[this.index].value)
+        !this.matches('then', 'and') &&
+        !isQuoted(this.currentValue)
       ) {
-        target.push(this.tokens[this.index]);
+        target.push(this.currentToken);
         this.index++;
       }
     }
@@ -130,7 +139,7 @@ export class Parser {
   }
 
   consume(expectedTokenValue, errorMessage) {
-    if (this.tokens[this.index].value === expectedTokenValue) {
+    if (this.matches(expectedTokenValue)) {
       this.index++;
     } else {
       this.error(errorMessage);
@@ -138,13 +147,13 @@ export class Parser {
   }
 
   consumeOptional(expectedTokenValue) {
-    if (this.tokens[this.index].value === expectedTokenValue) {
+    if (this.matches(expectedTokenValue)) {
       this.index++;
     }
   }
 
   reject(rejectedStrings, errorMessage) {
-    if (rejectedStrings.includes(this.tokens[this.index].value)) {
+    if (this.matches(...rejectedStrings)) {
       this.error(errorMessage);
     }
   }
@@ -154,9 +163,8 @@ export class Parser {
   }
 
   printErrorLocation() {
-    const index = this.index;
-    const line = this.tokens[index].line;
-    const column = this.tokens[index].column;
+    const line = this.currentToken.line;
+    const column = this.currentToken.column;
     const lineContent = this.sentence.split('\n')[line - 1];
     const pointer = ' '.repeat(column - 1) + '^';
     return `Line ${line}, column ${column}:\n${lineContent}\n${pointer}`;
