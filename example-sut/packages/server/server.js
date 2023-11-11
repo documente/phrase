@@ -8,6 +8,7 @@ const SECRET_KEY = 'your-secret-key';
 
 app.use(bodyParser.json());
 
+let latestId = 0;
 const tasks = [];
 
 // Middleware to verify JWT and extract user ID
@@ -45,21 +46,25 @@ app.get('/api/tasks', authenticateUser, (req, res) => {
 });
 
 app.post('/api/tasks', authenticateUser, (req, res) => {
-  const newTask = { ...req.body, userId: req.userId };
+  const newTask = { ...req.body, id: latestId++, userId: req.userId };
   tasks.push(newTask);
   console.log('add task, tasks', tasks)
   res.json(newTask);
 });
 
-app.delete('/api/tasks', authenticateUser, (req, res) => {
-  const toRemove = tasks.find(task => task.title === req.body.task.title && task.userId === req.userId);
+app.delete('/api/tasks/:taskId', authenticateUser, (req, res) => {
+  const taskId = parseInt(req.params.taskId, 10);
+  const toRemove = tasks.find(task => task.id === taskId);
 
   if (!toRemove) {
     return res.status(404).json({ message: 'Task not found' });
   }
 
+  if (toRemove.userId !== req.userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
   tasks.splice(tasks.indexOf(toRemove), 1);
-  console.log('removed task, tasks', tasks)
   const userTasks = tasks.filter((task) => task.userId === req.userId);
   res.json(userTasks);
 });

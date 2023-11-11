@@ -57,16 +57,17 @@ function App() {
 
   const handleDeleteTask = (task) => {
     // Create a new task with the logged-in user's ID
-    fetch(`/api/tasks`, {
+    fetch(`/api/tasks/${task.id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
-      body: JSON.stringify({ task, userId: user.username }),
     })
         .then((response) => response.json())
-        .then((data) => setTasks(data))
+        .then((data) => {
+          if (data) setTasks(data)
+        })
         .catch((error) => console.error('Error adding task:', error));
   };
 
