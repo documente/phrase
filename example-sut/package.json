@@ -3,8 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "workspaces": ["packages/*"],
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "start": "cd packages/client && npm run build && cd ../server && node server.js"
+    "start": "cd packages/client && npm run build && cd ../server && node server.js",
+    "dev": "concurrently \"cd packages/client && npm start\" \"cd packages/server && node server.js\""
+  },
+  "dependencies": {
+    "concurrently": "^8.2.2"
   }
 }
