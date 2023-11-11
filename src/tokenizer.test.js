@@ -1,4 +1,4 @@
-import {tokenize} from './tokenizer';
+import { tokenize } from './tokenizer';
 
 test('should tokenize an empty sentence', () => {
   expect(tokenize('')).toEqual([]);
