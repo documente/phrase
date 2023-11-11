@@ -51,13 +51,12 @@ export class Parser {
     }
 
     this.consume('when', 'Expected "when"');
-
-    // consume actions
     const actions = this.parseActions();
+    const assertions = this.parseAssertions();
 
     return {
       actions,
-      assertions: [],
+      assertions,
     };
   }
 
@@ -68,7 +67,12 @@ export class Parser {
       this.consumeOptional('I');
       const action = this.consumeAction();
       const args = this.consumeQuotedArg();
-      const target = this.consumeTarget();
+
+      let target = [];
+      if (this.matches('on')) {
+        this.index++;
+        target = this.consumeTarget();
+      }
 
       actions.push({
         target,
@@ -92,7 +96,7 @@ export class Parser {
       !this.matches('on', 'then') &&
       !isQuoted(this.currentValue)
     ) {
-      this.reject(['I', 'and'], 'Expected action');
+      this.reject(['I', 'and', 'when'], 'Expected action');
       action.push(this.currentToken);
       this.index++;
     }
@@ -102,6 +106,49 @@ export class Parser {
     }
 
     return action;
+  }
+
+  parseAssertions() {
+    const assertions = [];
+
+    while (!this.isAtEnd()) {
+      const target = this.consumeTarget();
+      this.consume('should', 'Expected "should"');
+      const assertion = this.consumeAssertion();
+
+      assertions.push({
+        target,
+        assertion,
+      });
+
+      this.consumeOptional('and');
+    }
+
+    if (assertions.length === 0) {
+      this.error('Missing assertion');
+    }
+
+    return assertions;
+  }
+
+  consumeAssertion() {
+    const assertion = [];
+
+    while (
+      !this.isAtEnd() &&
+      !this.matches('on', 'then', 'and') &&
+      !isQuoted(this.currentValue)
+    ) {
+      this.reject(['I', 'and', 'when', 'then'], 'Expected assertion');
+      assertion.push(this.currentToken);
+      this.index++;
+    }
+
+    if (assertion.length === 0) {
+      this.error('Missing assertion');
+    }
+
+    return assertion;
   }
 
   matches(...candidates) {
@@ -122,17 +169,13 @@ export class Parser {
   consumeTarget() {
     const target = [];
 
-    if (this.matches('on')) {
+    while (
+      !this.isAtEnd() &&
+      !this.matches('then', 'and', 'should') &&
+      !isQuoted(this.currentValue)
+    ) {
+      target.push(this.currentToken);
       this.index++;
-
-      while (
-        !this.isAtEnd() &&
-        !this.matches('then', 'and') &&
-        !isQuoted(this.currentValue)
-      ) {
-        target.push(this.currentToken);
-        this.index++;
-      }
     }
 
     return target;
@@ -163,8 +206,18 @@ export class Parser {
   }
 
   printErrorLocation() {
-    const line = this.currentToken.line;
-    const column = this.currentToken.column;
+    if (this.isAtEnd()) {
+      const line = this.sentence.split('\n').length;
+      const column = this.sentence.split('\n')[line - 1].length + 1;
+      return this.printErrorLineAndContent(line, column);
+    } else {
+      const line = this.currentToken.line;
+      const column = this.currentToken.column;
+      return this.printErrorLineAndContent(line, column);
+    }
+  }
+
+  printErrorLineAndContent(line, column) {
     const lineContent = this.sentence.split('\n')[line - 1];
     const pointer = ' '.repeat(column - 1) + '^';
     return `Line ${line}, column ${column}:\n${lineContent}\n${pointer}`;
@@ -176,9 +229,5 @@ export class Parser {
 }
 
 function isQuoted(str) {
-  if (str == null) {
-    return false;
-  }
-
   return str.startsWith('"') && str.endsWith('"');
 }
