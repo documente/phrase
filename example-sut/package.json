@@ -9,9 +9,12 @@
   ],
   "scripts": {
     "start": "cd packages/client && npm run build && cd ../server && node server.js",
-    "dev": "concurrently \"cd packages/client && npm start\" \"cd packages/server && node server.js\""
+    "dev": "concurrently \"cd packages/client && npm start\" \"cd packages/server && node server.js\"",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "cypress": "^13.5.0"
   }
 }
