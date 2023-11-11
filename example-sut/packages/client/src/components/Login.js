@@ -33,6 +33,7 @@ const Login = ({ onLogin, setError }) => {
 
       const result = await response.json();
       if (result.success) {
+        localStorage.setItem('token', result.token)
         onLogin({username});
       } else {
         setError('Login failed');

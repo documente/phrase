@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import Login from './components/Login';
+import Task from './components/Task';
 
 function App() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState('');
 
   const handleLogin = (userData) => {
     setUser(userData);
@@ -14,6 +17,57 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     setError(null);
+    setTasks([]);
+  };
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    // Fetch user-specific tasks
+    fetch(`/api/tasks`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`, // Include JWT token
+      },
+    })
+        .then((response) => response.json())
+        .then((data) => setTasks(data))
+        .catch((error) => console.error('Error fetching tasks:', error));
+  }, [user]); // Fetch tasks when component mounts
+
+  const addTask = () => {
+    if (newTask.trim() !== '') {
+      // Create a new task with the logged-in user's ID
+      fetch(`/api/tasks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({ title: newTask, userId: user.username }),
+      })
+          .then((response) => response.json())
+          .then((data) => setTasks([...tasks, data]))
+          .catch((error) => console.error('Error adding task:', error));
+
+      setNewTask('');
+    }
+  };
+
+
+  const handleDeleteTask = (task) => {
+    // Create a new task with the logged-in user's ID
+    fetch(`/api/tasks`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({ task, userId: user.username }),
+    })
+        .then((response) => response.json())
+        .then((data) => setTasks(data))
+        .catch((error) => console.error('Error adding task:', error));
   };
 
   return (
@@ -22,7 +76,24 @@ function App() {
             <div>
               <h1>Welcome, {user.username}!</h1>
               <button onClick={handleLogout}>Logout</button>
-              {/* Your main application content goes here */}
+
+              <h1>Task Management</h1>
+              <input
+                  type="text"
+                  placeholder="Enter a new task"
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+              />
+              <button onClick={addTask}>Add Task</button>
+              <div>
+                {tasks.map((task, index) => (
+                    <Task
+                        key={index}
+                        task={task}
+                        onDelete={() => handleDeleteTask(task)}
+                    />
+                ))}
+              </div>
             </div>
         ) : (
             <div>

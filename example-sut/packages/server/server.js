@@ -1,38 +1,71 @@
 const express = require('express');
-const path = require('path');
+const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
+
 const app = express();
-const port = 5000;
+const PORT = 5000;
+const SECRET_KEY = 'your-secret-key';
 
-app.use(express.json());
+app.use(bodyParser.json());
 
-// Serve static files from the 'client/build' directory
-app.use(express.static(path.join(__dirname, '../client/build')));
+const tasks = [];
 
-app.post('/api/message', (req, res) => {
-  const { text } = req.body;
-  console.log('Received message:', text);
-  res.json({ success: true, message: `Received message: ${text}` });
-});
+// Middleware to verify JWT and extract user ID
+const authenticateUser = (req, res, next) => {
+  const token = req.headers.authorization.replace('Bearer ', '');
 
+  console.log('token', token);
 
-// For simplicity, assume any login attempt is successful
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-
-  // Validate the username and password (you should hash the password in a real-world scenario)
-  // For simplicity, accept any username/password
-  if (username?.length > 0 && password?.length > 0) {
-    res.json({ success: true, message: 'Login successful' });
-  } else {
-    res.status(401).json({ success: false, message: 'Invalid credentials' });
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized' });
   }
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    req.userId = decoded.userId;
+    next();
+  } catch (error) {
+    console.error(error);
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+};
+
+app.post('/api/login', (req, res) => {
+  // Implement user authentication and return a JWT
+  const { username, password } = req.body;
+  const user = { userId: username };
+  const token = jwt.sign(user, SECRET_KEY);
+  res.json({ success: true, token });
 });
 
-// For all other routes, serve the React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+app.get('/api/tasks', authenticateUser, (req, res) => {
+  const userTasks = tasks.filter((task) => task.userId === req.userId);
+  console.log('get user tasks', tasks)
+  res.json(userTasks);
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+app.post('/api/tasks', authenticateUser, (req, res) => {
+  const newTask = { ...req.body, userId: req.userId };
+  tasks.push(newTask);
+  console.log('add task, tasks', tasks)
+  res.json(newTask);
+});
+
+app.delete('/api/tasks', authenticateUser, (req, res) => {
+  const toRemove = tasks.find(task => task.title === req.body.task.title && task.userId === req.userId);
+
+  if (!toRemove) {
+    return res.status(404).json({ message: 'Task not found' });
+  }
+
+  tasks.splice(tasks.indexOf(toRemove), 1);
+  console.log('removed task, tasks', tasks)
+  const userTasks = tasks.filter((task) => task.userId === req.userId);
+  res.json(userTasks);
+});
+
+// Other routes...
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
