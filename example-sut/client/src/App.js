@@ -1,38 +1,35 @@
 import React, { useState } from 'react';
 import './App.css';
+import Login from './components/Login';
 
 function App() {
-  const [message, setMessage] = useState('');
-  const [response, setResponse] = useState('');
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
 
-  const sendMessage = async () => {
-    try {
-      const response = await fetch('/api/message', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: message }),
-      });
-      const result = await response.json();
-      setResponse(result.message);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setResponse('Error sending message');
-    }
+  const handleLogin = (userData) => {
+    setUser(userData);
+    setError(null);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setError(null);
   };
 
   return (
       <div className="App">
-        <h1>Simple SPA</h1>
-        <label>
-          Message:
-          <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} />
-        </label>
-        <button onClick={sendMessage}>Send Message</button>
-        <div>
-          <strong>Response:</strong> {response}
-        </div>
+        {user ? (
+            <div>
+              <h1>Welcome, {user.username}!</h1>
+              <button onClick={handleLogout}>Logout</button>
+              {/* Your main application content goes here */}
+            </div>
+        ) : (
+            <div>
+              <Login onLogin={handleLogin} setError={setError} />
+              {error && <div style={{ color: 'red' }}>{error}</div>}
+            </div>
+        )}
       </div>
   );
 }
