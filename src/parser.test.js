@@ -107,3 +107,21 @@ test('should parse a sentence with two actions', () => {
   expect(sentence.actions[1].target[0].value).toEqual('input');
   expect(sentence.actions[1].args[0].value).toEqual('"foo"');
 });
+
+test('should throw if parsing a sentence with invalid action', () => {
+  const parser = new Parser();
+  expect(() => parser.parse('when I and foo then')).toThrow(
+    `Expected action
+Line 1, column 8:
+when I and foo then
+       ^`);
+});
+
+test('should throw if parsing a sentence with missing action', () => {
+  const parser = new Parser();
+  expect(() => parser.parse('when I then')).toThrow(
+    `Missing action
+Line 1, column 8:
+when I then
+       ^`);
+});

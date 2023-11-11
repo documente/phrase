@@ -68,11 +68,16 @@ export class Parser {
 
       while (
         this.index < this.tokens.length &&
-        !['then', 'and', 'on'].includes(this.tokens[this.index].value) &&
+        !['on', 'then'].includes(this.tokens[this.index].value) &&
         !isQuoted(this.tokens[this.index].value)
       ) {
+        this.reject(['I', 'and'], 'Expected action');
         currentAction.push(this.tokens[this.index]);
         this.index++;
+      }
+
+      if (currentAction.length === 0) {
+        this.error('Missing action');
       }
 
       if (isQuoted(this.tokens[this.index]?.value)) {
@@ -155,7 +160,7 @@ export class Parser {
     if (this.tokens[this.index].value === expectedTokenValue) {
       this.index++;
     } else {
-      throw new Error(errorMessage + '\n' + this.printErrorLocation());
+      this.error(errorMessage);
     }
   }
 
@@ -165,38 +170,6 @@ export class Parser {
     }
   }
 
-  // parseAssertion() {
-  //   const targetPath: string[] = [];
-  //
-  //   while (this.index < this.tokens.length
-  //   && !['should'].includes(this.tokens[this.index])) {
-  //     targetPath.push(this.tokens[this.index]);
-  //     this.index++;
-  //   }
-  //
-  //   if (this.tokens[this.index] === 'should') {
-  //     this.index++;
-  //   } else {
-  //     throw new Error('Expected "should" but got ' + this.tokens[this.index]);
-  //   }
-  //
-  //   const assertion: string[] = [];
-  //
-  //   while (this.index < this.tokens.length
-  //   && !['and'].includes(this.tokens[this.index])) {
-  //     assertion.push(this.tokens[this.index]);
-  //     this.index++;
-  //   }
-  //
-  //   if (this.tokens[this.index] === 'and') {
-  //     this.index++;
-  //   }
-  //
-  //   return {
-  //     target: targetPath,
-  //     assertion,
-  //   };
-  // }
   printErrorLocation() {
     const index = this.index;
     const line = this.tokens[index].line;
@@ -204,6 +177,16 @@ export class Parser {
     const lineContent = this.sentence.split('\n')[line - 1];
     const pointer = ' '.repeat(column - 1) + '^';
     return `Line ${line}, column ${column}:\n${lineContent}\n${pointer}`;
+  }
+
+  reject(rejectedStrings, errorMessage) {
+    if (rejectedStrings.includes(this.tokens[this.index].value)) {
+      this.error(errorMessage);
+    }
+  }
+
+  error(errorMessage) {
+    throw new Error(errorMessage + '\n' + this.printErrorLocation());
   }
 }
 
@@ -215,13 +198,3 @@ function isQuoted(str) {
   return str.startsWith('"') && str.endsWith('"');
 }
 
-const parser = new Parser();
-console.log(
-  JSON.stringify(
-    parser.parse(
-      `
-      when I click on button and I type "toto" on input then
-    button should be visible and input clear button should not be visible`,
-    ),
-  ),
-);
