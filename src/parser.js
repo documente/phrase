@@ -64,7 +64,7 @@ export class Parser {
   parseActions() {
     const actions = [];
 
-    while (this.index < this.tokens.length && !this.matches('then')) {
+    while (!this.isAtEnd() && !this.matches('then')) {
       this.consumeOptional('I');
       const action = this.consumeAction();
       const args = this.consumeQuotedArg();
@@ -88,7 +88,7 @@ export class Parser {
     const action = [];
 
     while (
-      this.index < this.tokens.length &&
+      !this.isAtEnd() &&
       !this.matches('on', 'then') &&
       !isQuoted(this.currentValue)
     ) {
@@ -126,7 +126,7 @@ export class Parser {
       this.index++;
 
       while (
-        this.index < this.tokens.length &&
+        !this.isAtEnd() &&
         !this.matches('then', 'and') &&
         !isQuoted(this.currentValue)
       ) {
@@ -168,6 +168,10 @@ export class Parser {
     const lineContent = this.sentence.split('\n')[line - 1];
     const pointer = ' '.repeat(column - 1) + '^';
     return `Line ${line}, column ${column}:\n${lineContent}\n${pointer}`;
+  }
+
+  isAtEnd() {
+    return this.index >= this.tokens.length;
   }
 }
 
