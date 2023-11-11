@@ -55,44 +55,55 @@ export class Parser {
 
   parseActions() {
     const actions = [];
-    let currentAction = [];
-    let currentTarget = [];
-    let currentArgs = [];
-
-    this.consumeOptional('I');
 
     while (
       this.index < this.tokens.length &&
-      !['then', 'and', 'on'].includes(this.tokens[this.index].value) &&
-      !isQuoted(this.tokens[this.index].value)
+      !['then'].includes(this.tokens[this.index].value)
     ) {
-      currentAction.push(this.tokens[this.index]);
-      this.index++;
-    }
+      let currentAction = [];
+      let currentTarget = [];
+      let currentArgs = [];
 
-    if (isQuoted(this.tokens[this.index]?.value)) {
-      currentArgs.push(this.tokens[this.index]);
-      this.index++;
-    }
-
-    if (this.tokens[this.index]?.value === 'on') {
-      this.index++;
+      this.consumeOptional('I');
 
       while (
         this.index < this.tokens.length &&
-        !['then', 'and'].includes(this.tokens[this.index].value) &&
+        !['then', 'and', 'on'].includes(this.tokens[this.index].value) &&
         !isQuoted(this.tokens[this.index].value)
       ) {
-        currentTarget.push(this.tokens[this.index]);
+        currentAction.push(this.tokens[this.index]);
         this.index++;
       }
+
+      if (isQuoted(this.tokens[this.index]?.value)) {
+        currentArgs.push(this.tokens[this.index]);
+        this.index++;
+      }
+
+      if (this.tokens[this.index]?.value === 'on') {
+        this.index++;
+
+        while (
+          this.index < this.tokens.length &&
+          !['then', 'and'].includes(this.tokens[this.index].value) &&
+          !isQuoted(this.tokens[this.index].value)
+        ) {
+          currentTarget.push(this.tokens[this.index]);
+          this.index++;
+        }
+      }
+
+      actions.push({
+        target: currentTarget,
+        action: currentAction,
+        args: currentArgs,
+      });
+
+      this.consumeOptional('and');
     }
 
-    actions.push({
-      target: currentTarget,
-      action: currentAction,
-      args: currentArgs,
-    });
+    this.consume('then', 'Expected "then"');
+
     return actions;
   }
 

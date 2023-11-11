@@ -17,7 +17,7 @@ foo
 
 test('should parse a sentence with an action without target and without args', () => {
   const parser = new Parser();
-  expect(parser.parse('when I click')).toEqual({
+  expect(parser.parse('when I click then')).toEqual({
     actions: [
       {
         target: [],
@@ -37,7 +37,7 @@ test('should parse a sentence with an action without target and without args', (
 
 test('should parse a sentence with an action with a target and without args', () => {
   const parser = new Parser();
-  expect(parser.parse('when I click on button')).toEqual({
+  expect(parser.parse('when I click on button then')).toEqual({
     actions: [
       {
         target: [
@@ -63,7 +63,7 @@ test('should parse a sentence with an action with a target and without args', ()
 
 test('should parse a sentence with an action with a target and with args', () => {
   const parser = new Parser();
-  expect(parser.parse('when I type "foo" on input')).toEqual({
+  expect(parser.parse('when I type "foo" on input then')).toEqual({
     actions: [
       {
         target: [
@@ -91,4 +91,19 @@ test('should parse a sentence with an action with a target and with args', () =>
     ],
     assertions: [],
   });
+});
+
+test('should parse a sentence with two actions', () => {
+  const parser = new Parser();
+  const sentence = parser.parse(
+    'when I click on button and I type "foo" on input then',
+  );
+
+  expect(sentence.actions[0].action[0].value).toEqual('click');
+  expect(sentence.actions[0].target[0].value).toEqual('button');
+  expect(sentence.actions[0].args.length).toEqual(0);
+
+  expect(sentence.actions[1].action[0].value).toEqual('type');
+  expect(sentence.actions[1].target[0].value).toEqual('input');
+  expect(sentence.actions[1].args[0].value).toEqual('"foo"');
 });
