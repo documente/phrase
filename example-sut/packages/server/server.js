@@ -6,7 +6,7 @@ const port = 5000;
 app.use(express.json());
 
 // Serve static files from the 'client/build' directory
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static(path.join(__dirname, '../client/build')));
 
 app.post('/api/message', (req, res) => {
   const { text } = req.body;
@@ -30,7 +30,7 @@ app.post('/api/login', (req, res) => {
 
 // For all other routes, serve the React app
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
 app.listen(port, () => {
