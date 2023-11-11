@@ -114,7 +114,8 @@ test('should throw if parsing a sentence with invalid action', () => {
     `Expected action
 Line 1, column 8:
 when I and foo then
-       ^`);
+       ^`,
+  );
 });
 
 test('should throw if parsing a sentence with missing action', () => {
@@ -123,5 +124,6 @@ test('should throw if parsing a sentence with missing action', () => {
     `Missing action
 Line 1, column 8:
 when I then
-       ^`);
+       ^`,
+  );
 });
