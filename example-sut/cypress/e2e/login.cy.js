@@ -11,14 +11,16 @@ const test = withTree({
 });
 
 const baseUrl = 'http://localhost:3000/';
+const username = 'user01';
+const password = 'P455w0rd';
 
 describe('template spec', () => {
-  it('passes', () => {
+  it('should login', () => {
     test `when I visit "${baseUrl}"
-           and I type "username" on login form login field
-           and I type "password" on password field
+           and I type "${username}" on login form login field
+           and I type "${password}" on password field
            and I click on login form confirm button
           then welcome message should be visible
-           and welcome message should have text "Welcome, username!"`;
+           and welcome message should have text "Welcome, ${username}!"`;
   });
 })
