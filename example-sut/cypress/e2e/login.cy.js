@@ -21,6 +21,7 @@ describe('template spec', () => {
            and I type "${password}" on password field
            and I click on login form confirm button
           then welcome message should be visible
-           and welcome message should have text "Welcome, ${username}!"`;
+           and welcome message should have text "Welcome, ${username}!"
+           and login form should not exist`;
   });
 })
