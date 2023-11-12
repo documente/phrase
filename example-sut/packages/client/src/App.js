@@ -78,7 +78,7 @@ function App() {
               <h1>Welcome, {user.username}!</h1>
               <button onClick={handleLogout}>Logout</button>
 
-              <h1>Task Management</h1>
+              <h2>Your tasks</h2>
               <input
                   type="text"
                   placeholder="Enter a new task"
