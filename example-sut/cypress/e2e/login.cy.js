@@ -15,7 +15,7 @@ describe('template spec', () => {
     cy.visit('http://localhost:3000/');
 
     test `when I type "username" on login form login field
-          and I type "password" on login form password field
+          and I type "password" on password field
           and I click on login form confirm button
           then welcome message should be visible
           and welcome message should have text "Welcome, username!"`
