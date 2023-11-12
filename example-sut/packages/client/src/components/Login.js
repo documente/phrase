@@ -47,7 +47,7 @@ const Login = ({ onLogin, setError }) => {
   return (
       <div>
         <h2>Login</h2>
-        <form onSubmit={handleLogin}>
+        <form className="login-form" onSubmit={handleLogin}>
           <label>
             Username:
             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
