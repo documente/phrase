@@ -17,7 +17,7 @@ const baseUrl = 'http://localhost:3000/';
 const username = 'user01';
 const password = 'P455w0rd';
 
-describe('template spec', () => {
+describe('example spec', () => {
   beforeEach(() => {
     // Quick and dirty way to reset the server state
     cy.request('DELETE', 'http://localhost:5000/api/all-tasks');
