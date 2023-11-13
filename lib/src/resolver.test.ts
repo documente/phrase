@@ -1,4 +1,9 @@
-import { resolve, resolvePath, resolvePathRecursively } from './resolver';
+import {
+  resolve,
+  resolvePath,
+  resolvePathRecursively,
+  splitOnQuotedText,
+} from './resolver';
 import { expect, test } from '@jest/globals';
 
 test('resolvePath should resolve a root node', () => {
@@ -10,8 +15,8 @@ test('resolvePath should resolve a root node', () => {
   };
   const result = resolvePath(tree, ['foo']);
   expect(result).toEqual({
-    matchingKey: 'foo',
-    consumedLength: 1,
+    key: 'foo',
+    fragments: ['foo'],
   });
 });
 
@@ -24,8 +29,8 @@ test('resolvePath should resolve a root node with composed tokens', () => {
   };
   const result = resolvePath(tree, ['welcome', 'message']);
   expect(result).toEqual({
-    matchingKey: 'welcomeMessage',
-    consumedLength: 2,
+    key: 'welcomeMessage',
+    fragments: ['welcome', 'message'],
   });
 });
 
@@ -47,7 +52,7 @@ test('resolvePathRecursively should resolve a nested node', () => {
     bar: {},
   };
   const result = resolvePathRecursively(tree, ['foo', 'bar']);
-  expect(result).toEqual(['foo', 'bar']);
+  expect(result?.map((r) => r.key)).toEqual(['foo', 'bar']);
 });
 
 test('resolvePathRecursively should resolve a nested node with composed tokens', () => {
@@ -58,7 +63,7 @@ test('resolvePathRecursively should resolve a nested node with composed tokens',
     welcomeMessage: { foo: {} },
   };
   const result = resolvePathRecursively(tree, ['welcome', 'message', 'foo']);
-  expect(result).toEqual(['welcomeMessage', 'foo']);
+  expect(result?.map((r) => r.key)).toEqual(['welcomeMessage', 'foo']);
 });
 
 test('resolvePathRecursively should throw error if no match is found', () => {
@@ -83,8 +88,17 @@ test('resolve should find among previous node descendants', () => {
     bar: { baz: {} },
   };
 
-  const result = resolve(tree, ['foo', 'bar'], ['welcome']);
-  expect(result).toEqual(['welcome', 'foo', 'bar']);
+  const result = resolve(
+    tree,
+    ['foo', 'bar'],
+    [
+      {
+        key: 'welcome',
+        fragments: ['welcome'],
+      },
+    ],
+  );
+  expect(result?.map((r) => r.key)).toEqual(['welcome', 'foo', 'bar']);
 });
 
 test("resolve should find among previous' parent descendants", () => {
@@ -97,8 +111,21 @@ test("resolve should find among previous' parent descendants", () => {
     bar: { baz: {} },
   };
 
-  const result = resolve(tree, ['foo', 'bar'], ['welcome', 'bar']);
-  expect(result).toEqual(['welcome', 'foo', 'bar']);
+  const result = resolve(
+    tree,
+    ['foo', 'bar'],
+    [
+      {
+        key: 'welcome',
+        fragments: ['welcome'],
+      },
+      {
+        key: 'bar',
+        fragments: ['bar'],
+      },
+    ],
+  );
+  expect(result?.map((r) => r.key)).toEqual(['welcome', 'foo', 'bar']);
 });
 
 test('resolve should ignore previous and find from root', () => {
@@ -110,6 +137,37 @@ test('resolve should ignore previous and find from root', () => {
     bar: { baz: {} },
   };
 
-  const result = resolve(tree, ['bar', 'baz'], ['welcome']);
-  expect(result).toEqual(['bar', 'baz']);
+  const result = resolve(
+    tree,
+    ['bar', 'baz'],
+    [
+      {
+        key: 'welcome',
+        fragments: ['welcome'],
+      },
+    ],
+  );
+  expect(result?.map((r) => r.key)).toEqual(['bar', 'baz']);
+});
+
+test('splitOnQuotedText should group segments with quoted text', () => {
+  const result = splitOnQuotedText(['foo', 'bar', '"baz"', 'foobar']);
+  expect(result).toEqual([
+    { segments: ['foo', 'bar'], arg: '"baz"' },
+    { segments: ['foobar'] },
+  ]);
+});
+
+test('splitOnQuotedText should group segments with quoted text at the end', () => {
+  const result = splitOnQuotedText([
+    'foo',
+    'bar',
+    '"baz"',
+    'foobar',
+    '"barbaz"',
+  ]);
+  expect(result).toEqual([
+    { segments: ['foo', 'bar'], arg: '"baz"' },
+    { segments: ['foobar'], arg: '"barbaz"' },
+  ]);
 });

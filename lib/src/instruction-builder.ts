@@ -1,5 +1,5 @@
 import { Action, Parser, Sentence } from './parser';
-import { resolve } from './resolver';
+import { resolve, ResolvedTarget } from './resolver';
 import { prettyPrintError } from './error';
 import { isBuiltinAction } from './builtin-actions';
 import { isQuoted, unquoted } from './quoted-text';
@@ -31,7 +31,7 @@ export function buildInstructions(
   const sentenceTree: Sentence = parser.parse(input);
 
   const actions: ActionInstruction[] = [];
-  let previousPath: string[] = [];
+  let previousPath: ResolvedTarget[] = [];
 
   sentenceTree.prerequisites.forEach((action) => {
     previousPath = extractAction(tree, action, previousPath, input, actions);
@@ -74,10 +74,10 @@ export function buildInstructions(
 function extractAction(
   tree: PageObjectTree,
   action: Action,
-  previousPath: string[],
+  previousPath: ResolvedTarget[],
   input: string,
   actions: ActionInstruction[],
-): string[] {
+): ResolvedTarget[] {
   const resolved = extractTargetSelector(
     tree,
     action.target,
@@ -117,7 +117,7 @@ function extractActionInstruction(action: Action, input: string) {
 function extractTargetSelector(
   tree: PageObjectTree,
   target: Token[],
-  previousPath: string[],
+  previousPath: ResolvedTarget[],
   input: string,
 ) {
   if (target.length === 0) {
@@ -133,9 +133,7 @@ function extractTargetSelector(
     };
   }
 
-  const targetFragments = target
-    .map((t) => t.value)
-    .filter((t) => !isQuoted(t));
+  const targetFragments = target.map((t) => t.value);
 
   const targetPath = resolve(tree, targetFragments, previousPath);
 
@@ -160,7 +158,7 @@ function extractTargetSelector(
 
 function buildSelectors(
   tree: PageObjectTree,
-  targetPath: string[],
+  targetPath: ResolvedTarget[],
   target: Token[],
   input: string,
 ) {
@@ -176,7 +174,7 @@ function buildSelectors(
       throw new Error('Invalid tree');
     }
 
-    const child = currentNode[pathSegment];
+    const child = currentNode[pathSegment.key];
 
     if (!child) {
       throw new Error('Invalid tree');
@@ -187,7 +185,7 @@ function buildSelectors(
     if (!currentNode) {
       throw new Error(
         prettyPrintError(
-          `Could not resolve target path for "${target
+          `Could not resolve node for "${target
             .map((t) => t.value)
             .join(' ')}"`,
           input,
@@ -200,7 +198,10 @@ function buildSelectors(
 
     if (typeof currentNode === 'object') {
       selector = currentNode._selector;
-    } else if (typeof currentNode === 'string' || typeof currentNode === 'function') {
+    } else if (
+      typeof currentNode === 'string' ||
+      typeof currentNode === 'function'
+    ) {
       selector = currentNode;
     }
 
@@ -208,10 +209,10 @@ function buildSelectors(
       selectors.push(selector);
     } else if (typeof selector === 'function') {
       // TODO: handle multiple arguments in the same target path
-      const arg = target.find((t) => isQuoted(t.value));
+      const arg = pathSegment.arg;
 
       if (arg) {
-        selectors.push(selector(unquoted(arg.value)));
+        selectors.push(selector(unquoted(arg)));
       } else {
         selectors.push(selector());
       }

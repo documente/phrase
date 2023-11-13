@@ -30,7 +30,10 @@ export function withTree(tree: PageObjectTree): TestFunction {
   };
 }
 
-function targetIsDefined(target: string[] | null, action: string): target is string[] {
+function targetIsDefined(
+  target: string[] | null,
+  action: string,
+): target is string[] {
   if (!target) {
     throw new Error(`Target is required for action ${action}.`);
   }

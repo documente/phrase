@@ -1,26 +1,39 @@
 import { getNode } from './get-node';
 import { PageObjectTree } from './page-object-tree';
+import { isQuoted } from './quoted-text';
+
+export interface ResolvedTarget {
+  fragments: string[];
+  key: string;
+  arg?: string;
+}
 
 export function resolve(
   tree: PageObjectTree,
   pathSegments: string[],
-  previousPath: string[],
-): string[] | undefined {
-  if (previousPath?.length > 0) {
-    const previousNode = getNode(tree, previousPath);
+  previous: ResolvedTarget[],
+): ResolvedTarget[] | undefined {
+  if (previous?.length > 0) {
+    const previousNode = getNode(
+      tree,
+      previous.map((p) => p.key),
+    );
 
     if (previousNode) {
       const match = resolvePathRecursively(previousNode, pathSegments);
 
       if (match) {
-        return [...previousPath, ...match];
+        return [...previous, ...match];
       }
     }
   }
 
-  if (previousPath?.length > 1) {
-    const pathToParent = previousPath.slice(0, -1);
-    const parentNode = getNode(tree, pathToParent);
+  if (previous?.length > 1) {
+    const pathToParent = previous.slice(0, -1);
+    const parentNode = getNode(
+      tree,
+      pathToParent.map((p) => p.key),
+    );
 
     if (parentNode) {
       const match = resolvePathRecursively(parentNode, pathSegments);
@@ -34,15 +47,10 @@ export function resolve(
   return resolvePathRecursively(tree, pathSegments);
 }
 
-interface ResolveMatch {
-  matchingKey: string;
-  consumedLength: number;
-}
-
 export function resolvePath(
   tree: PageObjectTree,
   pathSegments: string[],
-): ResolveMatch | undefined {
+): ResolvedTarget | undefined {
   const keys = Object.keys(tree);
 
   for (let j = pathSegments.length; j > 0; j--) {
@@ -52,7 +60,7 @@ export function resolvePath(
     );
 
     if (matchingKey) {
-      return { matchingKey, consumedLength: j };
+      return { key: matchingKey, fragments: pathSegments.slice(0, j) };
     }
   }
 
@@ -62,23 +70,59 @@ export function resolvePath(
 export function resolvePathRecursively(
   node: PageObjectTree,
   pathSegments: string[],
-  pathSoFar: string[] = [],
-): string[] | undefined {
-  const match = resolvePath(node, pathSegments);
+  resolvedSoFar: ResolvedTarget[] = [],
+): ResolvedTarget[] | undefined {
+  const groups = splitOnQuotedText(pathSegments);
+  const group = groups[0];
+
+  const match = resolvePath(node, group.segments);
 
   if (!match) {
     return undefined;
   }
 
-  const { matchingKey, consumedLength } = match;
+  const matchWithArg = { ...match, arg: group.arg };
+  const segmentsWithoutArgs = pathSegments.filter(
+    (segment) => !isQuoted(segment),
+  );
 
-  if (pathSegments.length === consumedLength) {
-    return [...pathSoFar, matchingKey];
+  if (segmentsWithoutArgs.length === match.fragments.length) {
+    return [...resolvedSoFar, matchWithArg];
   }
 
   return resolvePathRecursively(
-    node[matchingKey] as PageObjectTree,
-    pathSegments.slice(consumedLength),
-    [...(pathSoFar || []), matchingKey],
+    node[match.key] as PageObjectTree,
+    pathSegments.slice(match.fragments.length),
+    [...resolvedSoFar, matchWithArg],
   );
+}
+
+interface PathSegmentGroup {
+  segments: string[];
+  arg?: string;
+}
+
+export function splitOnQuotedText(pathSegments: string[]): PathSegmentGroup[] {
+  const groups: PathSegmentGroup[] = [];
+  let currentSegments: string[] = [];
+
+  pathSegments.forEach((segment) => {
+    if (isQuoted(segment)) {
+      groups.push({
+        segments: currentSegments,
+        arg: segment,
+      });
+      currentSegments = [];
+    } else {
+      currentSegments.push(segment);
+    }
+  });
+
+  if (currentSegments.length > 0) {
+    groups.push({
+      segments: currentSegments,
+    });
+  }
+
+  return groups;
 }
