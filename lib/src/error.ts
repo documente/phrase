@@ -1,4 +1,13 @@
-export function prettyPrintError(errorMessage, sentence, location) {
+interface ErrorLocation {
+  line: number;
+  column: number;
+}
+
+export function prettyPrintError(
+  errorMessage: string,
+  sentence: string,
+  location: ErrorLocation,
+): string {
   return `${errorMessage}\n${printErrorLineAndContent(
     sentence,
     location.line,
@@ -6,7 +15,11 @@ export function prettyPrintError(errorMessage, sentence, location) {
   )}`;
 }
 
-export function printErrorLineAndContent(sentence, line, column) {
+export function printErrorLineAndContent(
+  sentence: string,
+  line: number,
+  column: number,
+): string {
   const lineContent = sentence.split('\n')[line - 1];
   const pointer = ' '.repeat(column - 1) + '^';
   return `Line ${line}, column ${column}:\n${lineContent}\n${pointer}`;

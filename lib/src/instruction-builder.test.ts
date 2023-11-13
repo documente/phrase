@@ -1,4 +1,5 @@
-import { buildInstructions } from './instruction-builder.js';
+import { buildInstructions } from './instruction-builder';
+import { expect, test } from '@jest/globals';
 
 test('should throw if action target cannot be resolved', () => {
   const tree = {};

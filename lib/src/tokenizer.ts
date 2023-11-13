@@ -1,17 +1,16 @@
-/**
- * @typedef {Object} Token
- * @property {string} value - token value
- * @property {number} line - line number
- * @property {number} column - column number
- */
+export interface Token {
+  value: string;
+  line: number;
+  column: number;
+}
 
 /**
  * Tokenize a sentence.
  * @param {string} sentence - sentence to tokenize
  * @returns {Token[]} tokens
  */
-export function tokenize(sentence) {
-  const tokens = [];
+export function tokenize(sentence: string): Token[] {
+  const tokens: Token[] = [];
 
   let currentToken = '';
   let line = 1;

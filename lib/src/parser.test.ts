@@ -1,4 +1,5 @@
-import { Parser } from './parser.js';
+import { Parser } from './parser';
+import { expect, test } from '@jest/globals';
 
 test('should throw if parsing an empty sentence', () => {
   const parser = new Parser();

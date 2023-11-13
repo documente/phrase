@@ -1,41 +1,35 @@
-import { tokenize } from './tokenizer.js';
-import { printErrorLineAndContent } from './error.js';
-import { isQuoted } from './quoted-text.js';
+import { Token, tokenize } from './tokenizer';
+import { printErrorLineAndContent } from './error';
+import { isQuoted } from './quoted-text';
 
-/**
- * @typedef {Object} Action
- * @property {string[]} target - target path
- * @property {string[]} action - action name
- * @property {any[]} args - action arguments
- */
+export interface Action {
+  target: Token[];
+  action: Token[];
+  args: any[];
+}
 
-/**
- * @typedef {Object} Assertion
- * @property {string[]} target - target path
- * @property {string[]} assertion - assertion name
- */
+export interface Assertion {
+  target: Token[];
+  assertion: Token[];
+  args: Token[];
+}
 
-/**
- * @typedef {Object} Sentence
- * @property {Action[]} actions - actions
- * @property {Assertion[]} assertions - assertions
- */
+export interface Sentence {
+  prerequisites: Action[];
+  actions: Action[];
+  assertions: Assertion[];
+}
 
 export class Parser {
   sentence = '';
-
-  /**
-   * @type {Token[]}
-   */
-  tokens = [];
-
+  tokens: Token[] = [];
   index = 0;
 
-  get currentToken() {
+  get currentToken(): Token {
     return this.tokens[this.index];
   }
 
-  get currentValue() {
+  get currentValue(): string {
     return this.currentToken?.value;
   }
 
@@ -43,7 +37,7 @@ export class Parser {
    * @param {string} sentence - sentence to parse
    * @returns {Sentence} parsed sentence
    */
-  parse(sentence) {
+  parse(sentence: string): Sentence {
     this.sentence = sentence;
     this.tokens = tokenize(sentence);
     this.index = 0;
@@ -52,20 +46,20 @@ export class Parser {
       throw new Error('Empty sentence');
     }
 
-    const prerequisite = this.parseGiven();
+    const prerequisites = this.parseGiven();
     this.consume('when', 'Expected "when"');
     const actions = this.parseActions();
     this.consume('then', 'Expected "then"');
     const assertions = this.parseAssertions();
 
     return {
-      prerequisite,
+      prerequisites,
       actions,
       assertions,
     };
   }
 
-  parseGiven() {
+  parseGiven(): Action[] {
     if (this.matches('given')) {
       this.index++;
       return this.parseActions();
@@ -74,7 +68,7 @@ export class Parser {
     return [];
   }
 
-  parseActions() {
+  parseActions(): Action[] {
     const actions = [];
 
     while (!this.isAtEnd() && !this.matches('then', 'when')) {
@@ -82,7 +76,7 @@ export class Parser {
       const action = this.consumeAction();
       const args = this.consumeQuotedArg();
 
-      let target = [];
+      let target: Token[] = [];
       if (this.matches('on')) {
         this.index++;
         target = this.consumeTarget();
@@ -120,14 +114,14 @@ export class Parser {
     return action;
   }
 
-  parseAssertions() {
-    const assertions = [];
+  parseAssertions(): Assertion[] {
+    const assertions: Assertion[] = [];
 
     while (!this.isAtEnd()) {
       const target = this.consumeTarget();
       this.consume('should', 'Expected "should"');
       const assertion = this.consumeAssertion();
-      const args = this.isAtEnd() ? [] : this.consumeQuotedArg();
+      const args: Token[] = this.isAtEnd() ? [] : this.consumeQuotedArg();
 
       assertions.push({
         target,
@@ -145,8 +139,8 @@ export class Parser {
     return assertions;
   }
 
-  consumeAssertion() {
-    const assertion = [];
+  consumeAssertion(): Token[] {
+    const assertion: Token[] = [];
 
     while (
       !this.isAtEnd() &&
@@ -165,11 +159,11 @@ export class Parser {
     return assertion;
   }
 
-  matches(...candidates) {
+  matches(...candidates: string[]): boolean {
     return candidates.includes(this.currentValue);
   }
 
-  consumeQuotedArg() {
+  consumeQuotedArg(): Token[] {
     const args = [];
 
     if (isQuoted(this.currentValue)) {
@@ -180,7 +174,7 @@ export class Parser {
     return args;
   }
 
-  consumeTarget() {
+  consumeTarget(): Token[] {
     const target = [];
 
     while (!this.isAtEnd() && !this.matches('when', 'then', 'and', 'should')) {
@@ -191,7 +185,7 @@ export class Parser {
     return target;
   }
 
-  consume(expectedTokenValue, errorMessage) {
+  consume(expectedTokenValue: string, errorMessage: string): void {
     if (this.matches(expectedTokenValue)) {
       this.index++;
     } else {
@@ -199,23 +193,23 @@ export class Parser {
     }
   }
 
-  consumeOptional(expectedTokenValue) {
+  consumeOptional(expectedTokenValue: string): void {
     if (this.matches(expectedTokenValue)) {
       this.index++;
     }
   }
 
-  reject(rejectedStrings, errorMessage) {
+  reject(rejectedStrings: string[], errorMessage: string): void {
     if (this.matches(...rejectedStrings)) {
       this.error(errorMessage);
     }
   }
 
-  error(errorMessage) {
+  error(errorMessage: string): void {
     throw new Error(errorMessage + '\n' + this.printErrorLocation());
   }
 
-  printErrorLocation() {
+  printErrorLocation(): string {
     if (this.isAtEnd()) {
       const line = this.sentence.split('\n').length;
       const column = this.sentence.split('\n')[line - 1].length + 1;
@@ -227,7 +221,7 @@ export class Parser {
     }
   }
 
-  isAtEnd() {
+  isAtEnd(): boolean {
     return this.index >= this.tokens.length;
   }
 }

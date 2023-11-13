@@ -1,17 +1,39 @@
-import { Parser } from './parser.js';
-import { resolve } from './resolver.js';
-import { prettyPrintError } from './error.js';
-import { isBuiltinAction } from './builtin-actions.js';
-import { isQuoted, unquoted } from './quoted-text.js';
+import { Action, Parser, Sentence } from './parser';
+import { resolve } from './resolver';
+import { prettyPrintError } from './error';
+import { isBuiltinAction } from './builtin-actions';
+import { isQuoted, unquoted } from './quoted-text';
+import { PageObjectTree, Selector } from './page-object-tree';
+import { Token } from './tokenizer';
 
-export function buildInstructions(input, tree) {
+export interface ActionInstruction {
+  target: string[] | null;
+  action: string;
+  args: string[];
+}
+
+export interface AssertionInstruction {
+  target: string[] | null;
+  assertion: string;
+  args: string[];
+}
+
+export interface Instructions {
+  actions: ActionInstruction[];
+  assertions: AssertionInstruction[];
+}
+
+export function buildInstructions(
+  input: string,
+  tree: PageObjectTree,
+): Instructions {
   const parser = new Parser();
-  const sentenceTree = parser.parse(input);
+  const sentenceTree: Sentence = parser.parse(input);
 
-  const actions = [];
-  let previousPath = [];
+  const actions: ActionInstruction[] = [];
+  let previousPath: string[] = [];
 
-  sentenceTree.prerequisite.forEach((action) => {
+  sentenceTree.prerequisites.forEach((action) => {
     previousPath = extractAction(tree, action, previousPath, input, actions);
   });
 
@@ -19,7 +41,7 @@ export function buildInstructions(input, tree) {
     previousPath = extractAction(tree, action, previousPath, input, actions);
   });
 
-  const assertions = [];
+  const assertions: AssertionInstruction[] = [];
 
   sentenceTree.assertions.forEach((assertion) => {
     const resolved = extractTargetSelector(
@@ -49,7 +71,13 @@ export function buildInstructions(input, tree) {
   };
 }
 
-function extractAction(tree, action, previousPath, input, actions) {
+function extractAction(
+  tree: PageObjectTree,
+  action: Action,
+  previousPath: string[],
+  input: string,
+  actions: ActionInstruction[],
+): string[] {
   const resolved = extractTargetSelector(
     tree,
     action.target,
@@ -71,7 +99,7 @@ function extractAction(tree, action, previousPath, input, actions) {
   return previousPath;
 }
 
-function extractActionInstruction(action, input) {
+function extractActionInstruction(action: Action, input: string) {
   const actionName = action.action.map((a) => a.value).join(' ');
 
   if (!isBuiltinAction(actionName)) {
@@ -86,7 +114,12 @@ function extractActionInstruction(action, input) {
   return actionName;
 }
 
-function extractTargetSelector(tree, target, previousPath, input) {
+function extractTargetSelector(
+  tree: PageObjectTree,
+  target: Token[],
+  previousPath: string[],
+  input: string,
+) {
   if (target.length === 0) {
     return null;
   }
@@ -125,12 +158,32 @@ function extractTargetSelector(tree, target, previousPath, input) {
   };
 }
 
-function buildSelectors(tree, targetPath, target, input) {
-  const selectors = [];
-  let currentNode = tree;
+function buildSelectors(
+  tree: PageObjectTree,
+  targetPath: string[],
+  target: Token[],
+  input: string,
+) {
+  const selectors: string[] = [];
+  let currentNode: PageObjectTree | Selector = tree;
 
   targetPath.forEach((pathSegment) => {
-    currentNode = currentNode[pathSegment];
+    if (
+      !currentNode ||
+      typeof currentNode === 'string' ||
+      typeof currentNode === 'function'
+    ) {
+      throw new Error('Invalid tree');
+    }
+
+    const child = currentNode[pathSegment];
+
+    if (!child) {
+      throw new Error('Invalid tree');
+    }
+
+    currentNode = child;
+
     if (!currentNode) {
       throw new Error(
         prettyPrintError(
@@ -143,15 +196,29 @@ function buildSelectors(tree, targetPath, target, input) {
       );
     }
 
-    const selector = currentNode._selector ?? currentNode;
+    let selector: Selector | undefined;
+
+    if (typeof currentNode === 'object') {
+      selector = currentNode._selector;
+    }
+
+    if (!selector && typeof currentNode === 'string') {
+      selector = currentNode;
+    }
 
     if (typeof selector === 'string') {
       selectors.push(selector);
-    } else {
+    } else if (typeof selector === 'function') {
       // TODO: handle multiple arguments in the same target path
       const arg = target.find((t) => isQuoted(t.value));
-      selectors.push(selector(unquoted(arg?.value)));
+
+      if (arg) {
+        selectors.push(selector(unquoted(arg.value)));
+      } else {
+        selectors.push(selector());
+      }
     }
   });
+
   return selectors;
 }

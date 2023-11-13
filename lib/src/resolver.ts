@@ -1,6 +1,11 @@
-import { getNode } from './get-node.js';
+import { getNode } from './get-node';
+import { PageObjectTree } from './page-object-tree';
 
-export function resolve(tree, pathSegments, previousPath) {
+export function resolve(
+  tree: PageObjectTree,
+  pathSegments: string[],
+  previousPath: string[],
+): string[] | undefined {
   if (previousPath?.length > 0) {
     const previousNode = getNode(tree, previousPath);
 
@@ -29,7 +34,15 @@ export function resolve(tree, pathSegments, previousPath) {
   return resolvePathRecursively(tree, pathSegments);
 }
 
-export function resolvePath(tree, pathSegments) {
+interface ResolveMatch {
+  matchingKey: string;
+  consumedLength: number;
+}
+
+export function resolvePath(
+  tree: PageObjectTree,
+  pathSegments: string[],
+): ResolveMatch | undefined {
   const keys = Object.keys(tree);
 
   for (let j = pathSegments.length; j > 0; j--) {
@@ -46,7 +59,11 @@ export function resolvePath(tree, pathSegments) {
   return undefined;
 }
 
-export function resolvePathRecursively(node, pathSegments, pathSoFar = []) {
+export function resolvePathRecursively(
+  node: PageObjectTree,
+  pathSegments: string[],
+  pathSoFar: string[] = [],
+): string[] | undefined {
   const match = resolvePath(node, pathSegments);
 
   if (!match) {
@@ -60,7 +77,7 @@ export function resolvePathRecursively(node, pathSegments, pathSoFar = []) {
   }
 
   return resolvePathRecursively(
-    node[matchingKey],
+    node[matchingKey] as PageObjectTree,
     pathSegments.slice(consumedLength),
     [...(pathSoFar || []), matchingKey],
   );

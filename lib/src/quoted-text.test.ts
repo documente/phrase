@@ -1,4 +1,5 @@
-import { isQuoted, unquoted } from './quoted-text.js';
+import { isQuoted, unquoted } from './quoted-text';
+import { expect, test } from '@jest/globals';
 
 test('isQuoted should detect a quoted string', () => {
   expect(isQuoted('"foo"')).toEqual(true);

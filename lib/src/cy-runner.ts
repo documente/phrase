@@ -1,7 +1,16 @@
-import { buildInstructions } from './instruction-builder.js';
-import { knownChainers } from './known-chainers.js';
+import {
+  ActionInstruction,
+  AssertionInstruction,
+  buildInstructions,
+} from './instruction-builder';
+import { KnownChainer } from './known-chainers';
+import { PageObjectTree } from './page-object-tree';
 
-export function withTree(tree) {
+interface TestFunction {
+  (strings: TemplateStringsArray | string, ...values: any[]): void;
+}
+
+export function withTree(tree: PageObjectTree): TestFunction {
   return function test(strings, ...values) {
     let str = null;
 
@@ -21,22 +30,29 @@ export function withTree(tree) {
   };
 }
 
-function runAction(actionInstruction) {
+function runAction(actionInstruction: ActionInstruction): void {
   const { target, action, args } = actionInstruction;
+
+  if (!target) {
+    throw new Error('Target is required for actions');
+  }
 
   switch (action) {
     case 'type':
-      return cy.get(target.join(' ')).type(args[0]);
+      cy.get(target.join(' ')).type(args[0]);
+      break;
     case 'click':
-      return cy.get(target.join(' ')).click();
+      cy.get(target.join(' ')).click();
+      break;
     case 'visit':
-      return cy.visit(args[0]);
+      cy.visit(args[0]);
+      break;
     default:
       throw new Error(`Unknown action: ${action}`);
   }
 }
 
-function runAssertion(assertionInstruction) {
+function runAssertion(assertionInstruction: AssertionInstruction): void {
   const { target, assertion, args } = assertionInstruction;
 
   if (isKnownAssertion(assertion)) {
@@ -46,18 +62,27 @@ function runAssertion(assertionInstruction) {
   }
 }
 
-function isKnownAssertion(assertion) {
+function isKnownAssertion(assertion: string): assertion is KnownChainer {
   if (assertion.startsWith('not ')) {
     assertion = assertion.slice(4);
   }
 
-  return Object.keys(knownChainers).includes(assertion);
+  return Object.keys(KnownChainer).includes(assertion);
 }
 
-function runKnownAssertion(assertion, target, args) {
+function runKnownAssertion(
+  assertion: KnownChainer,
+  target: string[] | null,
+  args: string[],
+) {
   const isNegated = assertion.startsWith('not ');
   const assertionName = isNegated ? assertion.slice(4) : assertion;
-  let chainer = knownChainers[assertionName];
+  let chainer: string =
+    KnownChainer[assertionName as keyof typeof KnownChainer];
+
+  if (!target) {
+    throw new Error('Target is required for assertions');
+  }
 
   if (isNegated) {
     chainer = 'not.' + chainer;

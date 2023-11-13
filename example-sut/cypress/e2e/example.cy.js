@@ -1,4 +1,4 @@
-import {withTree} from '../../../lib/src/cy-runner';
+import {withTree} from '../../../lib/dist/cy-runner';
 
 const test = withTree({
   loginForm: {

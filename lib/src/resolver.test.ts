@@ -1,4 +1,5 @@
-import { resolve, resolvePath, resolvePathRecursively } from './resolver.js';
+import { resolve, resolvePath, resolvePathRecursively } from './resolver';
+import { expect, test } from '@jest/globals';
 
 test('resolvePath should resolve a root node', () => {
   const tree = {

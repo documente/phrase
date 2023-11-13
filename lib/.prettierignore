@@ -6,4 +6,4 @@ package-lock.json
 docs
 **/*.hbs
 **/README.md
-old
+dist

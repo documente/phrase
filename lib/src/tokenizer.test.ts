@@ -1,4 +1,5 @@
 import { tokenize } from './tokenizer';
+import { expect, test } from '@jest/globals';
 
 test('should tokenize an empty sentence', () => {
   expect(tokenize('')).toEqual([]);

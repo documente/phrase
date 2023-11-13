@@ -5,7 +5,6 @@
   "repository": "https://github.com/pckerneis/bdd-cy-lib.git",
   "author": "pckerneis <pc.kerneis@gmail.com>",
   "license": "MIT",
-  "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "pretty": "npx prettier . --write",
@@ -16,9 +15,14 @@
     "src"
   ],
   "devDependencies": {
-    "@types/jest": "^29.5.5",
+    "@babel/core": "^7.23.3",
+    "@babel/preset-env": "^7.23.3",
+    "@babel/preset-typescript": "^7.23.3",
+    "@jest/globals": "^29.7.0",
+    "babel-jest": "^29.7.0",
+    "cypress": "^13.5.0",
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
-    "cypress": "^13.5.0"
+    "typescript": "^5.2.2"
   }
 }
