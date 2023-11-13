@@ -33,7 +33,7 @@ const authenticateUser = (req, res, next) => {
 
 app.post('/api/login', (req, res) => {
   // Implement user authentication and return a JWT
-  const { username, password } = req.body;
+  const { username } = req.body;
   const user = { userId: username };
   const token = jwt.sign(user, SECRET_KEY);
   res.json({ success: true, token });
