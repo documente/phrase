@@ -81,7 +81,14 @@ test('should build an assertion', () => {
   );
   expect(instructions.assertions).toEqual([
     {
-      target: ['h1'],
+      selectors: ['h1'],
+      target: [
+        {
+          arg: undefined,
+          fragments: ['welcome', 'message'],
+          key: 'welcomeMessage',
+        },
+      ],
       assertion: 'be visible',
       args: [],
     },
@@ -100,7 +107,14 @@ test('should build an assertion with quoted text argument', () => {
   );
   expect(instructions.assertions).toEqual([
     {
-      target: ['h1'],
+      selectors: ['h1'],
+      target: [
+        {
+          arg: undefined,
+          fragments: ['welcome', 'message'],
+          key: 'welcomeMessage',
+        },
+      ],
       assertion: 'have text',
       args: ['Hello, World!'],
     },

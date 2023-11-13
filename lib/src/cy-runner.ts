@@ -5,6 +5,8 @@ import {
 } from './instruction-builder';
 import { KnownChainer } from './known-chainers';
 import { PageObjectTree } from './page-object-tree';
+import { getNode } from './get-node';
+import { ResolvedTarget } from './resolver';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: any[]): void;
@@ -26,7 +28,9 @@ export function withTree(tree: PageObjectTree): TestFunction {
 
     const instructions = buildInstructions(str, tree);
     instructions.actions.forEach(runAction);
-    instructions.assertions.forEach(runAssertion);
+    instructions.assertions.forEach((assertion) =>
+      runAssertion(assertion, tree),
+    );
   };
 }
 
@@ -63,14 +67,25 @@ function runAction(actionInstruction: ActionInstruction): void {
   }
 }
 
-function runAssertion(assertionInstruction: AssertionInstruction): void {
-  const { target, assertion, args } = assertionInstruction;
+function runAssertion(
+  assertionInstruction: AssertionInstruction,
+  tree: PageObjectTree,
+): void {
+  const { target, assertion, args, selectors } = assertionInstruction;
 
   if (isKnownAssertion(assertion)) {
-    runKnownAssertion(assertion, target, args);
-  } else {
-    throw new Error(`Unknown assertion: ${assertion}`);
+    runKnownAssertion(assertion, selectors, args);
+    return;
   }
+
+  const customAssertion = findCustomAssertion(assertion, target, tree);
+
+  if (customAssertion && selectors) {
+    customAssertion(cy.get(selectors.join(' ')), ...args);
+    return;
+  }
+
+  throw new Error(`Unknown assertion: ${assertion}`);
 }
 
 function isKnownAssertion(assertion: string): assertion is KnownChainer {
@@ -83,7 +98,7 @@ function isKnownAssertion(assertion: string): assertion is KnownChainer {
 
 function runKnownAssertion(
   assertion: KnownChainer,
-  target: string[] | null,
+  selectors: string[] | null,
   args: string[],
 ) {
   const isNegated = assertion.startsWith('not ');
@@ -91,13 +106,47 @@ function runKnownAssertion(
   let chainer: string =
     KnownChainer[assertionName as keyof typeof KnownChainer];
 
-  if (!target) {
-    throw new Error('Target is required for assertions');
+  if (!selectors) {
+    throw new Error('Target selectors are required for built-in assertions.');
   }
 
   if (isNegated) {
     chainer = 'not.' + chainer;
   }
 
-  cy.get(target.join(' ')).should(chainer, ...args);
+  cy.get(selectors.join(' ')).should(chainer, ...args);
+}
+
+function findCustomAssertion(
+  assertion: string,
+  target: ResolvedTarget[] | null,
+  tree: PageObjectTree,
+): Function | null {
+  if (!target) {
+    return null;
+  }
+
+  const node = getNode(
+    tree,
+    target.map((t) => t.key),
+  );
+  const assertionTestValue = assertion.split(' ').join('').toLowerCase();
+
+  for (const key in node) {
+    const keyWithoutShould = key
+      .toLowerCase()
+      .split('_')
+      .join('')
+      .replace('should', '');
+    const candidate = node[key];
+
+    if (
+      keyWithoutShould === assertionTestValue &&
+      typeof candidate === 'function'
+    ) {
+      return candidate;
+    }
+  }
+
+  return null;
 }

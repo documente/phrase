@@ -88,7 +88,7 @@ function App() {
         <h1>✅ my to-do app</h1>
         {user ? (
             <div>
-              <h2>Welcome, {user.username}!</h2>
+              <h2 className="welcome-message">Welcome, {user.username}!</h2>
               <button className="small-button" onClick={handleLogout}>Logout</button>
 
               <h2>My tasks</h2>

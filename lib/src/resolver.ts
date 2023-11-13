@@ -90,9 +90,11 @@ export function resolvePathRecursively(
     return [...resolvedSoFar, matchWithArg];
   }
 
+  const matchLength = match.fragments.length + (group.arg ? 1 : 0);
+
   return resolvePathRecursively(
     node[match.key] as PageObjectTree,
-    pathSegments.slice(match.fragments.length),
+    pathSegments.slice(matchLength),
     [...resolvedSoFar, matchWithArg],
   );
 }

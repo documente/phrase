@@ -2,7 +2,7 @@ import { Action, Parser, Sentence } from './parser';
 import { resolve, ResolvedTarget } from './resolver';
 import { prettyPrintError } from './error';
 import { isBuiltinAction } from './builtin-actions';
-import { isQuoted, unquoted } from './quoted-text';
+import { unquoted } from './quoted-text';
 import { PageObjectTree, Selector } from './page-object-tree';
 import { Token } from './tokenizer';
 
@@ -13,7 +13,8 @@ export interface ActionInstruction {
 }
 
 export interface AssertionInstruction {
-  target: string[] | null;
+  target: ResolvedTarget[] | null;
+  selectors: string[] | null;
   assertion: string;
   args: string[];
 }
@@ -50,16 +51,18 @@ export function buildInstructions(
       previousPath,
       input,
     );
-    const target = resolved?.selectors ?? null;
+
     if (resolved?.path) {
       previousPath = resolved.path;
     }
 
+    const selectors = resolved?.selectors ?? null;
     const assertionName = assertion.assertion.map((a) => a.value).join(' ');
     const args = assertion.args.map((arg) => unquoted(arg.value));
 
     assertions.push({
-      target,
+      target: resolved?.path ?? null,
+      selectors,
       assertion: assertionName,
       args,
     });
@@ -176,7 +179,7 @@ function buildSelectors(
 
     const child = currentNode[pathSegment.key];
 
-    if (!child) {
+    if (!child || typeof child === 'function') {
       throw new Error('Invalid tree');
     }
 
@@ -198,17 +201,13 @@ function buildSelectors(
 
     if (typeof currentNode === 'object') {
       selector = currentNode._selector;
-    } else if (
-      typeof currentNode === 'string' ||
-      typeof currentNode === 'function'
-    ) {
+    } else {
       selector = currentNode;
     }
 
     if (typeof selector === 'string') {
       selectors.push(selector);
     } else if (typeof selector === 'function') {
-      // TODO: handle multiple arguments in the same target path
       const arg = pathSegment.arg;
 
       if (arg) {

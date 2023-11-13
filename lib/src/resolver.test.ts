@@ -171,3 +171,16 @@ test('splitOnQuotedText should group segments with quoted text at the end', () =
     { segments: ['foobar'], arg: '"barbaz"' },
   ]);
 });
+
+test('resolveRecursively should resolve a nested node with quoted text', () => {
+  const tree = {
+    welcomeMessage: { foo: {} },
+  };
+  const result = resolvePathRecursively(tree, [
+    'welcome',
+    'message',
+    '"foo"',
+    'foo',
+  ]);
+  expect(result?.map((r) => r.key)).toEqual(['welcomeMessage', 'foo']);
+});

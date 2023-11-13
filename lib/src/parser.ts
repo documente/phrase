@@ -1,6 +1,7 @@
 import { Token, tokenize } from './tokenizer';
 import { printErrorLineAndContent } from './error';
 import { isQuoted } from './quoted-text';
+import { isArgument } from './arguments';
 
 export interface Action {
   target: Token[];
@@ -88,7 +89,11 @@ export class Parser {
         args,
       });
 
-      this.consumeOptional('and');
+      if (!this.matches('and')) {
+        break;
+      } else {
+        this.index++;
+      }
     }
 
     return actions;
@@ -120,8 +125,7 @@ export class Parser {
     while (!this.isAtEnd()) {
       const target = this.consumeTarget();
       this.consume('should', 'Expected "should"');
-      const assertion = this.consumeAssertion();
-      const args: Token[] = this.isAtEnd() ? [] : this.consumeQuotedArg();
+      const { assertion, args } = this.consumeAssertion();
 
       assertions.push({
         target,
@@ -129,7 +133,11 @@ export class Parser {
         args,
       });
 
-      this.consumeOptional('and');
+      if (!this.matches('and')) {
+        break;
+      } else {
+        this.index++;
+      }
     }
 
     if (assertions.length === 0) {
@@ -139,16 +147,19 @@ export class Parser {
     return assertions;
   }
 
-  consumeAssertion(): Token[] {
+  consumeAssertion(): { assertion: Token[]; args: Token[] } {
     const assertion: Token[] = [];
+    const args: Token[] = [];
 
-    while (
-      !this.isAtEnd() &&
-      !this.matches('on', 'then', 'and') &&
-      !isQuoted(this.currentValue)
-    ) {
+    while (!this.isAtEnd() && !this.matches('on', 'then', 'and')) {
       this.reject(['I', 'and', 'when', 'then'], 'Expected assertion');
-      assertion.push(this.currentToken);
+
+      if (isArgument(this.currentToken.value)) {
+        args.push(this.currentToken);
+      } else {
+        assertion.push(this.currentToken);
+      }
+
       this.index++;
     }
 
@@ -156,7 +167,7 @@ export class Parser {
       this.error('Missing assertion');
     }
 
-    return assertion;
+    return { assertion, args };
   }
 
   matches(...candidates: string[]): boolean {

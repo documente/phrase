@@ -7,10 +7,21 @@ const test = withTree({
     passwordField: 'input[type="password"]',
     confirmButton: 'button[type="submit"]',
   },
-  welcomeMessage: 'h1',
+  loginErrorMessage: '.error-message',
+  welcomeMessage: '.welcome-message',
   newTaskTitleField: '.new-task-title',
   addTaskButton: '.add-task-button',
-  taskWithText: (text) => `.task [data-test-title="${text}"]`
+  taskWithText: {
+    _selector: (text) => `.task[data-test-title="${text}"]`,
+    title: '.title',
+    deleteButton: '.delete-button',
+  },
+  taskList: {
+    _selector: '.task-list',
+    shouldHave_Task(self, count) {
+      self.children().should('have.length', count);
+    }
+  }
 });
 
 const baseUrl = 'http://localhost:3000/';
@@ -33,6 +44,22 @@ describe('example spec', () => {
            and login form should not exist`;
   });
 
+  it('should show an error message when username is missing', () => {
+    test `when I visit "${baseUrl}"
+           and I type "${username}" on login form login field
+           and I click on login form confirm button
+          then login error message should be visible
+           and it should have text "Please enter a username and password"`;
+  });
+
+  it('should show an error message when password is missing', () => {
+    test `when I visit "${baseUrl}"
+           and I type "${password}" on login form password field
+           and I click on login form confirm button
+          then login error message should be visible
+           and it should have text "Please enter a username and password"`;
+  });
+
   it('should add a task', () => {
     test `given I visit "${baseUrl}"
             and I type "${username}" on login form login field
@@ -40,6 +67,18 @@ describe('example spec', () => {
             and I click on login form confirm button
            when I type "Buy milk" on new task title field
             and I click on add task button
-           then task with text "Buy milk" should exist`;
+           then task with text "Buy milk" should exist
+            and task list should have 1 task`;
+  });
+
+  it('should remove a task', () => {
+    test `given I visit "${baseUrl}"
+            and I type "${username}" on login form login field
+            and I type "${password}" on password field
+            and I click on login form confirm button
+            and I type "Buy milk" on new task title field
+            and I click on add task button
+           when I click on task with text "Buy milk" delete button
+           then task list should have 0 task`;
   });
 })
