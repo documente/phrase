@@ -69,6 +69,11 @@ app.delete('/api/tasks/:taskId', authenticateUser, (req, res) => {
   res.json(userTasks);
 });
 
+app.delete('/api/all-tasks', (req, res) => {
+  tasks.splice(0, tasks.length);
+  res.json(tasks);
+});
+
 // Other routes...
 
 app.listen(PORT, () => {

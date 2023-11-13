@@ -80,12 +80,13 @@ function App() {
 
               <h2>Your tasks</h2>
               <input
+                  className="new-task-title"
                   type="text"
                   placeholder="Enter a new task"
                   value={newTask}
                   onChange={(e) => setNewTask(e.target.value)}
               />
-              <button onClick={addTask}>Add Task</button>
+              <button className="add-task-button" onClick={addTask}>Add Task</button>
               <div>
                 {tasks.map((task, index) => (
                     <Task
