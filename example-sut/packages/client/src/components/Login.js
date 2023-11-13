@@ -1,5 +1,5 @@
-// Example: src/components/Login.js
 import React, { useState } from 'react';
+import './Login.css';
 
 const Login = ({ onLogin, setError }) => {
   const [username, setUsername] = useState('');
@@ -46,19 +46,16 @@ const Login = ({ onLogin, setError }) => {
 
   return (
       <div>
-        <h2>Login</h2>
         <form className="login-form" onSubmit={handleLogin}>
           <label>
-            Username:
+            Username
             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} />
           </label>
-          <br />
           <label>
-            Password:
+            Password
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </label>
-          <br />
-          <button type="submit">Login</button>
+          <button className="big-button" type="submit">Log me in!</button>
         </form>
       </div>
   );

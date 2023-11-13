@@ -1,0 +1,15 @@
+.login-form label {
+    text-align: left;
+    display: block;
+    margin: auto auto 0.5rem;
+    font-weight: bold;
+    width: 400px;
+}
+
+.login-form input {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.25rem;
+    width: 100%;
+    margin-top: 0.2rem;
+}

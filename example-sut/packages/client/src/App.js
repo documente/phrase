@@ -71,14 +71,27 @@ function App() {
         .catch((error) => console.error('Error adding task:', error));
   };
 
+  const toggleTaskComplete = (task) => {
+    setTasks(tasks.map((t) => {
+      if (t.id === task.id) {
+        return {
+          ...t,
+          completed: !t.completed,
+        };
+      }
+      return t;
+    }));
+  };
+
   return (
       <div className="App">
+        <h1>✅ my to-do app</h1>
         {user ? (
             <div>
-              <h1>Welcome, {user.username}!</h1>
-              <button onClick={handleLogout}>Logout</button>
+              <h2>Welcome, {user.username}!</h2>
+              <button className="small-button" onClick={handleLogout}>Logout</button>
 
-              <h2>Your tasks</h2>
+              <h2>My tasks</h2>
               <input
                   className="new-task-title"
                   type="text"
@@ -86,13 +99,14 @@ function App() {
                   value={newTask}
                   onChange={(e) => setNewTask(e.target.value)}
               />
-              <button className="add-task-button" onClick={addTask}>Add Task</button>
-              <div>
+              <button className="add-task-button small-button" onClick={addTask}>Add Task</button>
+              <div className="task-list">
                 {tasks.map((task, index) => (
                     <Task
                         key={index}
                         task={task}
                         onDelete={() => handleDeleteTask(task)}
+                        onClick={() => toggleTaskComplete(task)}
                     />
                 ))}
               </div>
@@ -100,7 +114,7 @@ function App() {
         ) : (
             <div>
               <Login onLogin={handleLogin} setError={setError} />
-              {error && <div style={{ color: 'red' }}>{error}</div>}
+              {error && <div className="error-message">{error}</div>}
             </div>
         )}
       </div>
