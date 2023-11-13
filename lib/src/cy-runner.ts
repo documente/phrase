@@ -30,19 +30,27 @@ export function withTree(tree: PageObjectTree): TestFunction {
   };
 }
 
+function targetIsDefined(target: string[] | null, action: string): target is string[] {
+  if (!target) {
+    throw new Error(`Target is required for action ${action}.`);
+  }
+
+  return true;
+}
+
 function runAction(actionInstruction: ActionInstruction): void {
   const { target, action, args } = actionInstruction;
 
-  if (!target) {
-    throw new Error('Target is required for actions');
-  }
-
   switch (action) {
     case 'type':
-      cy.get(target.join(' ')).type(args[0]);
+      if (targetIsDefined(target, action)) {
+        cy.get(target.join(' ')).type(args[0]);
+      }
       break;
     case 'click':
-      cy.get(target.join(' ')).click();
+      if (targetIsDefined(target, action)) {
+        cy.get(target.join(' ')).click();
+      }
       break;
     case 'visit':
       cy.visit(args[0]);

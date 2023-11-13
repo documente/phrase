@@ -200,9 +200,7 @@ function buildSelectors(
 
     if (typeof currentNode === 'object') {
       selector = currentNode._selector;
-    }
-
-    if (!selector && typeof currentNode === 'string') {
+    } else if (typeof currentNode === 'string' || typeof currentNode === 'function') {
       selector = currentNode;
     }
 

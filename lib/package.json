@@ -9,6 +9,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "pretty": "npx prettier . --write",
     "build": "tsc",
+    "build-watch": "tsc --watch",
     "cy:open": "cypress open"
   },
   "files": [
