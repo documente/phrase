@@ -34,12 +34,12 @@ describe('template spec', () => {
   });
 
   it('should add a task', () => {
-    test `when I visit "${baseUrl}"
-           and I type "${username}" on login form login field
-           and I type "${password}" on password field
-           and I click on login form confirm button
-           and I type "Buy milk" on new task title field
-           and I click on add task button
-          then task with text "Buy milk" should exist`;
+    test `given I visit "${baseUrl}"
+            and I type "${username}" on login form login field
+            and I type "${password}" on password field
+            and I click on login form confirm button
+           when I type "Buy milk" on new task title field
+            and I click on add task button
+           then task with text "Buy milk" should exist`;
   });
 })
