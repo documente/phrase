@@ -10,7 +10,7 @@ const test = withTree({
   welcomeMessage: 'h1',
   newTaskTitleField: '.new-task-title',
   addTaskButton: '.add-task-button',
-  taskWithText: (text) => `[data-test-title="${text}"]`
+  taskWithText: (text) => `.task [data-test-title="${text}"]`
 });
 
 const baseUrl = 'http://localhost:3000/';
