@@ -1,3 +1,5 @@
+import { prettyPrintError } from './error';
+
 export interface Token {
   value: string;
   line: number;
@@ -34,7 +36,13 @@ export function tokenize(sentence: string): Token[] {
     if (char === ' ' && !insideDoubleQuotes) {
       pushToken();
       column++;
-    } else if (char === '\n' && !insideDoubleQuotes) {
+    } else if (char === '\n') {
+      if (insideDoubleQuotes) {
+        throw new Error(
+          prettyPrintError('Missing closing "', sentence, { line, column }),
+        );
+      }
+
       pushToken();
       line++;
       column = 1;
@@ -47,10 +55,26 @@ export function tokenize(sentence: string): Token[] {
 
       insideDoubleQuotes = !insideDoubleQuotes;
       column++;
+    } else if (char === '/' && sentence[i + 1] === '/' && !insideDoubleQuotes) {
+      pushToken();
+      i = sentence.indexOf('\n', i);
+
+      if (i === -1) {
+        break;
+      }
+
+      line++;
+      column = 1;
     } else {
       currentToken += char;
       column++;
     }
+  }
+
+  if (insideDoubleQuotes) {
+    throw new Error(
+      prettyPrintError('Missing closing "', sentence, { line, column }),
+    );
   }
 
   pushToken();
