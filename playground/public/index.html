@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<header>
+    <h1>Selectors playground</h1>
+    <button id="run-button">Run</button>
+</header>
+<main>
+    <div>
+        <h2>Page object tree</h2>
+        <div id="tree-editor" class="editor"></div>
+    </div>
+    <div>
+        <h2>Test content</h2>
+        <div id="test-editor" class="editor"></div>
+    </div>
+    <div>
+        <h2>Output</h2>
+        <div id="output" class="output">
+            Press "run" to see the output
+        </div>
+    </div>
+
+</main>
+<script src="./editor.bundle.js"></script>
+<script src="./index.js"></script>
+</body>
+</html>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    h1 {
+        font-size: 16px;
+    }
+
+    h2 {
+        font-size: 14px;
+    }
+
+    body {
+        font-family: 'Noto Sans', sans-serif;
+        margin: 0;
+        padding: 5px;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    header {
+        display: flex;
+        flex-direction: row;
+    }
+
+    header button {
+        margin-left: auto;
+    }
+
+    main {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    main>* {
+        flex-basis: 33.3%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-top: 1px solid rgba(128, 128, 128, 0.2);
+        margin: 4px;
+    }
+
+    .editor, .output {
+        box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.2);
+        min-height: 100px;
+        display: flex;
+        flex-grow: 1;
+        overflow: hidden;
+    }
+
+    .editor > div {
+        flex: 1;
+    }
+
+    .output {
+        font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+        min-height: 100px;
+        background: black;
+        color: white;
+        padding: 10px;
+    }
+</style>

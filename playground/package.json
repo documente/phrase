@@ -1,0 +1,15 @@
+{
+  "name": "playground",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "codemirror": "^6.0.1",
+    "rollup": "^4.4.1"
+  }
+}
