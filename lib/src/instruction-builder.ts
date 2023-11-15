@@ -5,6 +5,8 @@ import { isBuiltinAction } from './builtin-actions';
 import { unquoted } from './quoted-text';
 import { PageObjectTree, Selector } from './page-object-tree';
 import { Token } from './tokenizer';
+import { KnownChainer } from './known-chainers';
+import { getNode } from './get-node';
 
 export interface ActionInstruction {
   target: string[] | null;
@@ -12,10 +14,26 @@ export interface ActionInstruction {
   args: string[];
 }
 
+interface BaseResolvedAssertion {
+  kind: string;
+}
+
+export interface CustomAssertion extends BaseResolvedAssertion {
+  kind: 'custom';
+  method: string;
+}
+
+export interface BuiltInAssertion extends BaseResolvedAssertion {
+  kind: 'builtin';
+  chainer: string;
+}
+
+export type ResolvedAssertion = CustomAssertion | BuiltInAssertion;
+
 export interface AssertionInstruction {
   target: ResolvedTarget[] | null;
   selectors: string[] | null;
-  assertion: string;
+  assertion: ResolvedAssertion;
   args: string[];
 }
 
@@ -58,12 +76,19 @@ export function buildInstructions(
 
     const selectors = resolved?.selectors ?? null;
     const assertionName = assertion.assertion.map((a) => a.value).join(' ');
+    const resolvedAssertion = resolveAssertion(
+      resolved?.path,
+      tree,
+      assertionName,
+      input,
+      assertion.shouldToken,
+    );
     const args = assertion.args.map((arg) => unquoted(arg.value));
 
     assertions.push({
       target: resolved?.path ?? null,
       selectors,
-      assertion: assertionName,
+      assertion: resolvedAssertion,
       args,
     });
   });
@@ -219,4 +244,87 @@ function buildSelectors(
   });
 
   return selectors;
+}
+
+function resolveAssertion(
+  target: ResolvedTarget[] | undefined,
+  tree: PageObjectTree,
+  assertion: string,
+  input: string,
+  shouldToken: Token,
+): ResolvedAssertion {
+  const builtinAssertion = findBuiltinAssertion(assertion);
+
+  if (builtinAssertion) {
+    return {
+      kind: 'builtin',
+      chainer: builtinAssertion,
+    };
+  }
+
+  if (target) {
+    const customAssertion = findCustomAssertion(assertion, target, tree);
+
+    if (customAssertion) {
+      return {
+        kind: 'custom',
+        method: customAssertion,
+      };
+    }
+  }
+
+  throw new Error(
+    prettyPrintError(`Unknown assertion "${assertion}"`, input, shouldToken),
+  );
+}
+
+function findBuiltinAssertion(assertion: string): string | null {
+  const isNegated = assertion.startsWith('not ');
+
+  if (isNegated) {
+    assertion = assertion.slice(4);
+  }
+
+  const isKnown = Object.keys(KnownChainer).includes(assertion);
+
+  if (isKnown) {
+    const resolved = KnownChainer[assertion as keyof typeof KnownChainer];
+    return isNegated ? 'not.' + resolved : resolved;
+  }
+
+  return null;
+}
+
+function findCustomAssertion(
+  assertion: string,
+  target: ResolvedTarget[] | null,
+  tree: PageObjectTree,
+): string | null {
+  if (!target) {
+    return null;
+  }
+
+  const node = getNode(
+    tree,
+    target.map((t) => t.key),
+  );
+  const assertionTestValue = assertion.split(' ').join('').toLowerCase();
+
+  for (const key in node) {
+    const keyWithoutShould = key
+      .toLowerCase()
+      .split('_')
+      .join('')
+      .replace('should', '');
+    const candidate = node[key];
+
+    if (
+      keyWithoutShould === assertionTestValue &&
+      typeof candidate === 'function'
+    ) {
+      return key;
+    }
+  }
+
+  return null;
 }
