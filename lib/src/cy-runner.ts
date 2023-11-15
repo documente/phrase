@@ -1,13 +1,13 @@
 import {
   ActionInstruction,
   AssertionInstruction,
-  buildInstructions, BuiltInAssertion, CustomAssertion,
+  buildInstructions,
+  BuiltInAssertion,
+  CustomAssertion,
 } from './instruction-builder';
-import { KnownChainer } from './known-chainers';
-import { PageObjectTree } from './page-object-tree';
-import { getNode } from './get-node';
-import { ResolvedTarget } from './resolver';
-import {BuiltinAction} from './builtin-actions';
+import {PageObjectTree} from './page-object-tree';
+import {getNode} from './get-node';
+import {ResolvedTarget} from './resolver';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: any[]): void;
@@ -30,14 +30,14 @@ export function withTree(tree: PageObjectTree): TestFunction {
     const instructions = buildInstructions(str, tree);
     instructions.actions.forEach(runAction);
     instructions.assertions.forEach((assertion) =>
-      runAssertion(assertion, tree),
+        runAssertion(assertion, tree),
     );
   };
 }
 
 function targetIsDefined(
-  target: string[] | null,
-  action: string,
+    target: string[] | null,
+    action: string,
 ): target is string[] {
   if (!target) {
     throw new Error(`Target is required for action ${action}.`);
@@ -47,7 +47,7 @@ function targetIsDefined(
 }
 
 function runAction(actionInstruction: ActionInstruction): void {
-  const { target, action, args } = actionInstruction;
+  const {target, action, args} = actionInstruction;
 
   switch (action) {
     case 'type':
@@ -69,10 +69,10 @@ function runAction(actionInstruction: ActionInstruction): void {
 }
 
 function runAssertion(
-  assertionInstruction: AssertionInstruction,
-  tree: PageObjectTree,
+    assertionInstruction: AssertionInstruction,
+    tree: PageObjectTree,
 ): void {
-  const { target, assertion, args, selectors } = assertionInstruction;
+  const {target, assertion, args, selectors} = assertionInstruction;
 
   if (assertion.kind === 'builtin') {
     runKnownAssertion(assertion, selectors, args);
@@ -94,9 +94,9 @@ function runAssertion(
 }
 
 function runKnownAssertion(
-  assertion: BuiltInAssertion,
-  selectors: string[] | null,
-  args: string[],
+    assertion: BuiltInAssertion,
+    selectors: string[] | null,
+    args: string[],
 ) {
   if (!selectors) {
     throw new Error('Target selectors are required for built-in assertions.');
@@ -106,17 +106,17 @@ function runKnownAssertion(
 }
 
 function findCustomAssertion(
-  assertion: CustomAssertion,
-  target: ResolvedTarget[] | null,
-  tree: PageObjectTree,
+    assertion: CustomAssertion,
+    target: ResolvedTarget[] | null,
+    tree: PageObjectTree,
 ): Function {
   if (!target) {
     throw new Error('Target is required for custom assertions.');
   }
 
   const node = getNode(
-    tree,
-    target.map((t) => t.key),
+      tree,
+      target.map((t) => t.key),
   );
 
   return node[assertion.method as keyof typeof node] as Function;
