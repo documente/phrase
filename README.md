@@ -1,5 +1,7 @@
 # Welcome to our Automated Testing Library for Web Applications
 
+> Try the [Playground](https://pckerneis.github.io/bdd-cy-lib) for a quick glimpse into our testing language!
+
 This repository encompasses a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
 
 - **Readability for the Whole Team**: Test cases should be easily comprehensible by every member of the product team, fostering a ubiquitous language that promotes collaboration.
