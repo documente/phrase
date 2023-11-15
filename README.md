@@ -48,7 +48,7 @@ tree = {
 }
 ```
 
-This declarative approach offers inherent flexibility and facilitates test reuse. It eliminates the need for investing time and effort in a Page Object Pattern, mitigating the risk of misalignment with your evolving application.
+This declarative approach offers inherent flexibility and facilitates test reuse. It eliminates the need for investing time and effort in a Page Object Pattern, mitigating the risk of misalignment with the evolving application under test.
 
 ### Fluent Component Selection
 
@@ -73,9 +73,9 @@ The most recently selected node is preserved, allowing you to omit parts of the 
 - Explore among the siblings of the most recently selected node.
 - Resolve a node starting from the root and navigating down.
 
-This fluent selection mechanism enhances the ease with which components can be identified and interacted within your test sentences.
+This fluent selection mechanism enhances the ease with which components can be identified and interacted with in your test sentences.
 
-Feel free to try selecting nodes in the [Playground application](https://pckerneis.github.io/bdd-cy-lib) for a hands-on experience with this fluent component selection mechanism.
+Feel free to try selecting nodes in the [Playground application](https://pckerneis.github.io/bdd-cy-lib) for a hands-on experience with the fluent component selection mechanism.
 
 ### Actions
 
