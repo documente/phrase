@@ -29,6 +29,8 @@ when I click on welcome page greet button
 then welcome message should be visible
 ```
 
+Learn more about the language structure in the [Language Overview](docs/language-overview.md).
+
 ### System Under Test (SUT) Representation
 
 In the tests, the System Under Test (SUT) is depicted as a tree structure, with each node representing a component of the application. Nodes are assigned names and come with selectors. Additionally, nodes have the capability to define custom actions and assertions.
