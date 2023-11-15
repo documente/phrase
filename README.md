@@ -5,7 +5,6 @@
 This repository encompasses a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
 
 - **Readability for the Whole Team**: Test cases should be easily comprehensible by every member of the product team, fostering a ubiquitous language that promotes collaboration.
-- **Agile Test Case Creation**: We prioritize the swift and agile creation of automated test cases, ensuring that the process is efficient and seamlessly integrated into your development workflow.
 - **Rapid Feedback Loop**: Our tooling aims at providing prompt feedback, enabling your team to swiftly identify and address any issues that may arise.
 - **Adaptability to Change**: We understand that applications and their requirements are dynamic. Changes in your application should not necessitate a complete rewrite of automated tests.
 
