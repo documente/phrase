@@ -10,13 +10,15 @@
     <button id="run-button">Run</button>
 </header>
 <main>
-    <div>
-        <h2>Page object tree</h2>
-        <div id="tree-editor" class="editor"></div>
-    </div>
-    <div>
-        <h2>Test content</h2>
-        <div id="test-editor" class="editor"></div>
+    <div class="editors">
+        <div>
+            <h2>Page object tree</h2>
+            <div id="tree-editor" class="editor"></div>
+        </div>
+        <div>
+            <h2>Test content</h2>
+            <div id="test-editor" class="editor"></div>
+        </div>
     </div>
     <div>
         <h2>Output</h2>
@@ -71,7 +73,7 @@
     }
 
     main > * {
-        flex-basis: 33.3%;
+        flex-basis: 50%;
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -79,8 +81,19 @@
         margin: 4px;
     }
 
+    .editors {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .editors > div {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
     .editor, .output {
-        box-shadow: 1px 1px 5px 0 rgba(0, 0, 0, 0.2);
         min-height: 100px;
         display: flex;
         flex-grow: 1;
