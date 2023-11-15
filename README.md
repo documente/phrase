@@ -6,7 +6,7 @@ This repository encompasses a testing library and accompanying tools designed sp
 
 - **Readability for the Whole Team**: Test cases should be easily comprehensible by every member of the product team, fostering a ubiquitous language that promotes collaboration.
 - **Agile Test Case Creation**: We prioritize the swift and agile creation of automated test cases, ensuring that the process is efficient and seamlessly integrated into your development workflow.
-- **Rapid Feedback Loop**: Our tooling aims atproviding prompt feedback, enabling your team to swiftly identify and address any issues that may arise.
+- **Rapid Feedback Loop**: Our tooling aims at providing prompt feedback, enabling your team to swiftly identify and address any issues that may arise.
 - **Adaptability to Change**: We understand that applications and their requirements are dynamic. Changes in your application should not necessitate a complete rewrite of automated tests.
 
 The library is built on the [Cypress](https://www.cypress.io/) automated testing framework and defines a natural language structure based on Behavior-Driven Development (BDD) with Given-When-Then keywords.
@@ -73,7 +73,7 @@ The most recently selected node is preserved, allowing you to omit parts of the 
 
 This fluent selection mechanism enhances the ease with which components can be identified and interacted within your test sentences.
 
-Feel free to try selecting nodes in the [Playground application](https://pckerneis.github.io/bdd-cy-lib) to get hands-on experience with this fluent component selection mechanism.
+Feel free to try selecting nodes in the [Playground application](https://pckerneis.github.io/bdd-cy-lib) for a hands-on experience with this fluent component selection mechanism.
 
 ### Actions
 
@@ -88,7 +88,7 @@ Our library provides a range of built-in actions, simplifying the testing proces
 - clear
 - hover
 
-One can also define custom actions. This allows testers and developers to define actions that are specific to their application requirements or to encapsulate complex sequences of interactions.
+You can also define custom actions. This allows testers and developers to define actions that are specific to their application requirements or to encapsulate complex sequences of interactions.
 
 ### Assertions
 
@@ -99,7 +99,7 @@ The library builds upon Cypress's built-in assertions such as :
 - should exist
 - should have text
 
-Because every application is different, you can also define specific assertions on your components by declaring them in the selector tree.
+As every application is different, you can also define specific assertions on your components by declaring them in the selector tree.
 
 ## Repository structure
 
@@ -107,19 +107,21 @@ Within this repository, you'll find:
 
 - **Testing Library**: The core component providing essential tools for automated testing of web applications.
 - **Example System Under Test (SUT)**: Explore Cypress spec files that demonstrate the library's capabilities on a sample system, offering practical insights for implementation.
-- **Web Playground**: A convenient space for swift validation of test scenarios, empowering users to quickly assess and experiment with various testing scenarios. The playground is accessible live at https://pckerneis.github.io/bdd-cy-lib.
+- **Web Playground**: A convenient space for swift validation of test scenarios, empowering users to quickly assess and experiment with various testing scenarios. The playground is accessible live [here](https://pckerneis.github.io/bdd-cy-lib).
 
 ## Contributing
 
 Any contributions you make are *greatly appreciated*.
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+For suggestions and improvements, feel free to fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
 
 Don't forget to give the project a star! Thanks again!
 
 ## License
 
-Distributed under the GNU LGPL3 License. See `LICENSE` for more information.
+Distributed under the GNU LGPL3 License.
+
+See `LICENSE` for more information.
 
 ## Contact
 
