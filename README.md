@@ -37,7 +37,7 @@ In the tests, the System Under Test (SUT) is depicted as a tree structure, with 
 
 Here's an illustrative example:
 ```javascript
-{
+tree = {
   welcomePage: {
     _selector: '.welcome',
     greetButton: 'button',
@@ -56,13 +56,14 @@ This declarative approach offers inherent flexibility and facilitates test reuse
 Within test sentences, component selection is facilitated by traversing the System Under Test (SUT) tree representation. For instance, consider the following tree:
 
 ```javascript
-{
+tree = {
   foo: {
     bar: {
     },
     baz: {
     }
   }
+}
 ```
 
 You can select the `bar` component by specifying the path "foo bar".
