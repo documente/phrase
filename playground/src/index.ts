@@ -28,24 +28,23 @@ and it should have fragment "World!" highlighted`,
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  (window as any)['__buildInstructions'] = buildInstructions;
+  // We treat this element as a span because there isn't dedicated HTML*Element type for it
+  const outputElement = document.querySelector('#output') as HTMLSpanElement;
 
   document.body.querySelector('#run-button')?.addEventListener('click', () => {
     const tree = treeEditor.state.doc.toString();
     const test = testEditor.state.doc.toString();
-    const fullDoc = `try {
-      const instructions = __buildInstructions(\`${test}\`, ${tree});
-      const outputElement = document.querySelector('#output');
-      outputElement.innerText = JSON.stringify(instructions, null, 2);
-      outputElement.classList.remove('error');      
-    } catch(e) {
-      const outputElement = document.querySelector('#output');
-      outputElement.innerText = e.message;
-      outputElement.classList.add('error');
-    }`;
 
-    new Function(fullDoc)();
+    try {
+      const treeValue = new Function(`return ${tree}`)();
+      const instructions = buildInstructions(test, treeValue);
+      outputElement.innerText = JSON.stringify(instructions, null, 2);
+      outputElement.classList.remove('error');
+    } catch(error) {
+      outputElement.innerText = (error as any).message ?? error;
+      outputElement.classList.add('error');
+      return;
+    }
   });
 });
 
