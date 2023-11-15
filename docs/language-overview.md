@@ -35,7 +35,7 @@ Examples:
 ```
 when I click on welcome page greet button
 
-when I enter "John" in welcome page name input and click on welcome page greet button
+when I type "John" in welcome page name input and click on welcome page greet button
 ```
 
 ## Then section
