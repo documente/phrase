@@ -1,6 +1,5 @@
 import {EditorView, basicSetup} from "codemirror"
 import {javascript} from "@codemirror/lang-javascript"
-// @ts-ignore
 import {buildInstructions} from "../../lib/src/instruction-builder";
 
 const treeEditor = new EditorView({
