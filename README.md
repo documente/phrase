@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://github.com/pckerneis/bdd-cy-lib">
+    <a href="https://github.com/pckerneis/phrase">
         <img alt="Logo for the Phrasé automated testing library" src="docs/phrase-logo.svg" title="Phrasé logo" width="200"/>
     </a>
 </p>
@@ -10,7 +10,7 @@
 A fluent automated testing library for web applications
 </p>
 
-> Try the [Playground](https://pckerneis.github.io/bdd-cy-lib) for a quick glimpse into our testing language!
+> Try the [Playground](https://pckerneis.github.io/phrase) for a quick glimpse into our testing language!
 
 ## Project Overview
 
@@ -87,7 +87,7 @@ The most recently selected node is preserved, allowing you to omit parts of the 
 
 This fluent selection mechanism enhances the ease with which components can be identified and interacted with in your test sentences.
 
-Feel free to try selecting nodes in the [Playground application](https://pckerneis.github.io/bdd-cy-lib) for a hands-on experience with the fluent component selection mechanism.
+Feel free to try selecting nodes in the [Playground application](https://pckerneis.github.io/phrase) for a hands-on experience with the fluent component selection mechanism.
 
 ### Actions
 
@@ -121,7 +121,7 @@ Within this repository, you'll find:
 
 - **Testing Library**: The core component providing essential tools for automated testing of web applications.
 - **Example System Under Test (SUT)**: Explore Cypress spec files that demonstrate the library's capabilities on a sample system, offering practical insights for implementation.
-- **Web Playground**: A convenient space for swift validation of test scenarios, empowering users to quickly assess and experiment with various testing scenarios. The playground is accessible live [here](https://pckerneis.github.io/bdd-cy-lib).
+- **Web Playground**: A convenient space for swift validation of test scenarios, empowering users to quickly assess and experiment with various testing scenarios. The playground is accessible live [here](https://pckerneis.github.io/phrase).
 
 ## Contributing
 
@@ -141,4 +141,4 @@ See `LICENSE` for more information.
 
 Pierre-Clément KERNEIS - pc.kerneis@gmail.com
 
-Project Link: https://github.com/pckerneis/bdd-cy-lib
+Project Link: https://github.com/pckerneis/phrase
