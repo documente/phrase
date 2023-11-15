@@ -1,12 +1,13 @@
 import {
   ActionInstruction,
   AssertionInstruction,
-  buildInstructions,
+  buildInstructions, BuiltInAssertion, CustomAssertion,
 } from './instruction-builder';
 import { KnownChainer } from './known-chainers';
 import { PageObjectTree } from './page-object-tree';
 import { getNode } from './get-node';
 import { ResolvedTarget } from './resolver';
+import {BuiltinAction} from './builtin-actions';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: any[]): void;
@@ -73,14 +74,18 @@ function runAssertion(
 ): void {
   const { target, assertion, args, selectors } = assertionInstruction;
 
-  if (isKnownAssertion(assertion)) {
+  if (assertion.kind === 'builtin') {
     runKnownAssertion(assertion, selectors, args);
     return;
   }
 
   const customAssertion = findCustomAssertion(assertion, target, tree);
 
-  if (customAssertion && selectors) {
+  if (customAssertion) {
+    if (!selectors) {
+      throw new Error('Target selectors are required for custom assertions.');
+    }
+
     customAssertion(cy.get(selectors.join(' ')), ...args);
     return;
   }
@@ -88,65 +93,31 @@ function runAssertion(
   throw new Error(`Unknown assertion: ${assertion}`);
 }
 
-function isKnownAssertion(assertion: string): assertion is KnownChainer {
-  if (assertion.startsWith('not ')) {
-    assertion = assertion.slice(4);
-  }
-
-  return Object.keys(KnownChainer).includes(assertion);
-}
-
 function runKnownAssertion(
-  assertion: KnownChainer,
+  assertion: BuiltInAssertion,
   selectors: string[] | null,
   args: string[],
 ) {
-  const isNegated = assertion.startsWith('not ');
-  const assertionName = isNegated ? assertion.slice(4) : assertion;
-  let chainer: string =
-    KnownChainer[assertionName as keyof typeof KnownChainer];
-
   if (!selectors) {
     throw new Error('Target selectors are required for built-in assertions.');
   }
 
-  if (isNegated) {
-    chainer = 'not.' + chainer;
-  }
-
-  cy.get(selectors.join(' ')).should(chainer, ...args);
+  cy.get(selectors.join(' ')).should(assertion.chainer, ...args);
 }
 
 function findCustomAssertion(
-  assertion: string,
+  assertion: CustomAssertion,
   target: ResolvedTarget[] | null,
   tree: PageObjectTree,
-): Function | null {
+): Function {
   if (!target) {
-    return null;
+    throw new Error('Target is required for custom assertions.');
   }
 
   const node = getNode(
     tree,
     target.map((t) => t.key),
   );
-  const assertionTestValue = assertion.split(' ').join('').toLowerCase();
 
-  for (const key in node) {
-    const keyWithoutShould = key
-      .toLowerCase()
-      .split('_')
-      .join('')
-      .replace('should', '');
-    const candidate = node[key];
-
-    if (
-      keyWithoutShould === assertionTestValue &&
-      typeof candidate === 'function'
-    ) {
-      return candidate;
-    }
-  }
-
-  return null;
+  return node[assertion.method as keyof typeof node] as Function;
 }

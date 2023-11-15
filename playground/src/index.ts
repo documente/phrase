@@ -8,7 +8,10 @@ const treeEditor = new EditorView({
   welcomePage: {
     _selector: '.welcome',
     greetButton: 'button',
-    welcomeMessage: '.message'
+    welcomeMessage: {
+      _selector: '.message',
+      shouldHaveFragmentHighlighted(self, fragment) {/* ... */},
+    }
   }
 }
 `,
@@ -19,7 +22,8 @@ const treeEditor = new EditorView({
 const testEditor = new EditorView({
   doc: `when I click on welcome page greet button
 then welcome message should be visible
-and it should have text "Hello, World!"`,
+and it should have text "Hello, World!"
+and it should have fragment "World!" highlighted`,
   extensions: [basicSetup, javascript()],
   parent: document.body.querySelector("#test-editor")!,
 });

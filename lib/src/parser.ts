@@ -13,6 +13,7 @@ export interface Assertion {
   target: Token[];
   assertion: Token[];
   args: Token[];
+  shouldToken: Token;
 }
 
 export interface Sentence {
@@ -124,13 +125,14 @@ export class Parser {
 
     while (!this.isAtEnd()) {
       const target = this.consumeTarget();
-      this.consume('should', 'Expected "should"');
+      const shouldToken = this.consume('should', 'Expected "should"');
       const { assertion, args } = this.consumeAssertion();
 
       assertions.push({
         target,
         assertion,
         args,
+        shouldToken,
       });
 
       if (!this.matches('and')) {
@@ -196,12 +198,17 @@ export class Parser {
     return target;
   }
 
-  consume(expectedTokenValue: string, errorMessage: string): void {
+  consume(expectedTokenValue: string, errorMessage: string): Token {
     if (this.matches(expectedTokenValue)) {
+      const token = this.currentToken;
       this.index++;
+      return token;
     } else {
       this.error(errorMessage);
     }
+
+    // To avoid typing error...
+    throw new Error('Unreachable');
   }
 
   consumeOptional(expectedTokenValue: string): void {
