@@ -4,12 +4,16 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "build": "rollup -c"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@codemirror/lang-javascript": "^6.2.1",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "codemirror": "^6.0.1",
-    "rollup": "^4.4.1"
+    "codemirror": "^6.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "vite": "^4.0.0"
   }
 }

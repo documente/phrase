@@ -20,14 +20,13 @@
     </div>
     <div>
         <h2>Output</h2>
-        <div id="output" class="output">
-            Press "run" to see the output
-        </div>
+        <pre class="output">
+            <code id="output">Press "run" to see the output</code>
+        </pre>
     </div>
 
 </main>
-<script src="./editor.bundle.js"></script>
-<script src="./index.js"></script>
+<script type="module" src="./src/index.ts"></script>
 </body>
 </html>
 
@@ -71,7 +70,7 @@
         width: 100%;
     }
 
-    main>* {
+    main > * {
         flex-basis: 33.3%;
         display: flex;
         flex-direction: column;
@@ -98,5 +97,20 @@
         background: black;
         color: white;
         padding: 10px;
+        overflow: auto;
+    }
+
+    pre {
+        margin: 0;
+        padding: 0;
+        overflow-y: auto;
+    }
+
+    code {
+        margin: 0;
+    }
+
+    .error {
+        color: red;
     }
 </style>
