@@ -24,7 +24,7 @@ const testEditor = new EditorView({
 then welcome message should be visible
 and it should have text "Hello, World!"
 and it should have fragment "World!" highlighted`,
-  extensions: [basicSetup, javascript()],
+  extensions: [basicSetup],
   parent: document.body.querySelector("#test-editor")!,
 });
 
