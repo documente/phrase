@@ -5,8 +5,8 @@ import { isBuiltinAction } from './builtin-actions';
 import { unquoted } from './quoted-text';
 import { PageObjectTree, Selector } from './page-object-tree';
 import { Token } from './tokenizer';
-import {KnownChainer} from './known-chainers';
-import {getNode} from './get-node';
+import { KnownChainer } from './known-chainers';
+import { getNode } from './get-node';
 
 export interface ActionInstruction {
   target: string[] | null;
@@ -76,7 +76,13 @@ export function buildInstructions(
 
     const selectors = resolved?.selectors ?? null;
     const assertionName = assertion.assertion.map((a) => a.value).join(' ');
-    const resolvedAssertion = resolveAssertion(resolved?.path, tree, assertionName, input, assertion.shouldToken);
+    const resolvedAssertion = resolveAssertion(
+      resolved?.path,
+      tree,
+      assertionName,
+      input,
+      assertion.shouldToken,
+    );
     const args = assertion.args.map((arg) => unquoted(arg.value));
 
     assertions.push({
@@ -241,11 +247,11 @@ function buildSelectors(
 }
 
 function resolveAssertion(
-    target: ResolvedTarget[] | undefined,
+  target: ResolvedTarget[] | undefined,
   tree: PageObjectTree,
   assertion: string,
   input: string,
-    shouldToken: Token,
+  shouldToken: Token,
 ): ResolvedAssertion {
   const builtinAssertion = findBuiltinAssertion(assertion);
 
@@ -268,14 +274,9 @@ function resolveAssertion(
   }
 
   throw new Error(
-    prettyPrintError(
-      `Unknown assertion "${assertion}"`,
-      input,
-      shouldToken
-    ),
+    prettyPrintError(`Unknown assertion "${assertion}"`, input, shouldToken),
   );
 }
-
 
 function findBuiltinAssertion(assertion: string): string | null {
   const isNegated = assertion.startsWith('not ');
@@ -294,33 +295,32 @@ function findBuiltinAssertion(assertion: string): string | null {
   return null;
 }
 
-
 function findCustomAssertion(
-    assertion: string,
-    target: ResolvedTarget[] | null,
-    tree: PageObjectTree,
+  assertion: string,
+  target: ResolvedTarget[] | null,
+  tree: PageObjectTree,
 ): string | null {
   if (!target) {
     return null;
   }
 
   const node = getNode(
-      tree,
-      target.map((t) => t.key),
+    tree,
+    target.map((t) => t.key),
   );
   const assertionTestValue = assertion.split(' ').join('').toLowerCase();
 
   for (const key in node) {
     const keyWithoutShould = key
-        .toLowerCase()
-        .split('_')
-        .join('')
-        .replace('should', '');
+      .toLowerCase()
+      .split('_')
+      .join('')
+      .replace('should', '');
     const candidate = node[key];
 
     if (
-        keyWithoutShould === assertionTestValue &&
-        typeof candidate === 'function'
+      keyWithoutShould === assertionTestValue &&
+      typeof candidate === 'function'
     ) {
       return key;
     }
