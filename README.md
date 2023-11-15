@@ -1,8 +1,20 @@
-# Welcome to our Automated Testing Library for Web Applications
+<p align="center">
+    <a href="https://github.com/pckerneis/bdd-cy-lib">
+        <img alt="Logo for the Phrasé automated testing library" src="docs/phrase-logo.svg" title="Phrasé logo" width="200"/>
+    </a>
+</p>
+
+<h3 align="center">Welcome to Phrasé</h3>
+
+<p align="center">
+A fluent automated testing library for web applications
+</p>
 
 > Try the [Playground](https://pckerneis.github.io/bdd-cy-lib) for a quick glimpse into our testing language!
 
-This repository encompasses a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
+## Project Overview
+
+Phrasé (prononced /fraz-ay/) a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
 
 - **Readability for the Whole Team**: Test cases should be easily comprehensible by every member of the product team, fostering a ubiquitous language that promotes collaboration.
 - **Rapid Feedback Loop**: Our tooling aims at providing prompt feedback, enabling your team to swiftly identify and address any issues that may arise.
