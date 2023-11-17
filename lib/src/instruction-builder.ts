@@ -107,7 +107,7 @@ export function buildInstructions(
       tree,
       assertionName,
       input,
-      assertion.shouldToken,
+      assertion.firstToken,
     );
     const args = assertion.args.map((arg) => unquoted(arg.value));
 
@@ -181,10 +181,8 @@ function extractTargetSelector(
   }
 
   if (target.length === 1 && target[0].value === 'it') {
-    const selectors = buildSelectors(tree, previousPath, target, input);
-
     return {
-      selectors,
+      selectors: buildSelectors(tree, previousPath, target, input),
       path: previousPath,
     };
   }
@@ -204,10 +202,9 @@ function extractTargetSelector(
       ),
     );
   }
-  const selectors = buildSelectors(tree, targetPath, target, input);
 
   return {
-    selectors,
+    selectors: buildSelectors(tree, targetPath, target, input),
     path: targetPath,
   };
 }
@@ -279,7 +276,7 @@ function resolveAssertion(
   tree: PageObjectTree,
   assertion: string,
   input: string,
-  shouldToken: Token,
+  firstToken: Token,
 ): ResolvedAssertion {
   const builtinAssertion = findBuiltinAssertion(assertion);
 
@@ -302,7 +299,7 @@ function resolveAssertion(
   }
 
   throw new Error(
-    prettyPrintError(`Unknown assertion "${assertion}"`, input, shouldToken),
+    prettyPrintError(`Unknown assertion "${assertion}"`, input, firstToken),
   );
 }
 

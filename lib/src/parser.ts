@@ -15,7 +15,7 @@ export interface AssertionStatement {
   target: Token[];
   assertion: Token[];
   args: Token[];
-  shouldToken: Token;
+  firstToken: Token;
 }
 
 export interface SystemLevelStatement {
@@ -166,10 +166,10 @@ export class Parser {
 
     while (
       !this.isAtEnd() &&
-      !this.matches('on', 'then') &&
+      !this.matches('on', 'then', 'when', 'and') &&
       !isQuoted(this.currentValue)
     ) {
-      this.reject(['I', 'and', 'when'], 'Expected action');
+      this.reject(['I'], 'Unexpected "I" in action name');
       action.push(this.currentToken);
       this.index++;
     }
@@ -186,7 +186,8 @@ export class Parser {
 
     while (!this.isAtEnd()) {
       const target = this.consumeTarget();
-      const shouldToken = this.consume('should', 'Expected "should"');
+      this.consume('should', 'Expected "should"');
+      const firstToken = this.currentToken;
       const { assertion, args } = this.consumeAssertion();
 
       assertions.push({
@@ -194,7 +195,7 @@ export class Parser {
         target,
         assertion,
         args,
-        shouldToken,
+        firstToken,
       });
 
       if (!this.matches('and')) {
@@ -260,17 +261,12 @@ export class Parser {
     return target;
   }
 
-  consume(expectedTokenValue: string, errorMessage: string): Token {
+  consume(expectedTokenValue: string, errorMessage: string): void {
     if (this.matches(expectedTokenValue)) {
-      const token = this.currentToken;
       this.index++;
-      return token;
     } else {
       this.error(errorMessage);
     }
-
-    // To avoid typing error...
-    throw new Error('Unreachable');
   }
 
   consumeOptional(expectedTokenValue: string): void {
