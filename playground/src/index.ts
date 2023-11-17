@@ -1,8 +1,9 @@
 import {EditorView, basicSetup} from "codemirror"
 import {javascript} from "@codemirror/lang-javascript"
 import {buildInstructions} from "../../lib/src/instruction-builder";
+import {validateContext} from '../../lib/src/context.interface';
 
-const treeEditor = new EditorView({
+const contextEditor = new EditorView({
   doc: `{
   systemActions: {
     databaseIsSeededWithDefaultData() {/* ... */},
@@ -20,7 +21,7 @@ const treeEditor = new EditorView({
 }
 `,
   extensions: [basicSetup, javascript()],
-  parent: document.body.querySelector("#tree-editor")!,
+  parent: document.body.querySelector("#context-editor")!,
 });
 
 const testEditor = new EditorView({
@@ -38,12 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const outputElement = document.querySelector('#output') as HTMLSpanElement;
 
   document.body.querySelector('#run-button')?.addEventListener('click', () => {
-    const tree = treeEditor.state.doc.toString();
+    const context = contextEditor.state.doc.toString();
     const test = testEditor.state.doc.toString();
 
     try {
-      const treeValue = new Function(`return ${tree}`)();
-      const instructions = buildInstructions(test, treeValue);
+      const contextValue = new Function(`return ${context}`)();
+      validateContext(contextValue);
+      const instructions = buildInstructions(test, contextValue);
       outputElement.innerText = JSON.stringify(instructions, null, 2);
       outputElement.classList.remove('error');
     } catch(error) {

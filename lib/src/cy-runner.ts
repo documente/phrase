@@ -8,7 +8,7 @@ import {
 import { PageObjectTree } from './page-object-tree';
 import { getNode } from './get-node';
 import { ResolvedTarget } from './resolver';
-import {Context} from './context.interface';
+import {Context, validateContext} from './context.interface';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: any[]): void;
@@ -18,8 +18,9 @@ function runSystemLevel(instruction: SystemLevelInstruction, context: Context): 
   context.systemActions[instruction.key](...instruction.args);
 }
 
-// TODO: check validity of context
 export function withContext(context: Context): TestFunction {
+  validateContext(context);
+
   const tree = context.pageObjectTree;
 
   return function test(strings, ...values) {
