@@ -91,22 +91,33 @@ Feel free to try selecting nodes in the [Playground application](https://pckerne
 
 ### Actions
 
-An **action** refers to a specific interaction or operation performed on the application under test (SUT). These interactions typically mirror user actions, such as clicking buttons, entering text, navigating through pages, or interacting with various elements.
+An **action** refers to a specific interaction or operation performed on the application under test (SUT). Actions can
+take two forms:
+- User actions
+- System state changes
+
+#### User actions
+
+These interactions typically mirror user actions, such as clicking buttons, entering text, navigating through pages, or interacting with various elements.
 
 Actions are integral components of test scenarios, encapsulating the steps required to simulate user behavior and interactions with the application. They serve as the building blocks for constructing meaningful and comprehensive test cases.
 
-Our library provides a range of built-in actions, simplifying the testing process for common operations, including:
+The library provides a range of built-in user actions, simplifying the testing process for common operations, including:
 - visit
 - click
 - type
 - clear
 - hover
 
-You can also define custom actions. This allows testers and developers to define actions that are specific to their application requirements or to encapsulate complex sequences of interactions.
+You can also define custom user actions. This allows testers and developers to define actions that are specific to their application requirements or to encapsulate complex sequences of interactions.
+
+#### System state changes
+
+System state changes are used to define the initial state of the application under test (SUT) or to simulate changes in the system state. These changes can be used to set up the application for testing or to simulate specific scenarios.
 
 ### Assertions
 
-Assertions in the context of our testing library refer to statements or conditions that validate the expected outcomes of specific actions or interactions within your test scenarios. These statements act as checkpoints, ensuring that the application under test behaves as anticipated.
+Assertions refer to statements or conditions that validate the expected outcomes of specific actions or interactions within your test scenarios. These statements act as checkpoints, ensuring that the application under test behaves as anticipated.
 
 The library builds upon Cypress's built-in assertions such as :
 - should be visible

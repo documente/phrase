@@ -8,13 +8,12 @@ The language is based on Behavior-Driven Development (BDD) with Given-When-Then 
 
 ### Given section
 
-The `given` section is optional and serves to establish prerequisites for the test. Prerequisites involve actions on the system, described by selecting a component and specifying an action to execute.
+The `given` section is optional and serves to establish prerequisites for the test. Prerequisites involve actions on the system, either in the form of user actions or system state changes.
 
-An action starts with the `I` pronoun, followed by a verb. Actions may include a target, introduced by the `on` preposition.
+- A user action starts with the `I` pronoun, followed by a verb. Actions may include a target, introduced by the `on` preposition. The target is identified as a component, chosen by specifying a path in the System Under Test (SUT) tree representation. This path is a sequence of component names separated by spaces.
+- A system state change is expressed by a free-form statement which can include arguments.
 
-The target is identified as a component, chosen by specifying a path in the System Under Test (SUT) tree representation. This path is a sequence of component names separated by spaces.
-
-Actions can be linked using the `and` keyword.
+User actions and system state changes can be linked using the `and` keyword.
 
 Examples:
 
@@ -24,6 +23,8 @@ given I visit "http://localhost:3000/myapp"
 given I login as "user1"
 
 given I click on navigation menu and I click on dropdown menu item "About"
+
+given the task list has 3 tasks
 ```
 
 ### When section
