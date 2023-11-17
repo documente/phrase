@@ -1,27 +1,35 @@
-import {withTree} from '../../../lib/dist/cy-runner';
+import {withContext} from '../../../lib/dist/cy-runner';
 
-const test = withTree({
-  loginForm: {
-    _selector: '.login-form',
-    loginField: 'input[type="text"]',
-    passwordField: 'input[type="password"]',
-    confirmButton: 'button[type="submit"]',
-  },
-  loginErrorMessage: '.error-message',
-  welcomeMessage: '.welcome-message',
-  newTaskTitleField: '.new-task-title',
-  addTaskButton: '.add-task-button',
-  taskWithText: {
-    _selector: (text) => `.task[data-test-title="${text}"]`,
-    title: '.title',
-    deleteButton: '.delete-button',
-  },
-  taskList: {
-    _selector: '.task-list',
-    shouldHave_Task(self, count) {
-      self.children().should('have.length', count);
+const test = withContext({
+  pageObjectTree: {
+    loginForm: {
+      _selector: '.login-form',
+      loginField: 'input[type="text"]',
+      passwordField: 'input[type="password"]',
+      confirmButton: 'button[type="submit"]',
+    },
+    loginErrorMessage: '.error-message',
+    welcomeMessage: '.welcome-message',
+    newTaskTitleField: '.new-task-title',
+    addTaskButton: '.add-task-button',
+    taskWithText: {
+      _selector: (text) => `.task[data-test-title="${text}"]`,
+      title: '.title',
+      deleteButton: '.delete-button',
+    },
+    taskList: {
+      _selector: '.task-list',
+      shouldHave_Task(self, count) {
+        self.children().should('have.length', count);
+      }
     }
-  }
+  },
+  systemActions: {
+    taskListIsEmpty() {
+      // Quick and dirty way to reset the server state
+      cy.request('DELETE', 'http://localhost:5000/api/all-tasks');
+    }
+  },
 });
 
 const baseUrl = 'http://localhost:3000/';
@@ -29,11 +37,6 @@ const username = 'user01';
 const password = 'P455w0rd';
 
 describe('example spec', () => {
-  beforeEach(() => {
-    // Quick and dirty way to reset the server state
-    cy.request('DELETE', 'http://localhost:5000/api/all-tasks');
-  });
-
   it('should login', () => {
     test `when I visit "${baseUrl}"
            and I type "${username}" on login form login field
@@ -61,7 +64,8 @@ describe('example spec', () => {
   });
 
   it('should add a task', () => {
-    test `given I visit "${baseUrl}"
+    test `given task list is empty
+            and I visit "${baseUrl}"
             and I type "${username}" on login form login field
             and I type "${password}" on password field
             and I click on login form confirm button
@@ -72,7 +76,8 @@ describe('example spec', () => {
   });
 
   it('should remove a task', () => {
-    test `given I visit "${baseUrl}"
+    test `given task list is empty
+            and I visit "${baseUrl}"
             and I type "${username}" on login form login field
             and I type "${password}" on password field
             and I click on login form confirm button

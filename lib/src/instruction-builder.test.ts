@@ -1,86 +1,102 @@
-import { buildInstructions } from './instruction-builder';
+import {ActionInstruction, AssertionInstruction, buildInstructions, ResolvedAssertion} from './instruction-builder';
 import { expect, test } from '@jest/globals';
+import {Context} from './context.interface';
 
 test('should throw if action target cannot be resolved', () => {
-  const tree = {};
+  const context: Context = {pageObjectTree: {}, systemActions: {}};
   expect(() =>
     buildInstructions(
-      'when I click on form button then it should be done',
-      tree,
+      'when I click on form button then it should be visible',
+        context,
     ),
   ).toThrow('Could not resolve target path for "form button"');
 });
 
 test('should throw if action in unknown', () => {
-  const tree = {
-    form: {
-      _selector: 'form',
-      button: 'button',
-    },
+  const context: Context = {
+    systemActions: {},
+    pageObjectTree: {
+      form: {
+        _selector: 'form',
+        button: 'button',
+      },
+    }
   };
 
   expect(() =>
     buildInstructions(
-      'when I foobar on form button then it should be done',
-      tree,
+      'when I foobar on form button then it should be visible',
+        context,
     ),
   ).toThrow('Unknown action "foobar"');
 });
 
 test('should build an action without arguments', () => {
-  const tree = {
-    form: {
-      _selector: 'form',
-      button: 'button',
+  const context: Context = {
+    pageObjectTree: {
+      form: {
+        _selector: 'form',
+        button: 'button',
+      }
     },
+    systemActions: {},
   };
 
   const instructions = buildInstructions(
-    'when I click on form button then it should be done',
-    tree,
+    'when I click on form button then it should be visible',
+    context,
   );
-  expect(instructions.actions).toEqual([
+  expect(instructions.when).toEqual([
     {
+      kind: 'action',
       target: ['form', 'button'],
       action: 'click',
       args: [],
-    },
+    } satisfies ActionInstruction,
   ]);
 });
 
 test('should build an action with arguments', () => {
-  const tree = {
-    form: {
-      _selector: 'form',
-      button: 'button',
+  const context: Context = {
+    pageObjectTree: {
+      form: {
+        _selector: 'form',
+        button: 'button',
+      },
     },
+    systemActions: {}
   };
 
   const instructions = buildInstructions(
-    'when I type "foo" on form button then it should be done',
-    tree,
+    'when I type "foo" on form button then it should be visible',
+      context,
   );
-  expect(instructions.actions).toEqual([
+  expect(instructions.when).toEqual([
     {
+      kind: 'action',
       target: ['form', 'button'],
       action: 'type',
       args: ['foo'],
-    },
+    } satisfies ActionInstruction,
   ]);
 });
 
 test('should build an assertion', () => {
-  const tree = {
-    button: 'button',
-    welcomeMessage: 'h1',
+  const context: Context = {
+    pageObjectTree: {
+      button: 'button',
+      welcomeMessage: 'h1',
+    },
+    systemActions: {},
   };
 
   const instructions = buildInstructions(
     'when I click on button then welcome message should be visible',
-    tree,
+    context,
   );
-  expect(instructions.assertions).toEqual([
+  expect(instructions.then).toEqual([
     {
+      kind: 'assertion',
       selectors: ['h1'],
       target: [
         {
@@ -89,24 +105,31 @@ test('should build an assertion', () => {
           key: 'welcomeMessage',
         },
       ],
-      assertion: 'be visible',
+      assertion: {
+        kind: 'builtin',
+        chainer: 'be.visible',
+      } satisfies ResolvedAssertion,
       args: [],
-    },
+    } satisfies AssertionInstruction,
   ]);
 });
 
 test('should build an assertion with quoted text argument', () => {
-  const tree = {
+  const context: Context = {
+    pageObjectTree: {
     button: 'button',
-    welcomeMessage: 'h1',
-  };
+        welcomeMessage: 'h1',
+  },
+    systemActions: {},
+};
 
   const instructions = buildInstructions(
     'when I click on button then welcome message should have text "Hello, World!"',
-    tree,
+    context,
   );
-  expect(instructions.assertions).toEqual([
+  expect(instructions.then).toEqual([
     {
+      kind: 'assertion',
       selectors: ['h1'],
       target: [
         {
@@ -115,8 +138,12 @@ test('should build an assertion with quoted text argument', () => {
           key: 'welcomeMessage',
         },
       ],
-      assertion: 'have text',
+      assertion: {
+        kind: 'builtin',
+        chainer: 'have.text',
+      } satisfies ResolvedAssertion,
       args: ['Hello, World!'],
-    },
+    } satisfies AssertionInstruction,
   ]);
 });
+

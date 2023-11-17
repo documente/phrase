@@ -3,17 +3,25 @@ import {
   AssertionInstruction,
   buildInstructions,
   BuiltInAssertion,
-  CustomAssertion,
+  CustomAssertion, SystemLevelInstruction,
 } from './instruction-builder';
 import { PageObjectTree } from './page-object-tree';
 import { getNode } from './get-node';
 import { ResolvedTarget } from './resolver';
+import {Context} from './context.interface';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: any[]): void;
 }
 
-export function withTree(tree: PageObjectTree): TestFunction {
+function runSystemLevel(instruction: SystemLevelInstruction, context: Context): void {
+  context.systemActions[instruction.key](...instruction.args);
+}
+
+// TODO: check validity of context
+export function withContext(context: Context): TestFunction {
+  const tree = context.pageObjectTree;
+
   return function test(strings, ...values) {
     let str = null;
 
@@ -27,9 +35,16 @@ export function withTree(tree: PageObjectTree): TestFunction {
       throw new Error('Invalid input');
     }
 
-    const instructions = buildInstructions(str, tree);
-    instructions.actions.forEach(runAction);
-    instructions.assertions.forEach((assertion) =>
+    const instructions = buildInstructions(str, context);
+    instructions.given.forEach(instruction => {
+      if (instruction.kind === 'system-level') {
+        runSystemLevel(instruction, context);
+      } else if (instruction.kind === 'action') {
+        runAction(instruction);
+      }
+    });
+    instructions.when.forEach(runAction);
+    instructions.then.forEach((assertion) =>
       runAssertion(assertion, tree),
     );
   };

@@ -4,12 +4,17 @@ import {buildInstructions} from "../../lib/src/instruction-builder";
 
 const treeEditor = new EditorView({
   doc: `{
-  welcomePage: {
-    _selector: '.welcome',
-    greetButton: 'button',
-    welcomeMessage: {
-      _selector: '.message',
-      shouldHaveFragmentHighlighted(self, fragment) {/* ... */},
+  systemActions: {
+    databaseIsSeededWithDefaultData() {/* ... */},
+  },
+  pageObjectTree: {
+    welcomePage: {
+      _selector: '.welcome',
+      greetButton: 'button',
+      welcomeMessage: {
+        _selector: '.message',
+        shouldHaveFragmentHighlighted(self, fragment) {/* ... */},
+      }
     }
   }
 }
@@ -19,7 +24,8 @@ const treeEditor = new EditorView({
 });
 
 const testEditor = new EditorView({
-  doc: `when I click on welcome page greet button
+  doc: `given database is seeded with default data
+when I click on welcome page greet button
 then welcome message should be visible
 and it should have text "Hello, World!"
 and it should have fragment "World!" highlighted`,

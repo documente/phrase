@@ -3,23 +3,31 @@ import { printErrorLineAndContent } from './error';
 import { isQuoted } from './quoted-text';
 import { isArgument } from './arguments';
 
-export interface Action {
+export interface ActionStatement {
+  kind: 'action';
   target: Token[];
   action: Token[];
   args: any[];
 }
 
-export interface Assertion {
+export interface AssertionStatement {
+  kind: 'assertion';
   target: Token[];
   assertion: Token[];
   args: Token[];
   shouldToken: Token;
 }
 
+export interface SystemLevelStatement {
+  kind: 'system-level';
+  tokens: Token[];
+  args: Token[];
+}
+
 export interface Sentence {
-  prerequisites: Action[];
-  actions: Action[];
-  assertions: Assertion[];
+  prerequisites: (ActionStatement | SystemLevelStatement)[];
+  actions: ActionStatement[];
+  assertions: AssertionStatement[];
 }
 
 export class Parser {
@@ -61,17 +69,69 @@ export class Parser {
     };
   }
 
-  parseGiven(): Action[] {
+  parseGiven(): (ActionStatement | SystemLevelStatement)[] {
     if (this.matches('given')) {
       this.index++;
-      return this.parseActions();
+      return this.parseActionOrSystemLevelStatements();
     }
 
     return [];
   }
 
-  parseActions(): Action[] {
-    const actions = [];
+  parseActionOrSystemLevelStatements(): (ActionStatement | SystemLevelStatement)[] {
+    const statements: (ActionStatement | SystemLevelStatement)[] = [];
+
+    while (!this.isAtEnd() && !this.matches('then', 'when')) {
+      if (this.matches('I')) {
+        this.index++;
+        const action = this.consumeAction();
+        const args = this.consumeQuotedArg();
+
+        let target: Token[] = [];
+        if (this.matches('on')) {
+          this.index++;
+          target = this.consumeTarget();
+        }
+
+        statements.push({
+          kind: 'action',
+          target,
+          action,
+          args,
+        });
+      } else {
+        const tokens = [];
+        const args = [];
+
+        while (!this.isAtEnd() && !this.matches('then', 'when', 'and')) {
+          if (isArgument(this.currentToken.value)) {
+            args.push(this.currentToken);
+          } else {
+            tokens.push(this.currentToken);
+          }
+
+          this.index++;
+        }
+
+        statements.push({
+          kind: 'system-level',
+          tokens,
+          args,
+        });
+      }
+
+      if (!this.matches('and')) {
+        break;
+      } else {
+        this.index++;
+      }
+    }
+
+    return statements;
+  }
+
+  parseActions(): ActionStatement[] {
+    const actions: ActionStatement[] = [];
 
     while (!this.isAtEnd() && !this.matches('then', 'when')) {
       this.consumeOptional('I');
@@ -85,6 +145,7 @@ export class Parser {
       }
 
       actions.push({
+        kind: 'action',
         target,
         action,
         args,
@@ -120,8 +181,8 @@ export class Parser {
     return action;
   }
 
-  parseAssertions(): Assertion[] {
-    const assertions: Assertion[] = [];
+  parseAssertions(): AssertionStatement[] {
+    const assertions: AssertionStatement[] = [];
 
     while (!this.isAtEnd()) {
       const target = this.consumeTarget();
@@ -129,6 +190,7 @@ export class Parser {
       const { assertion, args } = this.consumeAssertion();
 
       assertions.push({
+        kind: 'assertion',
         target,
         assertion,
         args,

@@ -1,4 +1,4 @@
-import { Parser } from './parser';
+import {ActionStatement, Parser} from './parser';
 import { expect, test } from '@jest/globals';
 
 test('should throw if parsing an empty sentence', () => {
@@ -22,6 +22,7 @@ test('should parse a sentence with an action without target and without args', (
 
   expect(sentence.actions).toEqual([
     {
+      kind: 'action',
       target: [],
       action: [
         {
@@ -31,7 +32,7 @@ test('should parse a sentence with an action without target and without args', (
         },
       ],
       args: [],
-    },
+    } satisfies ActionStatement,
   ]);
 });
 
@@ -42,6 +43,7 @@ test('should parse a sentence with an action with a target and without args', ()
   );
   expect(sentence.actions).toEqual([
     {
+      kind: 'action',
       target: [
         {
           column: 17,
@@ -57,7 +59,7 @@ test('should parse a sentence with an action with a target and without args', ()
         },
       ],
       args: [],
-    },
+    } satisfies ActionStatement,
   ]);
 });
 
@@ -69,6 +71,7 @@ test('should parse a sentence with an action with a target and with args', () =>
 
   expect(sentence.actions).toEqual([
     {
+      kind: 'action',
       target: [
         {
           column: 22,
@@ -90,7 +93,7 @@ test('should parse a sentence with an action with a target and with args', () =>
           value: '"foo"',
         },
       ],
-    },
+    } satisfies ActionStatement,
   ]);
 });
 
