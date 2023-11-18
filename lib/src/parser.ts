@@ -1,7 +1,7 @@
-import { tokenize } from './tokenizer';
-import { printErrorLineAndContent } from './error';
-import { isQuoted } from './quoted-text';
-import { isArgument } from './arguments';
+import {tokenize} from './tokenizer';
+import {printErrorLineAndContent} from './error';
+import {isQuoted} from './quoted-text';
+import {isArgument} from './arguments';
 import {
   ActionStatement,
   AssertionStatement,
@@ -9,7 +9,7 @@ import {
   Statement,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
-import { Token } from './interfaces/token.interface';
+import {Token} from './interfaces/token.interface';
 
 export class Parser {
   sentence = '';
@@ -37,16 +37,10 @@ export class Parser {
       throw new Error('Empty sentence');
     }
 
-    const given = this.parseGiven();
-    this.consume('when', 'Expected "when"');
-    const when = this.parseStatements();
-    this.consume('then', 'Expected "then"');
-    const then = this.parseStatements();
-
     return {
-      given,
-      when,
-      then,
+      given: this.parseGiven(),
+      when: this.parseWhen(),
+      then: this.parseThen(),
       blocks: {},
     };
   }
@@ -58,6 +52,16 @@ export class Parser {
     }
 
     return [];
+  }
+
+  parseWhen(): Statement[] {
+    this.consume('when', 'Expected "when"');
+    return this.parseStatements();
+  }
+
+  parseThen(): Statement[] {
+    this.consume('then', 'Expected "when"');
+    return this.parseStatements();
   }
 
   parseStatements(): Statement[] {
@@ -82,16 +86,16 @@ export class Parser {
   }
 
   private parseAssertionOrSystemStateChangeStatement():
-    | SystemLevelStatement
-    | AssertionStatement {
+      | SystemLevelStatement
+      | AssertionStatement {
     const tokensBeforeShould = [];
     const tokensAfterShould = [];
     let foundShould = false;
 
     while (
-      !this.isAtEnd() &&
-      !this.matches('given', 'when', 'then', 'and', '>')
-    ) {
+        !this.isAtEnd() &&
+        !this.matches('given', 'when', 'then', 'and', '>')
+        ) {
       if (this.matches('should')) {
         foundShould = true;
       } else {
@@ -107,7 +111,7 @@ export class Parser {
 
     if (foundShould) {
       const assertion = tokensAfterShould.filter(
-        (token) => !isArgument(token.value),
+          (token) => !isArgument(token.value),
       );
       const args = tokensAfterShould.filter((token) => isArgument(token.value));
       return {
@@ -119,10 +123,10 @@ export class Parser {
       } satisfies AssertionStatement;
     } else {
       const tokens = tokensBeforeShould.filter(
-        (token) => !isArgument(token.value),
+          (token) => !isArgument(token.value),
       );
       const args = tokensBeforeShould.filter((token) =>
-        isArgument(token.value),
+          isArgument(token.value),
       );
       return {
         kind: 'system-level',
@@ -154,10 +158,10 @@ export class Parser {
     const action = [];
 
     while (
-      !this.isAtEnd() &&
-      !this.matches('on', 'then', 'when', 'and') &&
-      !isQuoted(this.currentValue)
-    ) {
+        !this.isAtEnd() &&
+        !this.matches('on', 'then', 'when', 'and') &&
+        !isQuoted(this.currentValue)
+        ) {
       this.reject(['I'], 'Unexpected "I" in action name');
       action.push(this.currentToken);
       this.index++;
