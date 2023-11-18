@@ -21,8 +21,16 @@ export interface SystemLevelStatement {
   args: Token[];
 }
 
-export interface Sentence {
-  prerequisites: (ActionStatement | SystemLevelStatement)[];
-  actions: ActionStatement[];
-  assertions: AssertionStatement[];
+export type Statement =
+  | ActionStatement
+  | AssertionStatement
+  | SystemLevelStatement;
+
+export interface ParsedSentence {
+  given: Statement[];
+  when: Statement[];
+  then: Statement[];
+  blocks: {
+    [key: string]: Statement[];
+  };
 }

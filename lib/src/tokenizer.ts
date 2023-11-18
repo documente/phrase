@@ -13,6 +13,11 @@ export function tokenize(sentence: string): Token[] {
   let line = 1;
   let column = 1;
   let insideDoubleQuotes = false;
+  let isAtStartOfLine = true;
+
+  const throwError = (message: string) => {
+    throw new Error(prettyPrintError(message, sentence, { line, column }));
+  };
 
   function pushToken() {
     if (currentToken !== '') {
@@ -22,6 +27,7 @@ export function tokenize(sentence: string): Token[] {
         column: column - currentToken.length,
       });
       currentToken = '';
+      isAtStartOfLine = false;
     }
   }
 
@@ -33,14 +39,13 @@ export function tokenize(sentence: string): Token[] {
       column++;
     } else if (char === '\n') {
       if (insideDoubleQuotes) {
-        throw new Error(
-          prettyPrintError('Missing closing "', sentence, { line, column }),
-        );
+        throwError('Missing closing "');
       }
 
       pushToken();
       line++;
       column = 1;
+      isAtStartOfLine = true;
     } else if (char === '"') {
       currentToken += char;
 
@@ -60,6 +65,15 @@ export function tokenize(sentence: string): Token[] {
 
       line++;
       column = 1;
+      isAtStartOfLine = true;
+    } else if (char === '>' && insideDoubleQuotes) {
+      if (!isAtStartOfLine) {
+        throwError('Unexpected ">"');
+      } else {
+        pushToken();
+        currentToken += char;
+        pushToken();
+      }
     } else {
       currentToken += char;
       column++;
@@ -67,9 +81,7 @@ export function tokenize(sentence: string): Token[] {
   }
 
   if (insideDoubleQuotes) {
-    throw new Error(
-      prettyPrintError('Missing closing "', sentence, { line, column }),
-    );
+    throwError('Missing closing "');
   }
 
   pushToken();

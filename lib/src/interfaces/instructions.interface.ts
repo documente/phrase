@@ -41,8 +41,13 @@ export interface SystemLevelInstruction {
   args: string[];
 }
 
+export type Instruction =
+  | ActionInstruction
+  | AssertionInstruction
+  | SystemLevelInstruction;
+
 export interface Instructions {
-  given: (ActionInstruction | SystemLevelInstruction)[];
-  when: ActionInstruction[];
-  then: AssertionInstruction[];
+  given: Instruction[];
+  when: Instruction[];
+  then: Instruction[];
 }

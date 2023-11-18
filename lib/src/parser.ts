@@ -5,7 +5,8 @@ import { isArgument } from './arguments';
 import {
   ActionStatement,
   AssertionStatement,
-  Sentence,
+  ParsedSentence,
+  Statement,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
 import { Token } from './interfaces/token.interface';
@@ -25,9 +26,9 @@ export class Parser {
 
   /**
    * @param {string} sentence - sentence to parse
-   * @returns {Sentence} parsed sentence
+   * @returns {ParsedSentence} parsed sentence
    */
-  parse(sentence: string): Sentence {
+  parse(sentence: string): ParsedSentence {
     this.sentence = sentence;
     this.tokens = tokenize(sentence);
     this.index = 0;
@@ -36,71 +37,38 @@ export class Parser {
       throw new Error('Empty sentence');
     }
 
-    const prerequisites = this.parseGiven();
+    const given = this.parseGiven();
     this.consume('when', 'Expected "when"');
-    const actions = this.parseActions();
+    const when = this.parseStatements();
     this.consume('then', 'Expected "then"');
-    const assertions = this.parseAssertions();
+    const then = this.parseStatements();
 
     return {
-      prerequisites,
-      actions,
-      assertions,
+      given,
+      when,
+      then,
+      blocks: {},
     };
   }
 
-  parseGiven(): (ActionStatement | SystemLevelStatement)[] {
+  parseGiven(): Statement[] {
     if (this.matches('given')) {
       this.index++;
-      return this.parseActionOrSystemLevelStatements();
+      return this.parseStatements();
     }
 
     return [];
   }
 
-  parseActionOrSystemLevelStatements(): (
-    | ActionStatement
-    | SystemLevelStatement
-  )[] {
-    const statements: (ActionStatement | SystemLevelStatement)[] = [];
+  parseStatements(): Statement[] {
+    const statements: Statement[] = [];
 
-    while (!this.isAtEnd() && !this.matches('then', 'when')) {
+    while (!this.isAtEnd() && !this.matches('given', 'when', 'then', '>')) {
       if (this.matches('I')) {
         this.index++;
-        const action = this.consumeAction();
-        const args = this.consumeQuotedArg();
-
-        let target: Token[] = [];
-        if (this.matches('on')) {
-          this.index++;
-          target = this.consumeTarget();
-        }
-
-        statements.push({
-          kind: 'action',
-          target,
-          action,
-          args,
-        });
+        statements.push(this.parseActionStatement());
       } else {
-        const tokens = [];
-        const args = [];
-
-        while (!this.isAtEnd() && !this.matches('then', 'when', 'and')) {
-          if (isArgument(this.currentToken.value)) {
-            args.push(this.currentToken);
-          } else {
-            tokens.push(this.currentToken);
-          }
-
-          this.index++;
-        }
-
-        statements.push({
-          kind: 'system-level',
-          tokens,
-          args,
-        });
+        statements.push(this.parseAssertionOrSystemStateChangeStatement());
       }
 
       if (!this.matches('and')) {
@@ -113,38 +81,76 @@ export class Parser {
     return statements;
   }
 
-  parseActions(): ActionStatement[] {
-    const actions: ActionStatement[] = [];
+  private parseAssertionOrSystemStateChangeStatement():
+    | SystemLevelStatement
+    | AssertionStatement {
+    const tokensBeforeShould = [];
+    const tokensAfterShould = [];
+    let foundShould = false;
 
-    while (!this.isAtEnd() && !this.matches('then', 'when')) {
-      this.consumeOptional('I');
-      const action = this.consumeAction();
-      const args = this.consumeQuotedArg();
-
-      let target: Token[] = [];
-      if (this.matches('on')) {
-        this.index++;
-        target = this.consumeTarget();
-      }
-
-      actions.push({
-        kind: 'action',
-        target,
-        action,
-        args,
-      });
-
-      if (!this.matches('and')) {
-        break;
+    while (
+      !this.isAtEnd() &&
+      !this.matches('given', 'when', 'then', 'and', '>')
+    ) {
+      if (this.matches('should')) {
+        foundShould = true;
       } else {
-        this.index++;
+        if (foundShould) {
+          tokensAfterShould.push(this.currentToken);
+        } else {
+          tokensBeforeShould.push(this.currentToken);
+        }
       }
+
+      this.index++;
     }
 
-    return actions;
+    if (foundShould) {
+      const assertion = tokensAfterShould.filter(
+        (token) => !isArgument(token.value),
+      );
+      const args = tokensAfterShould.filter((token) => isArgument(token.value));
+      return {
+        kind: 'assertion',
+        target: tokensBeforeShould,
+        assertion,
+        args,
+        firstToken: tokensAfterShould[0],
+      } satisfies AssertionStatement;
+    } else {
+      const tokens = tokensBeforeShould.filter(
+        (token) => !isArgument(token.value),
+      );
+      const args = tokensBeforeShould.filter((token) =>
+        isArgument(token.value),
+      );
+      return {
+        kind: 'system-level',
+        tokens,
+        args,
+      } satisfies SystemLevelStatement;
+    }
   }
 
-  consumeAction() {
+  private parseActionStatement(): ActionStatement {
+    const action = this.consumeActionName();
+    const args = this.consumeQuotedArg();
+
+    let target: Token[] = [];
+    if (this.matches('on')) {
+      this.index++;
+      target = this.consumeTarget();
+    }
+
+    return {
+      kind: 'action',
+      target,
+      action,
+      args,
+    } satisfies ActionStatement;
+  }
+
+  consumeActionName() {
     const action = [];
 
     while (
@@ -162,60 +168,6 @@ export class Parser {
     }
 
     return action;
-  }
-
-  parseAssertions(): AssertionStatement[] {
-    const assertions: AssertionStatement[] = [];
-
-    while (!this.isAtEnd()) {
-      const target = this.consumeTarget();
-      this.consume('should', 'Expected "should"');
-      const firstToken = this.currentToken;
-      const { assertion, args } = this.consumeAssertion();
-
-      assertions.push({
-        kind: 'assertion',
-        target,
-        assertion,
-        args,
-        firstToken,
-      });
-
-      if (!this.matches('and')) {
-        break;
-      } else {
-        this.index++;
-      }
-    }
-
-    if (assertions.length === 0) {
-      this.error('Missing assertion');
-    }
-
-    return assertions;
-  }
-
-  consumeAssertion(): { assertion: Token[]; args: Token[] } {
-    const assertion: Token[] = [];
-    const args: Token[] = [];
-
-    while (!this.isAtEnd() && !this.matches('on', 'then', 'and')) {
-      this.reject(['I', 'and', 'when', 'then'], 'Expected assertion');
-
-      if (isArgument(this.currentToken.value)) {
-        args.push(this.currentToken);
-      } else {
-        assertion.push(this.currentToken);
-      }
-
-      this.index++;
-    }
-
-    if (assertion.length === 0) {
-      this.error('Missing assertion');
-    }
-
-    return { assertion, args };
   }
 
   matches(...candidates: string[]): boolean {
@@ -249,12 +201,6 @@ export class Parser {
       this.index++;
     } else {
       this.error(errorMessage);
-    }
-  }
-
-  consumeOptional(expectedTokenValue: string): void {
-    if (this.matches(expectedTokenValue)) {
-      this.index++;
     }
   }
 

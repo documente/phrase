@@ -3,6 +3,7 @@ import {
   AssertionInstruction,
   BuiltInAssertion,
   CustomAssertion,
+  Instruction,
   ResolvedTarget,
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
@@ -28,6 +29,16 @@ export function withContext(context: Context): TestFunction {
 
   const tree = context.pageObjectTree;
 
+  function runInstruction(instruction: Instruction): void {
+    if (instruction.kind === 'system-level') {
+      runSystemLevel(instruction, context);
+    } else if (instruction.kind === 'action') {
+      runAction(instruction);
+    } else if (instruction.kind === 'assertion') {
+      runAssertion(instruction, tree);
+    }
+  }
+
   return function test(strings, ...values) {
     let str = null;
 
@@ -42,15 +53,9 @@ export function withContext(context: Context): TestFunction {
     }
 
     const instructions = buildInstructions(str, context);
-    instructions.given.forEach((instruction) => {
-      if (instruction.kind === 'system-level') {
-        runSystemLevel(instruction, context);
-      } else if (instruction.kind === 'action') {
-        runAction(instruction);
-      }
-    });
-    instructions.when.forEach(runAction);
-    instructions.then.forEach((assertion) => runAssertion(assertion, tree));
+    instructions.given.forEach(runInstruction);
+    instructions.when.forEach(runInstruction);
+    instructions.then.forEach(runInstruction);
   };
 }
 
