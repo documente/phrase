@@ -1,7 +1,7 @@
 import {EditorView, basicSetup} from "codemirror"
 import {javascript} from "@codemirror/lang-javascript"
 import {buildInstructions} from "../../lib/src/instruction-builder";
-import {validateContext} from '../../lib/src/context.interface';
+import {validateContext} from "../../lib/src/context-validation";
 
 const contextEditor = new EditorView({
   doc: `{
