@@ -1,4 +1,4 @@
-import {PageObjectTree} from './page-object-tree';
+import { PageObjectTree } from './page-object-tree.interface';
 
 export type SystemActions = {
   [key: string]: Function;

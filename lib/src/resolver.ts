@@ -1,12 +1,7 @@
 import { getNode } from './get-node';
-import { PageObjectTree } from './page-object-tree';
 import { isQuoted } from './quoted-text';
-
-export interface ResolvedTarget {
-  fragments: string[];
-  key: string;
-  arg?: string;
-}
+import { PageObjectTree } from './interfaces/page-object-tree.interface';
+import { ResolvedTarget } from './interfaces/instructions.interface';
 
 export function resolve(
   tree: PageObjectTree,

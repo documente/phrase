@@ -1,6 +1,6 @@
-import {Context} from './context.interface';
 import { test, expect } from '@jest/globals';
-import {validateContext} from './context-validation';
+import { validateContext } from './context-validation';
+import { Context } from './interfaces/context.interface';
 
 test('should validate context with valid systemActions and pageObjectTree', () => {
   const context: Context = {
@@ -15,8 +15,8 @@ test('should validate context with valid systemActions and pageObjectTree', () =
         field: (name: string) => {},
         label: {
           _selector: () => 'label',
-          shouldHaveText(self, text: string) {}
-        }
+          shouldHaveText(self, text: string) {},
+        },
       },
     },
   };
@@ -63,7 +63,9 @@ test('should throw if systemActions contains non-function values', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow('systemActions.action1 must be a function');
+  expect(() => validateContext(context)).toThrow(
+    'systemActions.action1 must be a function',
+  );
 });
 
 test('should throw if pageObjectTree contains null nodes', () => {
@@ -77,7 +79,9 @@ test('should throw if pageObjectTree contains null nodes', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow('Page object node must not be null or undefined at path form');
+  expect(() => validateContext(context)).toThrow(
+    'Page object node must not be null or undefined at path form',
+  );
 });
 
 test('should throw if pageObjectTree contains number nodes', () => {
@@ -91,7 +95,9 @@ test('should throw if pageObjectTree contains number nodes', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow('Page object node must be either a string, function or an object at path form');
+  expect(() => validateContext(context)).toThrow(
+    'Page object node must be either a string, function or an object at path form',
+  );
 });
 
 test('should throw if pageObjectTree contains invalid selector', () => {
@@ -108,5 +114,7 @@ test('should throw if pageObjectTree contains invalid selector', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow('Page object node selector must be either a string or a function at path form._selector');
+  expect(() => validateContext(context)).toThrow(
+    'Page object node selector must be either a string or a function at path form._selector',
+  );
 });

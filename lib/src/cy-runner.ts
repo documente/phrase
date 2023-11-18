@@ -1,20 +1,25 @@
 import {
   ActionInstruction,
   AssertionInstruction,
-  buildInstructions,
   BuiltInAssertion,
-  CustomAssertion, SystemLevelInstruction,
-} from './instruction-builder';
-import { PageObjectTree } from './page-object-tree';
+  CustomAssertion,
+  ResolvedTarget,
+  SystemLevelInstruction,
+} from './interfaces/instructions.interface';
 import { getNode } from './get-node';
-import { ResolvedTarget } from './resolver';
-import {Context, validateContext} from './context.interface';
+import { Context } from './interfaces/context.interface';
+import { validateContext } from './context-validation';
+import { buildInstructions } from './instruction-builder';
+import { PageObjectTree } from './interfaces/page-object-tree.interface';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: any[]): void;
 }
 
-function runSystemLevel(instruction: SystemLevelInstruction, context: Context): void {
+function runSystemLevel(
+  instruction: SystemLevelInstruction,
+  context: Context,
+): void {
   context.systemActions[instruction.key](...instruction.args);
 }
 
@@ -37,7 +42,7 @@ export function withContext(context: Context): TestFunction {
     }
 
     const instructions = buildInstructions(str, context);
-    instructions.given.forEach(instruction => {
+    instructions.given.forEach((instruction) => {
       if (instruction.kind === 'system-level') {
         runSystemLevel(instruction, context);
       } else if (instruction.kind === 'action') {
@@ -45,9 +50,7 @@ export function withContext(context: Context): TestFunction {
       }
     });
     instructions.when.forEach(runAction);
-    instructions.then.forEach((assertion) =>
-      runAssertion(assertion, tree),
-    );
+    instructions.then.forEach((assertion) => runAssertion(assertion, tree));
   };
 }
 

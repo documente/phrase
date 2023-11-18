@@ -1,56 +1,29 @@
-import {ActionStatement, Parser, Sentence, SystemLevelStatement} from './parser';
-import { resolve, ResolvedTarget } from './resolver';
+import { resolve } from './resolver';
 import { prettyPrintError } from './error';
 import { isBuiltinAction } from './builtin-actions';
 import { unquoted } from './quoted-text';
-import { PageObjectTree, Selector } from './page-object-tree';
-import { Token } from './tokenizer';
 import { KnownChainer } from './known-chainers';
 import { getNode } from './get-node';
-import {Context} from './context.interface';
-
-export interface ActionInstruction {
-  kind: 'action';
-  target: string[] | null;
-  action: string;
-  args: string[];
-}
-
-interface BaseResolvedAssertion {
-  kind: string;
-}
-
-export interface CustomAssertion extends BaseResolvedAssertion {
-  kind: 'custom';
-  method: string;
-}
-
-export interface BuiltInAssertion extends BaseResolvedAssertion {
-  kind: 'builtin';
-  chainer: string;
-}
-
-export type ResolvedAssertion = CustomAssertion | BuiltInAssertion;
-
-export interface AssertionInstruction {
-  kind: 'assertion';
-  target: ResolvedTarget[] | null;
-  selectors: string[] | null;
-  assertion: ResolvedAssertion;
-  args: string[];
-}
-
-export interface SystemLevelInstruction {
-  kind: 'system-level';
-  key: string;
-  args: string[];
-}
-
-export interface Instructions {
-  given: (ActionInstruction | SystemLevelInstruction)[];
-  when: ActionInstruction[];
-  then: AssertionInstruction[];
-}
+import { Context } from './interfaces/context.interface';
+import {
+  ActionInstruction,
+  AssertionInstruction,
+  Instructions,
+  ResolvedAssertion,
+  ResolvedTarget,
+  SystemLevelInstruction,
+} from './interfaces/instructions.interface';
+import { Parser } from './parser';
+import {
+  ActionStatement,
+  Sentence,
+  SystemLevelStatement,
+} from './interfaces/statements.interface';
+import {
+  PageObjectTree,
+  Selector,
+} from './interfaces/page-object-tree.interface';
+import { Token } from './interfaces/token.interface';
 
 export function buildInstructions(
   input: string,
@@ -66,9 +39,16 @@ export function buildInstructions(
 
   sentenceTree.prerequisites.forEach((statement) => {
     if (statement.kind === 'system-level') {
-      givenInstructions.push(extractSystemLevelInstruction(context, statement, input));
+      givenInstructions.push(
+        extractSystemLevelInstruction(context, statement, input),
+      );
     } else {
-      const {previousPath: path, instruction} = extractAction(tree, statement, previousPath, input);
+      const { previousPath: path, instruction } = extractAction(
+        tree,
+        statement,
+        previousPath,
+        input,
+      );
       givenInstructions.push(instruction);
       if (path) {
         previousPath = path;
@@ -79,7 +59,12 @@ export function buildInstructions(
   const whenInstructions: ActionInstruction[] = [];
 
   sentenceTree.actions.forEach((action) => {
-    const {previousPath: path, instruction} = extractAction(tree, action, previousPath, input);
+    const { previousPath: path, instruction } = extractAction(
+      tree,
+      action,
+      previousPath,
+      input,
+    );
     whenInstructions.push(instruction);
     if (path) {
       previousPath = path;
@@ -132,10 +117,10 @@ function extractAction(
   actionStatement: ActionStatement,
   previousPath: ResolvedTarget[],
   input: string,
-): {previousPath: ResolvedTarget[], instruction: ActionInstruction} {
+): { previousPath: ResolvedTarget[]; instruction: ActionInstruction } {
   const resolved = extractTargetSelector(
     tree,
-      actionStatement.target,
+    actionStatement.target,
     previousPath,
     input,
   );
@@ -152,7 +137,7 @@ function extractAction(
     action: actionName,
     args,
   };
-  return {previousPath, instruction};
+  return { previousPath, instruction };
 }
 
 function extractActionInstruction(action: ActionStatement, input: string) {
@@ -355,19 +340,18 @@ function findCustomAssertion(
 }
 
 function extractSystemLevelInstruction(
-    context: Context,
-    statement: SystemLevelStatement,
-    input: string,
+  context: Context,
+  statement: SystemLevelStatement,
+  input: string,
 ): SystemLevelInstruction {
   const actionName = statement.tokens
-      .map((a) => a.value)
-      .map((a) => a.toLowerCase())
-      .join('');
+    .map((a) => a.value)
+    .map((a) => a.toLowerCase())
+    .join('');
 
   for (let systemActionsKey in context.systemActions) {
     if (systemActionsKey.toLowerCase() == actionName) {
-      const args = statement.args
-          .map((arg) => unquoted(arg.value));
+      const args = statement.args.map((arg) => unquoted(arg.value));
       return {
         kind: 'system-level',
         key: systemActionsKey,
@@ -376,15 +360,13 @@ function extractSystemLevelInstruction(
     }
   }
 
-  const prettyActionName = statement.tokens
-      .map((a) => a.value)
-      .join(' ');
+  const prettyActionName = statement.tokens.map((a) => a.value).join(' ');
 
   throw new Error(
-      prettyPrintError(
-          `Unknown system-level action "${prettyActionName}"`,
-          input,
-          statement.tokens[0],
-      ),
+    prettyPrintError(
+      `Unknown system-level action "${prettyActionName}"`,
+      input,
+      statement.tokens[0],
+    ),
   );
 }

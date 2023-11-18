@@ -1,5 +1,5 @@
-import {PageObjectTree} from './page-object-tree';
-import {Context} from './context.interface';
+import { PageObjectTree } from './interfaces/page-object-tree.interface';
+import { Context } from './interfaces/context.interface';
 
 export function validateContext(context: Context): void {
   if (!context.pageObjectTree) {
@@ -20,9 +20,15 @@ export function validateContext(context: Context): void {
   }
 }
 
-function validatePageObjectNode(node: PageObjectTree | string | Function | undefined, path: string[]) {
+function validatePageObjectNode(
+  node: PageObjectTree | string | Function | undefined,
+  path: string[],
+) {
   if (!node) {
-    throw new Error('Page object node must not be null or undefined at path ' + path.join('.'));
+    throw new Error(
+      'Page object node must not be null or undefined at path ' +
+        path.join('.'),
+    );
   }
 
   if (typeof node === 'function' || typeof node === 'string') {
@@ -30,11 +36,22 @@ function validatePageObjectNode(node: PageObjectTree | string | Function | undef
   }
 
   if (typeof node !== 'object') {
-    throw new Error('Page object node must be either a string, function or an object at path ' + path.join('.'));
+    throw new Error(
+      'Page object node must be either a string, function or an object at path ' +
+        path.join('.'),
+    );
   }
 
-  if (node._selector && typeof node._selector !== 'string' && typeof node._selector !== 'function') {
-    throw new Error('Page object node selector must be either a string or a function at path ' + path.join('.') + '._selector');
+  if (
+    node._selector &&
+    typeof node._selector !== 'string' &&
+    typeof node._selector !== 'function'
+  ) {
+    throw new Error(
+      'Page object node selector must be either a string or a function at path ' +
+        path.join('.') +
+        '._selector',
+    );
   }
 
   for (const key in node) {

@@ -1,34 +1,14 @@
-import { Token, tokenize } from './tokenizer';
+import { tokenize } from './tokenizer';
 import { printErrorLineAndContent } from './error';
 import { isQuoted } from './quoted-text';
 import { isArgument } from './arguments';
-
-export interface ActionStatement {
-  kind: 'action';
-  target: Token[];
-  action: Token[];
-  args: any[];
-}
-
-export interface AssertionStatement {
-  kind: 'assertion';
-  target: Token[];
-  assertion: Token[];
-  args: Token[];
-  firstToken: Token;
-}
-
-export interface SystemLevelStatement {
-  kind: 'system-level';
-  tokens: Token[];
-  args: Token[];
-}
-
-export interface Sentence {
-  prerequisites: (ActionStatement | SystemLevelStatement)[];
-  actions: ActionStatement[];
-  assertions: AssertionStatement[];
-}
+import {
+  ActionStatement,
+  AssertionStatement,
+  Sentence,
+  SystemLevelStatement,
+} from './interfaces/statements.interface';
+import { Token } from './interfaces/token.interface';
 
 export class Parser {
   sentence = '';
@@ -78,7 +58,10 @@ export class Parser {
     return [];
   }
 
-  parseActionOrSystemLevelStatements(): (ActionStatement | SystemLevelStatement)[] {
+  parseActionOrSystemLevelStatements(): (
+    | ActionStatement
+    | SystemLevelStatement
+  )[] {
     const statements: (ActionStatement | SystemLevelStatement)[] = [];
 
     while (!this.isAtEnd() && !this.matches('then', 'when')) {

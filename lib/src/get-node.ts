@@ -1,4 +1,4 @@
-import { PageObjectTree } from './page-object-tree';
+import { PageObjectTree } from './interfaces/page-object-tree.interface';
 
 export function getNode(
   tree: PageObjectTree,

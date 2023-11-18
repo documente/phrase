@@ -1,13 +1,18 @@
-import {ActionInstruction, AssertionInstruction, buildInstructions, ResolvedAssertion} from './instruction-builder';
 import { expect, test } from '@jest/globals';
-import {Context} from './context.interface';
+import { Context } from './interfaces/context.interface';
+import { buildInstructions } from './instruction-builder';
+import {
+  ActionInstruction,
+  AssertionInstruction,
+  ResolvedAssertion,
+} from './interfaces/instructions.interface';
 
 test('should throw if action target cannot be resolved', () => {
-  const context: Context = {pageObjectTree: {}, systemActions: {}};
+  const context: Context = { pageObjectTree: {}, systemActions: {} };
   expect(() =>
     buildInstructions(
       'when I click on form button then it should be visible',
-        context,
+      context,
     ),
   ).toThrow('Could not resolve target path for "form button"');
 });
@@ -20,13 +25,13 @@ test('should throw if action in unknown', () => {
         _selector: 'form',
         button: 'button',
       },
-    }
+    },
   };
 
   expect(() =>
     buildInstructions(
       'when I foobar on form button then it should be visible',
-        context,
+      context,
     ),
   ).toThrow('Unknown action "foobar"');
 });
@@ -37,7 +42,7 @@ test('should build an action without arguments', () => {
       form: {
         _selector: 'form',
         button: 'button',
-      }
+      },
     },
     systemActions: {},
   };
@@ -64,12 +69,12 @@ test('should build an action with arguments', () => {
         button: 'button',
       },
     },
-    systemActions: {}
+    systemActions: {},
   };
 
   const instructions = buildInstructions(
     'when I type "foo" on form button then it should be visible',
-      context,
+    context,
   );
   expect(instructions.when).toEqual([
     {
@@ -117,11 +122,11 @@ test('should build an assertion', () => {
 test('should build an assertion with quoted text argument', () => {
   const context: Context = {
     pageObjectTree: {
-    button: 'button',
-        welcomeMessage: 'h1',
-  },
+      button: 'button',
+      welcomeMessage: 'h1',
+    },
     systemActions: {},
-};
+  };
 
   const instructions = buildInstructions(
     'when I click on button then welcome message should have text "Hello, World!"',
@@ -146,4 +151,3 @@ test('should build an assertion with quoted text argument', () => {
     } satisfies AssertionInstruction,
   ]);
 });
-

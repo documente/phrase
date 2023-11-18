@@ -1,5 +1,9 @@
-import {ActionStatement, Parser, SystemLevelStatement} from './parser';
+import { Parser } from './parser';
 import { expect, test } from '@jest/globals';
+import {
+  ActionStatement,
+  SystemLevelStatement,
+} from './interfaces/statements.interface';
 
 test('should throw if parsing an empty sentence', () => {
   const parser = new Parser();
@@ -136,7 +140,7 @@ when I and foo then it should be done
 test('should throw if parsing a sentence with "I" in action name', () => {
   const parser = new Parser();
   expect(() => parser.parse('when I am I foo then it should be done')).toThrow(
-      `Unexpected "I" in action name
+    `Unexpected "I" in action name
 Line 1, column 11:
 when I am I foo then it should be done
           ^`,
@@ -232,38 +236,50 @@ when I click then
 
 test('should parse a sentence with a system-level instruction', () => {
   const parser = new Parser();
-  const sentence = parser.parse('given system is "ready" when I click then it should be done');
-  expect((sentence.prerequisites[0] as SystemLevelStatement).tokens.map((a) => a.value)).toEqual([
-    'system',
-    'is',
-  ]);
-  expect((sentence.prerequisites[0] as SystemLevelStatement).args.map((a) => a.value)).toEqual([
-    '"ready"',
-  ]);
+  const sentence = parser.parse(
+    'given system is "ready" when I click then it should be done',
+  );
+  expect(
+    (sentence.prerequisites[0] as SystemLevelStatement).tokens.map(
+      (a) => a.value,
+    ),
+  ).toEqual(['system', 'is']);
+  expect(
+    (sentence.prerequisites[0] as SystemLevelStatement).args.map(
+      (a) => a.value,
+    ),
+  ).toEqual(['"ready"']);
 });
 
 test('should parse a sentence with a user action in a given', () => {
   const parser = new Parser();
-  const sentence = parser.parse('given I land on Mars when I leave then it should be done');
-  expect((sentence.prerequisites[0] as ActionStatement).action.map((a) => a.value)).toEqual([
-      'land'
-  ]);
-  expect((sentence.prerequisites[0] as ActionStatement).target.map((a) => a.value)).toEqual([
-    'Mars'
-  ]);
+  const sentence = parser.parse(
+    'given I land on Mars when I leave then it should be done',
+  );
+  expect(
+    (sentence.prerequisites[0] as ActionStatement).action.map((a) => a.value),
+  ).toEqual(['land']);
+  expect(
+    (sentence.prerequisites[0] as ActionStatement).target.map((a) => a.value),
+  ).toEqual(['Mars']);
 });
 
 test('should parse a sentence with a user action and a system state change in a given', () => {
-const parser = new Parser();
-  const sentence = parser.parse('given I login and system is "ready" when I leave then it should be done');
-  expect((sentence.prerequisites[0] as ActionStatement).action.map((a) => a.value)).toEqual([
-    'login'
-  ]);
-  expect((sentence.prerequisites[1] as SystemLevelStatement).tokens.map((a) => a.value)).toEqual([
-    'system',
-    'is',
-  ]);
-  expect((sentence.prerequisites[1] as SystemLevelStatement).args.map((a) => a.value)).toEqual([
-    '"ready"',
-  ]);
+  const parser = new Parser();
+  const sentence = parser.parse(
+    'given I login and system is "ready" when I leave then it should be done',
+  );
+  expect(
+    (sentence.prerequisites[0] as ActionStatement).action.map((a) => a.value),
+  ).toEqual(['login']);
+  expect(
+    (sentence.prerequisites[1] as SystemLevelStatement).tokens.map(
+      (a) => a.value,
+    ),
+  ).toEqual(['system', 'is']);
+  expect(
+    (sentence.prerequisites[1] as SystemLevelStatement).args.map(
+      (a) => a.value,
+    ),
+  ).toEqual(['"ready"']);
 });

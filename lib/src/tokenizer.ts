@@ -1,10 +1,5 @@
 import { prettyPrintError } from './error';
-
-export interface Token {
-  value: string;
-  line: number;
-  column: number;
-}
+import { Token } from './interfaces/token.interface';
 
 /**
  * Tokenize a sentence.
