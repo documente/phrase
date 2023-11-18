@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
       outputElement.innerText = JSON.stringify(instructions, null, 2);
       outputElement.classList.remove('error');
     } catch(error) {
+      console.error(error);
       outputElement.innerText = (error as any).message ?? error;
       outputElement.classList.add('error');
       return;
