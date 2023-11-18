@@ -64,7 +64,7 @@ function buildInstructionsFromStatements(
     if (statement.kind === 'system-level') {
       instructions.push(extractSystemLevelInstruction(statement, buildContext));
     } else if (statement.kind === 'action') {
-      instructions.push(extractAction(statement, buildContext));
+      instructions.push(extractActionInstruction(statement, buildContext));
     } else if (statement.kind === 'assertion') {
       instructions.push(extractAssertionInstruction(statement, buildContext));
     }
@@ -73,7 +73,7 @@ function buildInstructionsFromStatements(
   return instructions;
 }
 
-function extractAction(
+function extractActionInstruction(
   actionStatement: ActionStatement,
   buildContext: BuildContext,
 ): ActionInstruction {
