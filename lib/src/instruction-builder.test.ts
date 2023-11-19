@@ -4,9 +4,10 @@ import { buildInstructions } from './instruction-builder';
 import {
   ActionInstruction,
   AssertionInstruction,
-  BlockActionInstruction,
+  BlockActionInstruction, BuiltInActionInstruction,
   ResolvedAssertion,
 } from './interfaces/instructions.interface';
+import {BuiltinAction} from './builtin-actions';
 
 test('should throw if action target cannot be resolved', () => {
   const context: Context = { pageObjectTree: {}, systemActions: {} };
@@ -155,13 +156,12 @@ test('should build an assertion with quoted text argument', () => {
 
 test('should build instructions with an action block', () => {
   const instructions = buildInstructions(
-    `when I long press on button then it should be visible
+    `when I click twice on button then it should be visible
       done
       
-      In order to long press on button:
-      - I press mouse button on it
-      - I wait 1 second
-      - I release mouse button on it`,
+      In order to click twice on button:
+      - I click on it
+      - I click on it`,
     {
       pageObjectTree: {
         button: 'button',
@@ -170,10 +170,15 @@ test('should build instructions with an action block', () => {
     },
   );
 
-  const action = instructions.when[0] as BlockActionInstruction;
-  expect(action.kind).toEqual('block');
-  expect(action.action).toEqual('long press');
-  expect(action.args).toEqual([]);
-  expect(action.selectors).toEqual(['button']);
-  expect(action.block).toBeTruthy();
+  const firstAction = instructions.when[0] as BuiltInActionInstruction;
+  expect(firstAction.kind).toEqual('builtin');
+  expect(firstAction.action).toEqual('click');
+  expect(firstAction.args).toEqual([]);
+  expect(firstAction.selectors).toEqual(['button']);
+
+  const secondAction = instructions.when[1] as BuiltInActionInstruction;
+  expect(secondAction.kind).toEqual('builtin');
+  expect(secondAction.action).toEqual('click');
+  expect(secondAction.args).toEqual([]);
+  expect(secondAction.selectors).toEqual(['button']);
 });

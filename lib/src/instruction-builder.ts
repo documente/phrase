@@ -8,6 +8,7 @@ import { Context } from './interfaces/context.interface';
 import {
   ActionInstruction,
   AssertionInstruction,
+  BlockActionInstruction,
   Instruction,
   Instructions,
   ResolvedAssertion,
@@ -64,16 +65,40 @@ function buildInstructionsFromStatements(
   const instructions: Instruction[] = [];
 
   statements.forEach((statement) => {
-    if (statement.kind === 'system-level') {
-      instructions.push(extractSystemLevelInstruction(statement, buildContext));
-    } else if (statement.kind === 'action') {
-      instructions.push(extractActionInstruction(statement, buildContext));
-    } else if (statement.kind === 'assertion') {
-      instructions.push(extractAssertionInstruction(statement, buildContext));
-    }
+    const extractedInstructions = extractInstructionsFromStatement(
+      statement,
+      buildContext,
+    );
+    instructions.push(...extractedInstructions);
   });
 
   return instructions;
+}
+
+function extractInstructionsFromStatement(
+  statement: Statement,
+  buildContext: BuildContext,
+): Instruction[] {
+  const kind = statement.kind;
+
+  if (kind === 'system-level') {
+    return [extractSystemLevelInstruction(statement, buildContext)];
+  } else if (kind === 'action') {
+    const actionInstruction = extractActionInstruction(statement, buildContext);
+
+    if (actionInstruction.kind === 'block') {
+      return extractInstructionsFromBlockAction(
+        actionInstruction,
+        buildContext,
+      );
+    } else {
+      return [actionInstruction];
+    }
+  } else if (kind === 'assertion') {
+    return [extractAssertionInstruction(statement, buildContext)];
+  } else {
+    throw new Error(`Unknown statement kind "${kind}"`);
+  }
 }
 
 function extractActionInstruction(
@@ -389,4 +414,19 @@ function extractAssertionInstruction(
     assertion: resolvedAssertion,
     args,
   };
+}
+
+function extractInstructionsFromBlockAction(
+  actionInstruction: BlockActionInstruction,
+  buildContext: BuildContext,
+): Instruction[] {
+  const instructions: Instruction[] = [];
+
+  actionInstruction.block.body.forEach((statement) => {
+    instructions.push(
+      ...extractInstructionsFromStatement(statement, buildContext),
+    );
+  });
+
+  return instructions;
 }
