@@ -77,7 +77,7 @@ export function tokenize(sentence: string): Token[] {
       line++;
       column = 1;
       isAtStartOfLine = true;
-    } else if (char === ':') {
+    } else if (char === ':' && !insideDoubleQuotes) {
       pushToken();
       currentToken += char;
       column++;
