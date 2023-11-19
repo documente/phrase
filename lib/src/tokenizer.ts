@@ -20,26 +20,28 @@ export function tokenize(sentence: string): Token[] {
   };
 
   function pushToken() {
-    if (currentToken !== '') {
-      let kind: Token['kind'] = 'generic';
-
-      if (currentToken === 'done' && isAtStartOfLine) {
-        kind = 'done';
-      } else if (currentToken === '-' && isAtStartOfLine) {
-        kind = 'bullet';
-      } else if (currentToken === ':') {
-        kind = 'colon';
-      }
-
-      tokens.push({
-        kind,
-        value: currentToken,
-        line,
-        column: column - currentToken.length,
-      });
-      currentToken = '';
-      isAtStartOfLine = false;
+    if (currentToken === '') {
+      return;
     }
+
+    let kind: Token['kind'] = 'generic';
+
+    if (currentToken === 'done' && isAtStartOfLine) {
+      kind = 'done';
+    } else if (currentToken === '-' && isAtStartOfLine) {
+      kind = 'bullet';
+    } else if (currentToken === ':') {
+      kind = 'colon';
+    }
+
+    tokens.push({
+      kind,
+      value: currentToken,
+      line,
+      column: column - currentToken.length,
+    });
+    currentToken = '';
+    isAtStartOfLine = false;
   }
 
   for (let i = 0; i < sentence.length; i++) {
