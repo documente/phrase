@@ -108,7 +108,7 @@ function extractInstructionsFromStatement(
 
     if (assertionInstruction.assertion.kind === 'block') {
       return extractInstructionsFromAssertionBlock(
-        assertionInstruction,
+        assertionInstruction.assertion,
         buildContext,
         blockStack,
         assertionInstruction.assertion.location,
@@ -323,10 +323,10 @@ function resolveAssertion(
   const assertionBlock = findAssertionBlock(assertion, buildContext.blocks);
 
   if (assertionBlock) {
-    // TODO: Implement this
     return {
-      kind: 'custom',
-      method: 'TODO',
+      kind: 'block',
+      block: assertionBlock,
+      location: firstToken,
     };
   }
 
