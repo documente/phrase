@@ -28,38 +28,33 @@ export type ActionInstruction =
   | BuiltInActionInstruction
   | BlockActionInstruction;
 
-interface BaseResolvedAssertion {
+interface BaseAssertionInstruction {
   kind: string;
+  target: ResolvedTarget[] | null;
+  selectors: string[] | null;
+  args: string[];
 }
 
-export interface CustomAssertion extends BaseResolvedAssertion {
+export interface CustomAssertion extends BaseAssertionInstruction {
   kind: 'custom-assertion';
   method: string;
 }
 
-export interface BuiltInAssertion extends BaseResolvedAssertion {
+export interface BuiltInAssertion extends BaseAssertionInstruction {
   kind: 'builtin-assertion';
   chainer: string;
 }
 
-export interface BlockAssertion extends BaseResolvedAssertion {
+export interface BlockAssertion extends BaseAssertionInstruction {
   kind: 'block-assertion';
   block: Block;
   location: Token;
 }
 
-export type ResolvedAssertion =
+export type AssertionInstruction =
   | CustomAssertion
   | BuiltInAssertion
   | BlockAssertion;
-
-export interface AssertionInstruction {
-  kind: 'assertion';
-  target: ResolvedTarget[] | null;
-  selectors: string[] | null;
-  assertion: ResolvedAssertion;
-  args: string[];
-}
 
 export interface SystemLevelInstruction {
   kind: 'system-level';

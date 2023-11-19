@@ -12,7 +12,6 @@ import {
   BlockAssertion,
   Instruction,
   Instructions,
-  ResolvedAssertion,
   ResolvedTarget,
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
@@ -95,7 +94,6 @@ function extractInstructionsFromStatement(
         actionInstruction,
         buildContext,
         blockStack,
-        actionInstruction.location,
       );
     } else {
       return [actionInstruction];
@@ -106,12 +104,11 @@ function extractInstructionsFromStatement(
       buildContext,
     );
 
-    if (assertionInstruction.assertion.kind === 'block-assertion') {
+    if (assertionInstruction.kind === 'block-assertion') {
       return extractInstructionsFromAssertionBlock(
-        assertionInstruction.assertion,
+        assertionInstruction,
         buildContext,
         blockStack,
-        assertionInstruction.assertion.location,
       );
     } else {
       return [assertionInstruction];
@@ -314,55 +311,6 @@ function buildSelectors(
   return selectors;
 }
 
-function resolveAssertion(
-  target: ResolvedTarget[] | undefined,
-  assertion: string,
-  buildContext: BuildContext,
-  firstToken: Token,
-): ResolvedAssertion {
-  const assertionBlock = findAssertionBlock(assertion, buildContext.blocks);
-
-  if (assertionBlock) {
-    return {
-      kind: 'block-assertion',
-      block: assertionBlock,
-      location: firstToken,
-    };
-  }
-
-  const builtinAssertion = findBuiltinAssertion(assertion);
-
-  if (builtinAssertion) {
-    return {
-      kind: 'builtin-assertion',
-      chainer: builtinAssertion,
-    };
-  }
-
-  if (target) {
-    const customAssertion = findCustomAssertion(
-      assertion,
-      target,
-      buildContext.testContext.pageObjectTree,
-    );
-
-    if (customAssertion) {
-      return {
-        kind: 'custom-assertion',
-        method: customAssertion,
-      };
-    }
-  }
-
-  throw new Error(
-    prettyPrintError(
-      `Unknown assertion "${assertion}"`,
-      buildContext.input,
-      firstToken,
-    ),
-  );
-}
-
 function findBuiltinAssertion(assertion: string): string | null {
   const isNegated = assertion.startsWith('not ');
 
@@ -457,28 +405,64 @@ function extractAssertionInstruction(
 
   const selectors = resolved?.selectors ?? null;
   const assertionName = statement.assertion.map((a) => a.value).join(' ');
-  const resolvedAssertion = resolveAssertion(
-    resolved?.path,
-    assertionName,
-    buildContext,
-    statement.firstToken,
-  );
   const args = statement.args.map((arg) => unquoted(arg.value));
 
-  return {
-    kind: 'assertion',
-    target: resolved?.path ?? null,
-    selectors,
-    assertion: resolvedAssertion,
-    args,
-  };
+  const assertionBlock = findAssertionBlock(assertionName, buildContext.blocks);
+
+  if (assertionBlock) {
+    return {
+      kind: 'block-assertion',
+      selectors,
+      target: resolved?.path ?? null,
+      block: assertionBlock,
+      location: statement.firstToken,
+      args,
+    };
+  }
+
+  const builtinAssertion = findBuiltinAssertion(assertionName);
+
+  if (builtinAssertion) {
+    return {
+      kind: 'builtin-assertion',
+      chainer: builtinAssertion,
+      selectors,
+      target: resolved?.path ?? null,
+      args,
+    };
+  }
+
+  if (statement.target) {
+    const customAssertion = findCustomAssertion(
+      assertionName,
+      resolved?.path ?? null,
+      buildContext.testContext.pageObjectTree,
+    );
+
+    if (customAssertion) {
+      return {
+        kind: 'custom-assertion',
+        method: customAssertion,
+        selectors,
+        target: resolved?.path ?? null,
+        args,
+      };
+    }
+  }
+
+  throw new Error(
+    prettyPrintError(
+      `Unknown assertion "${assertionName}"`,
+      buildContext.input,
+      statement.firstToken,
+    ),
+  );
 }
 
 function extractInstructionsFromActionBlock(
   actionInstruction: BlockActionInstruction,
   buildContext: BuildContext,
   blockStack: Block[],
-  callLocation: Token,
 ): Instruction[] {
   const instructions: Instruction[] = [];
 
@@ -487,7 +471,7 @@ function extractInstructionsFromActionBlock(
       prettyPrintError(
         `Circular action block detected: "${actionInstruction.action}"`,
         buildContext.input,
-        callLocation,
+        actionInstruction.location,
       ),
     );
   }
@@ -509,7 +493,6 @@ function extractInstructionsFromAssertionBlock(
   blockAssertion: BlockAssertion,
   buildContext: BuildContext,
   blockStack: Block[],
-  callLocation: Token,
 ): Instruction[] {
   const instructions: Instruction[] = [];
 
@@ -520,7 +503,7 @@ function extractInstructionsFromAssertionBlock(
           .map((t) => t.value)
           .join(' ')}"`,
         buildContext.input,
-        callLocation,
+        blockAssertion.location,
       ),
     );
   }

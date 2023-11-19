@@ -6,7 +6,6 @@ import {
   AssertionInstruction,
   BuiltInActionInstruction,
   BuiltInAssertion,
-  ResolvedAssertion,
 } from './interfaces/instructions.interface';
 
 test('should throw if action target cannot be resolved', () => {
@@ -103,7 +102,7 @@ test('should build an assertion', () => {
   );
   expect(instructions.then).toEqual([
     {
-      kind: 'assertion',
+      kind: 'builtin-assertion',
       selectors: ['h1'],
       target: [
         {
@@ -112,12 +111,9 @@ test('should build an assertion', () => {
           key: 'welcomeMessage',
         },
       ],
-      assertion: {
-        kind: 'builtin-assertion',
-        chainer: 'be.visible',
-      } satisfies ResolvedAssertion,
+      chainer: 'be.visible',
       args: [],
-    } satisfies AssertionInstruction,
+    } satisfies BuiltInAssertion,
   ]);
 });
 
@@ -136,7 +132,7 @@ test('should build an assertion with quoted text argument', () => {
   );
   expect(instructions.then).toEqual([
     {
-      kind: 'assertion',
+      kind: 'builtin-assertion',
       selectors: ['h1'],
       target: [
         {
@@ -145,10 +141,7 @@ test('should build an assertion with quoted text argument', () => {
           key: 'welcomeMessage',
         },
       ],
-      assertion: {
-        kind: 'builtin-assertion',
-        chainer: 'have.text',
-      } satisfies ResolvedAssertion,
+      chainer: 'have.text',
       args: ['Hello, World!'],
     } satisfies AssertionInstruction,
   ]);
@@ -250,14 +243,14 @@ test('should build instructions with an assertion block', () => {
   expect(instructions.then).toHaveLength(1);
 
   const assertion = instructions.then[0] as AssertionInstruction;
-  expect(assertion.kind).toEqual('assertion');
+  expect(assertion.kind).toEqual('builtin-assertion');
   expect(assertion.selectors).toEqual(['button']);
   expect(assertion.args).toEqual([]);
   expect(assertion.target).toEqual([
     { arg: undefined, fragments: ['button'], key: 'button' },
   ]);
 
-  const resolvedAssertion = assertion.assertion as BuiltInAssertion;
+  const resolvedAssertion = assertion as BuiltInAssertion;
   expect(resolvedAssertion.kind).toEqual('builtin-assertion');
   expect(resolvedAssertion.chainer).toEqual('be.visible');
 });
