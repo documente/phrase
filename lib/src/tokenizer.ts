@@ -21,7 +21,18 @@ export function tokenize(sentence: string): Token[] {
 
   function pushToken() {
     if (currentToken !== '') {
+      let kind: Token['kind'] = 'generic';
+
+      if (currentToken === 'done' && isAtStartOfLine) {
+        kind = 'done';
+      } else if (currentToken === '-' && isAtStartOfLine) {
+        kind = 'bullet';
+      } else if (currentToken === ':') {
+        kind = 'colon';
+      }
+
       tokens.push({
+        kind,
         value: currentToken,
         line,
         column: column - currentToken.length,
@@ -66,14 +77,11 @@ export function tokenize(sentence: string): Token[] {
       line++;
       column = 1;
       isAtStartOfLine = true;
-    } else if (char === '>' && insideDoubleQuotes) {
-      if (!isAtStartOfLine) {
-        throwError('Unexpected ">"');
-      } else {
-        pushToken();
-        currentToken += char;
-        pushToken();
-      }
+    } else if (char === ':') {
+      pushToken();
+      currentToken += char;
+      column++;
+      pushToken();
     } else {
       currentToken += char;
       column++;

@@ -1,15 +1,17 @@
-import {tokenize} from './tokenizer';
-import {printErrorLineAndContent} from './error';
-import {isQuoted} from './quoted-text';
-import {isArgument} from './arguments';
+import { tokenize } from './tokenizer';
+import { printErrorLineAndContent } from './error';
+import { isQuoted } from './quoted-text';
+import { isArgument } from './arguments';
 import {
+  ActionBlock,
   ActionStatement,
   AssertionStatement,
+  Block,
   ParsedSentence,
   Statement,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
-import {Token} from './interfaces/token.interface';
+import { Token } from './interfaces/token.interface';
 
 export class Parser {
   sentence = '';
@@ -22,6 +24,10 @@ export class Parser {
 
   get currentValue(): string {
     return this.currentToken?.value;
+  }
+
+  get currentKind(): Token['kind'] {
+    return this.currentToken?.kind;
   }
 
   /**
@@ -37,12 +43,18 @@ export class Parser {
       throw new Error('Empty sentence');
     }
 
-    return {
+    const parsedSentence: ParsedSentence = {
       given: this.parseGiven(),
       when: this.parseWhen(),
       then: this.parseThen(),
-      blocks: {},
+      blocks: this.parseBlocks(),
     };
+
+    if (!this.isAtEnd()) {
+      this.error(`Unexpected "${this.currentValue}"`);
+    }
+
+    return parsedSentence;
   }
 
   parseGiven(): Statement[] {
@@ -64,38 +76,93 @@ export class Parser {
     return this.parseStatements();
   }
 
+  parseBlocks(): Block[] {
+    if (this.isAtEnd() || !this.matchesKind('done')) {
+      return [];
+    }
+
+    this.consumeKind('done', 'Expected "done"');
+
+    const blocks: Block[] = [];
+
+    while (!this.isAtEnd()) {
+      const header = this.consumeBlockHeader();
+      const body = this.parseBullets();
+      blocks.push({
+        kind: 'action',
+        header,
+        body,
+      } satisfies ActionBlock);
+
+      if (this.matchesKind('done')) {
+        this.index++;
+      } else {
+        break;
+      }
+    }
+
+    return blocks;
+  }
+
   parseStatements(): Statement[] {
     const statements: Statement[] = [];
 
-    while (!this.isAtEnd() && !this.matches('given', 'when', 'then', '>')) {
-      if (this.matches('I')) {
-        this.index++;
-        statements.push(this.parseActionStatement());
-      } else {
-        statements.push(this.parseAssertionOrSystemStateChangeStatement());
-      }
+    while (
+      !this.isAtEnd() &&
+      !this.matches('given', 'when', 'then') &&
+      !this.matchesKind('bullet', 'done')
+    ) {
+      statements.push(this.parseStatement());
 
-      if (!this.matches('and')) {
-        break;
-      } else {
+      if (this.matches('and') || this.matchesKind('bullet')) {
         this.index++;
+      } else {
+        break;
       }
     }
 
     return statements;
   }
 
+  private parseStatement(): Statement {
+    if (this.matches('I')) {
+      this.index++;
+      return this.parseActionStatement();
+    } else {
+      return this.parseAssertionOrSystemStateChangeStatement();
+    }
+  }
+
   private parseAssertionOrSystemStateChangeStatement():
-      | SystemLevelStatement
-      | AssertionStatement {
+    | SystemLevelStatement
+    | AssertionStatement {
+    let { tokensBeforeShould, tokensAfterShould, foundShould } =
+      this.extractAssertionOrSystemStateChangeTokens();
+
+    if (foundShould) {
+      return this.buildAssertionStatement(
+        tokensAfterShould,
+        tokensBeforeShould,
+      );
+    } else {
+      return this.buildSystemStateChangeStatement(tokensBeforeShould);
+    }
+  }
+
+  private extractAssertionOrSystemStateChangeTokens(): {
+    tokensBeforeShould: Token[];
+    tokensAfterShould: Token[];
+    foundShould: boolean;
+  } {
     const tokensBeforeShould = [];
     const tokensAfterShould = [];
     let foundShould = false;
 
     while (
-        !this.isAtEnd() &&
-        !this.matches('given', 'when', 'then', 'and', '>')
-        ) {
+      !this.isAtEnd() &&
+      !this.matches('given', 'when', 'then', 'and') &&
+      !this.matchesKind('bullet', 'done')
+    ) {
       if (this.matches('should')) {
         foundShould = true;
       } else {
@@ -108,32 +175,38 @@ export class Parser {
 
       this.index++;
     }
+    return { tokensBeforeShould, tokensAfterShould, foundShould };
+  }
 
-    if (foundShould) {
-      const assertion = tokensAfterShould.filter(
-          (token) => !isArgument(token.value),
-      );
-      const args = tokensAfterShould.filter((token) => isArgument(token.value));
-      return {
-        kind: 'assertion',
-        target: tokensBeforeShould,
-        assertion,
-        args,
-        firstToken: tokensAfterShould[0],
-      } satisfies AssertionStatement;
-    } else {
-      const tokens = tokensBeforeShould.filter(
-          (token) => !isArgument(token.value),
-      );
-      const args = tokensBeforeShould.filter((token) =>
-          isArgument(token.value),
-      );
-      return {
-        kind: 'system-level',
-        tokens,
-        args,
-      } satisfies SystemLevelStatement;
-    }
+  private buildSystemStateChangeStatement(
+    tokensBeforeShould: any[],
+  ): SystemLevelStatement {
+    const tokens = tokensBeforeShould.filter(
+      (token) => !isArgument(token.value),
+    );
+    const args = tokensBeforeShould.filter((token) => isArgument(token.value));
+    return {
+      kind: 'system-level',
+      tokens,
+      args,
+    } satisfies SystemLevelStatement;
+  }
+
+  private buildAssertionStatement(
+    tokensAfterShould: any[],
+    tokensBeforeShould: any[],
+  ): AssertionStatement {
+    const assertion = tokensAfterShould.filter(
+      (token) => !isArgument(token.value),
+    );
+    const args = tokensAfterShould.filter((token) => isArgument(token.value));
+    return {
+      kind: 'assertion',
+      target: tokensBeforeShould,
+      assertion,
+      args,
+      firstToken: tokensAfterShould[0],
+    } satisfies AssertionStatement;
   }
 
   private parseActionStatement(): ActionStatement {
@@ -158,10 +231,11 @@ export class Parser {
     const action = [];
 
     while (
-        !this.isAtEnd() &&
-        !this.matches('on', 'then', 'when', 'and') &&
-        !isQuoted(this.currentValue)
-        ) {
+      !this.isAtEnd() &&
+      !this.matches('on', 'then', 'when', 'and') &&
+      !this.matchesKind('bullet', 'done') &&
+      !isQuoted(this.currentValue)
+    ) {
       this.reject(['I'], 'Unexpected "I" in action name');
       action.push(this.currentToken);
       this.index++;
@@ -178,6 +252,10 @@ export class Parser {
     return candidates.includes(this.currentValue);
   }
 
+  matchesKind(...kinds: Token['kind'][]): boolean {
+    return kinds.includes(this.currentKind);
+  }
+
   consumeQuotedArg(): Token[] {
     const args = [];
 
@@ -192,7 +270,11 @@ export class Parser {
   consumeTarget(): Token[] {
     const target = [];
 
-    while (!this.isAtEnd() && !this.matches('when', 'then', 'and', 'should')) {
+    while (
+      !this.isAtEnd() &&
+      !this.matches('when', 'then', 'and', 'should') &&
+      !this.matchesKind('bullet', 'done')
+    ) {
       target.push(this.currentToken);
       this.index++;
     }
@@ -202,6 +284,14 @@ export class Parser {
 
   consume(expectedTokenValue: string, errorMessage: string): void {
     if (this.matches(expectedTokenValue)) {
+      this.index++;
+    } else {
+      this.error(errorMessage);
+    }
+  }
+
+  consumeKind(expectedKind: Token['kind'], errorMessage: string): void {
+    if (this.matchesKind(expectedKind)) {
       this.index++;
     } else {
       this.error(errorMessage);
@@ -232,5 +322,31 @@ export class Parser {
 
   isAtEnd(): boolean {
     return this.index >= this.tokens.length;
+  }
+
+  private consumeBlockHeader(): Token[] {
+    const blockName = [];
+
+    while (!this.isAtEnd() && !this.matchesKind('colon')) {
+      blockName.push(this.currentToken);
+      this.index++;
+    }
+
+    return blockName;
+  }
+
+  parseBullets(): Statement[] {
+    const statements: Statement[] = [];
+
+    while (!this.isAtEnd() && !this.matches('done')) {
+      if (this.matchesKind('bullet')) {
+        this.index++;
+        statements.push(this.parseStatement());
+      } else {
+        this.index++;
+      }
+    }
+
+    return statements;
   }
 }

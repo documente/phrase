@@ -5,6 +5,7 @@ import {
   AssertionStatement,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
+import { tokenize } from './tokenizer';
 
 test('should throw if parsing an empty sentence', () => {
   const parser = new Parser();
@@ -31,6 +32,7 @@ test('should parse a sentence with an action without target and without args', (
       target: [],
       action: [
         {
+          kind: 'generic',
           column: 8,
           line: 1,
           value: 'click',
@@ -51,6 +53,7 @@ test('should parse a sentence with an action with a target and without args', ()
       kind: 'action',
       target: [
         {
+          kind: 'generic',
           column: 17,
           line: 1,
           value: 'button',
@@ -58,6 +61,7 @@ test('should parse a sentence with an action with a target and without args', ()
       ],
       action: [
         {
+          kind: 'generic',
           column: 8,
           line: 1,
           value: 'click',
@@ -79,6 +83,7 @@ test('should parse a sentence with an action with a target and with args', () =>
       kind: 'action',
       target: [
         {
+          kind: 'generic',
           column: 22,
           line: 1,
           value: 'input',
@@ -86,6 +91,7 @@ test('should parse a sentence with an action with a target and with args', () =>
       ],
       action: [
         {
+          kind: 'generic',
           column: 8,
           line: 1,
           value: 'type',
@@ -93,6 +99,7 @@ test('should parse a sentence with an action with a target and with args', () =>
       ],
       args: [
         {
+          kind: 'generic',
           column: 12,
           line: 1,
           value: '"foo"',
@@ -276,4 +283,45 @@ test('should parse a sentence with a user action and a system state change in a 
   expect(
     (sentence.given[1] as SystemLevelStatement).args.map((a) => a.value),
   ).toEqual(['"ready"']);
+});
+
+test('should parse a sentence with an action block', () => {
+  const tokens = tokenize(`
+    when I long press on button
+    then it should be red
+    done
+
+    In order to long press on it:
+    - I press mouse button on it
+    - I wait 1 second
+    - I release mouse button on it
+    done
+  `);
+  const parser = new Parser();
+  const sentence = parser.parse(`
+    when I long press on button
+    then it should be red
+    done
+
+    In order to long press on it:
+    - I press mouse button on it
+    - I wait 1 second
+    - I release mouse button on it
+    done
+  `);
+
+  expect(sentence.then.length).toEqual(1);
+
+  expect(sentence.blocks.length).toEqual(1);
+  expect(sentence.blocks[0].kind).toEqual('action');
+  expect(sentence.blocks[0].header.map((a) => a.value)).toEqual([
+    'In',
+    'order',
+    'to',
+    'long',
+    'press',
+    'on',
+    'it',
+  ]);
+  expect(sentence.blocks[0].body.length).toEqual(3);
 });

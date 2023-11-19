@@ -4,7 +4,7 @@ export interface ActionStatement {
   kind: 'action';
   target: Token[];
   action: Token[];
-  args: any[];
+  args: Token[];
 }
 
 export interface AssertionStatement {
@@ -26,11 +26,21 @@ export type Statement =
   | AssertionStatement
   | SystemLevelStatement;
 
+interface BaseBlock {
+  kind: string;
+  header: Token[];
+  body: Statement[];
+}
+
+export interface ActionBlock extends BaseBlock {
+  kind: 'action';
+}
+
+export type Block = ActionBlock;
+
 export interface ParsedSentence {
   given: Statement[];
   when: Statement[];
   then: Statement[];
-  blocks: {
-    [key: string]: Statement[];
-  };
+  blocks: Block[];
 }
