@@ -1,15 +1,30 @@
+import { Block } from './statements.interface';
+
 export interface ResolvedTarget {
   fragments: string[];
   key: string;
   arg?: string;
 }
 
-export interface ActionInstruction {
-  kind: 'action';
-  target: string[] | null;
+interface BaseActionInstruction {
+  kind: string;
+  selectors: string[] | null;
   action: string;
   args: string[];
 }
+
+export interface BuiltInActionInstruction extends BaseActionInstruction {
+  kind: 'builtin';
+}
+
+export interface BlockActionInstruction extends BaseActionInstruction {
+  kind: 'block';
+  block: Block;
+}
+
+export type ActionInstruction =
+  | BuiltInActionInstruction
+  | BlockActionInstruction;
 
 interface BaseResolvedAssertion {
   kind: string;

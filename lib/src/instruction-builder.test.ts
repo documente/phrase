@@ -4,6 +4,7 @@ import { buildInstructions } from './instruction-builder';
 import {
   ActionInstruction,
   AssertionInstruction,
+  BlockActionInstruction,
   ResolvedAssertion,
 } from './interfaces/instructions.interface';
 
@@ -53,8 +54,8 @@ test('should build an action without arguments', () => {
   );
   expect(instructions.when).toEqual([
     {
-      kind: 'action',
-      target: ['form', 'button'],
+      kind: 'builtin',
+      selectors: ['form', 'button'],
       action: 'click',
       args: [],
     } satisfies ActionInstruction,
@@ -78,8 +79,8 @@ test('should build an action with arguments', () => {
   );
   expect(instructions.when).toEqual([
     {
-      kind: 'action',
-      target: ['form', 'button'],
+      kind: 'builtin',
+      selectors: ['form', 'button'],
       action: 'type',
       args: ['foo'],
     } satisfies ActionInstruction,
@@ -150,4 +151,29 @@ test('should build an assertion with quoted text argument', () => {
       args: ['Hello, World!'],
     } satisfies AssertionInstruction,
   ]);
+});
+
+test('should build instructions with an action block', () => {
+  const instructions = buildInstructions(
+    `when I long press on button then it should be visible
+      done
+      
+      In order to long press on button:
+      - I press mouse button on it
+      - I wait 1 second
+      - I release mouse button on it`,
+    {
+      pageObjectTree: {
+        button: 'button',
+      },
+      systemActions: {},
+    },
+  );
+
+  const action = instructions.when[0] as BlockActionInstruction;
+  expect(action.kind).toEqual('block');
+  expect(action.action).toEqual('long press');
+  expect(action.args).toEqual([]);
+  expect(action.selectors).toEqual(['button']);
+  expect(action.block).toBeTruthy();
 });

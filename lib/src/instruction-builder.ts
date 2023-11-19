@@ -18,6 +18,7 @@ import { Parser } from './parser';
 import {
   ActionStatement,
   AssertionStatement,
+  Block,
   ParsedSentence,
   Statement,
   SystemLevelStatement,
@@ -31,6 +32,7 @@ import { Token } from './interfaces/token.interface';
 interface BuildContext {
   previousPath: ResolvedTarget[];
   testContext: Context;
+  blocks: Block[];
   input: string;
 }
 
@@ -39,18 +41,19 @@ export function buildInstructions(
   context: Context,
 ): Instructions {
   const parser = new Parser();
-  const sentenceTree: ParsedSentence = parser.parse(input);
+  const parsedSentence: ParsedSentence = parser.parse(input);
 
   const buildContext: BuildContext = {
     previousPath: [],
     testContext: context,
+    blocks: parsedSentence.blocks,
     input,
   };
 
   return {
-    given: buildInstructionsFromStatements(sentenceTree.given, buildContext),
-    when: buildInstructionsFromStatements(sentenceTree.when, buildContext),
-    then: buildInstructionsFromStatements(sentenceTree.then, buildContext),
+    given: buildInstructionsFromStatements(parsedSentence.given, buildContext),
+    when: buildInstructionsFromStatements(parsedSentence.when, buildContext),
+    then: buildInstructionsFromStatements(parsedSentence.then, buildContext),
   };
 }
 
@@ -78,34 +81,63 @@ function extractActionInstruction(
   buildContext: BuildContext,
 ): ActionInstruction {
   const resolved = extractTargetSelector(actionStatement.target, buildContext);
-  const target = resolved?.selectors ?? null;
+  const args = actionStatement.args.map((arg) => unquoted(arg.value));
+
+  const selectors = resolved?.selectors ?? null;
   if (resolved?.path) {
     buildContext.previousPath = resolved.path;
   }
-  const actionName = extractActionName(actionStatement, buildContext.input);
-  const args = actionStatement.args.map((arg) => unquoted(arg.value));
 
-  return {
-    kind: 'action',
-    target,
-    action: actionName,
-    args,
-  };
+  const actionName = actionStatement.action.map((a) => a.value).join(' ');
+
+  const block = findActionBlock(actionName, buildContext.blocks);
+
+  if (block) {
+    return {
+      kind: 'block',
+      selectors,
+      action: actionName,
+      args,
+      block,
+    };
+  }
+
+  if (isBuiltinAction(actionName)) {
+    return {
+      kind: 'builtin',
+      selectors,
+      action: actionName,
+      args,
+    };
+  }
+
+  throw new Error(
+    prettyPrintError(
+      `Unknown action "${actionName}"`,
+      buildContext.input,
+      actionStatement.action[0],
+    ),
+  );
 }
 
-function extractActionName(action: ActionStatement, input: string) {
-  const actionName = action.action.map((a) => a.value).join(' ');
+function findActionBlock(actionName: string, blocks: Block[]): Block | null {
+  for (const block of blocks) {
+    if (block.kind === 'action') {
+      const blockActionName = block.header
+        .map((a) => a.value)
+        .join(' ')
+        .toLowerCase()
+        .replace('in order to ', '')
+        .split(' on ')[0]
+        .trim();
 
-  if (!isBuiltinAction(actionName)) {
-    throw new Error(
-      prettyPrintError(
-        `Unknown action "${actionName}"`,
-        input,
-        action.action[0],
-      ),
-    );
+      if (blockActionName === actionName) {
+        return block;
+      }
+    }
   }
-  return actionName;
+
+  return null;
 }
 
 interface TargetSelector {
