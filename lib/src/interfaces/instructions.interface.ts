@@ -15,11 +15,11 @@ interface BaseActionInstruction {
 }
 
 export interface BuiltInActionInstruction extends BaseActionInstruction {
-  kind: 'builtin';
+  kind: 'builtin-action';
 }
 
 export interface BlockActionInstruction extends BaseActionInstruction {
-  kind: 'block';
+  kind: 'block-action';
   block: Block;
   location: Token;
 }
@@ -33,17 +33,17 @@ interface BaseResolvedAssertion {
 }
 
 export interface CustomAssertion extends BaseResolvedAssertion {
-  kind: 'custom';
+  kind: 'custom-assertion';
   method: string;
 }
 
 export interface BuiltInAssertion extends BaseResolvedAssertion {
-  kind: 'builtin';
+  kind: 'builtin-assertion';
   chainer: string;
 }
 
 export interface BlockAssertion extends BaseResolvedAssertion {
-  kind: 'block';
+  kind: 'block-assertion';
   block: Block;
   location: Token;
 }

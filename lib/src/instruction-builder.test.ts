@@ -55,7 +55,7 @@ test('should build an action without arguments', () => {
   );
   expect(instructions.when).toEqual([
     {
-      kind: 'builtin',
+      kind: 'builtin-action',
       selectors: ['form', 'button'],
       action: 'click',
       args: [],
@@ -80,7 +80,7 @@ test('should build an action with arguments', () => {
   );
   expect(instructions.when).toEqual([
     {
-      kind: 'builtin',
+      kind: 'builtin-action',
       selectors: ['form', 'button'],
       action: 'type',
       args: ['foo'],
@@ -113,7 +113,7 @@ test('should build an assertion', () => {
         },
       ],
       assertion: {
-        kind: 'builtin',
+        kind: 'builtin-assertion',
         chainer: 'be.visible',
       } satisfies ResolvedAssertion,
       args: [],
@@ -146,7 +146,7 @@ test('should build an assertion with quoted text argument', () => {
         },
       ],
       assertion: {
-        kind: 'builtin',
+        kind: 'builtin-assertion',
         chainer: 'have.text',
       } satisfies ResolvedAssertion,
       args: ['Hello, World!'],
@@ -173,13 +173,13 @@ test('should build instructions with an action block', () => {
   expect(instructions.when).toHaveLength(2);
 
   const firstAction = instructions.when[0] as BuiltInActionInstruction;
-  expect(firstAction.kind).toEqual('builtin');
+  expect(firstAction.kind).toEqual('builtin-action');
   expect(firstAction.action).toEqual('click');
   expect(firstAction.args).toEqual([]);
   expect(firstAction.selectors).toEqual(['button']);
 
   const secondAction = instructions.when[1] as BuiltInActionInstruction;
-  expect(secondAction.kind).toEqual('builtin');
+  expect(secondAction.kind).toEqual('builtin-action');
   expect(secondAction.action).toEqual('click');
   expect(secondAction.args).toEqual([]);
   expect(secondAction.selectors).toEqual(['button']);
@@ -258,6 +258,6 @@ test('should build instructions with an assertion block', () => {
   ]);
 
   const resolvedAssertion = assertion.assertion as BuiltInAssertion;
-  expect(resolvedAssertion.kind).toEqual('builtin');
+  expect(resolvedAssertion.kind).toEqual('builtin-assertion');
   expect(resolvedAssertion.chainer).toEqual('be.visible');
 });

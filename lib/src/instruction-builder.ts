@@ -90,7 +90,7 @@ function extractInstructionsFromStatement(
   } else if (kind === 'action') {
     const actionInstruction = extractActionInstruction(statement, buildContext);
 
-    if (actionInstruction.kind === 'block') {
+    if (actionInstruction.kind === 'block-action') {
       return extractInstructionsFromActionBlock(
         actionInstruction,
         buildContext,
@@ -106,7 +106,7 @@ function extractInstructionsFromStatement(
       buildContext,
     );
 
-    if (assertionInstruction.assertion.kind === 'block') {
+    if (assertionInstruction.assertion.kind === 'block-assertion') {
       return extractInstructionsFromAssertionBlock(
         assertionInstruction.assertion,
         buildContext,
@@ -139,7 +139,7 @@ function extractActionInstruction(
 
   if (block) {
     return {
-      kind: 'block',
+      kind: 'block-action',
       selectors,
       action: actionName,
       args,
@@ -150,7 +150,7 @@ function extractActionInstruction(
 
   if (isBuiltinAction(actionName)) {
     return {
-      kind: 'builtin',
+      kind: 'builtin-action',
       selectors,
       action: actionName,
       args,
@@ -324,7 +324,7 @@ function resolveAssertion(
 
   if (assertionBlock) {
     return {
-      kind: 'block',
+      kind: 'block-assertion',
       block: assertionBlock,
       location: firstToken,
     };
@@ -334,7 +334,7 @@ function resolveAssertion(
 
   if (builtinAssertion) {
     return {
-      kind: 'builtin',
+      kind: 'builtin-assertion',
       chainer: builtinAssertion,
     };
   }
@@ -348,7 +348,7 @@ function resolveAssertion(
 
     if (customAssertion) {
       return {
-        kind: 'custom',
+        kind: 'custom-assertion',
         method: customAssertion,
       };
     }

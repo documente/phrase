@@ -1,6 +1,6 @@
 import {
-  ActionInstruction,
   AssertionInstruction,
+  BuiltInActionInstruction,
   BuiltInAssertion,
   CustomAssertion,
   Instruction,
@@ -32,7 +32,7 @@ export function withContext(context: Context): TestFunction {
   function runInstruction(instruction: Instruction): void {
     if (instruction.kind === 'system-level') {
       runSystemLevel(instruction, context);
-    } else if (instruction.kind === 'action') {
+    } else if (instruction.kind === 'builtin-action') {
       runAction(instruction);
     } else if (instruction.kind === 'assertion') {
       runAssertion(instruction, tree);
@@ -70,18 +70,18 @@ function targetIsDefined(
   return true;
 }
 
-function runAction(actionInstruction: ActionInstruction): void {
-  const { target, action, args } = actionInstruction;
+function runAction(actionInstruction: BuiltInActionInstruction): void {
+  const { selectors, action, args } = actionInstruction;
 
   switch (action) {
     case 'type':
-      if (targetIsDefined(target, action)) {
-        cy.get(target.join(' ')).type(args[0]);
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).type(args[0]);
       }
       break;
     case 'click':
-      if (targetIsDefined(target, action)) {
-        cy.get(target.join(' ')).click();
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).click();
       }
       break;
     case 'visit':
@@ -98,24 +98,26 @@ function runAssertion(
 ): void {
   const { target, assertion, args, selectors } = assertionInstruction;
 
-  if (assertion.kind === 'block') {
-    throw new Error('Block assertions are not supported yet.');
+  if (assertion.kind === 'block-assertion') {
+    throw new Error('Block assertions cannot be executed.');
   }
 
-  if (assertion.kind === 'builtin') {
+  if (assertion.kind === 'builtin-assertion') {
     runKnownAssertion(assertion, selectors, args);
     return;
   }
 
-  const customAssertion = findCustomAssertion(assertion, target, tree);
+  if (assertion.kind === 'custom-assertion') {
+    const customAssertion = findCustomAssertion(assertion, target, tree);
 
-  if (customAssertion) {
-    if (!selectors) {
-      throw new Error('Target selectors are required for custom assertions.');
+    if (customAssertion) {
+      if (!selectors) {
+        throw new Error('Target selectors are required for custom assertions.');
+      }
+
+      customAssertion(cy.get(selectors.join(' ')), ...args);
+      return;
     }
-
-    customAssertion(cy.get(selectors.join(' ')), ...args);
-    return;
   }
 
   throw new Error(`Unknown assertion: ${assertion}`);
