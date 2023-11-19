@@ -59,13 +59,13 @@ export function tokenize(sentence: string): Token[] {
       isAtStartOfLine = true;
     } else if (char === '"') {
       currentToken += char;
+      column++;
 
       if (insideDoubleQuotes) {
         pushToken();
       }
 
       insideDoubleQuotes = !insideDoubleQuotes;
-      column++;
     } else if (char === '/' && sentence[i + 1] === '/' && !insideDoubleQuotes) {
       pushToken();
       i = sentence.indexOf('\n', i);
@@ -77,6 +77,12 @@ export function tokenize(sentence: string): Token[] {
       line++;
       column = 1;
       isAtStartOfLine = true;
+    } else if (char === '\\') {
+      currentToken += char;
+      column++;
+      i++;
+      currentToken += sentence[i];
+      column++;
     } else if (char === ':' && !insideDoubleQuotes) {
       pushToken();
       currentToken += char;

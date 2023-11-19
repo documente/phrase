@@ -99,7 +99,7 @@ test('should parse a sentence with an action with a target and with args', () =>
       args: [
         {
           kind: 'generic',
-          column: 12,
+          column: 13,
           line: 1,
           value: '"foo"',
         },

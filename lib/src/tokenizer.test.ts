@@ -69,7 +69,7 @@ test('should tokenize a sentence with quoted text', () => {
       kind: 'generic',
       value: '"Hello, World!"',
       line: 1,
-      column: 11,
+      column: 12,
     } satisfies Token,
   ]);
 });
@@ -216,4 +216,21 @@ test('should throw an error when a quoted text is not closed', () => {
 
 test('should throw an error when a quoted text is not closed at the end of the sentence', () => {
   expect(() => tokenize('foo "bar')).toThrow('Missing closing "');
+});
+
+test('should escape a double quote inside a quoted text', () => {
+  expect(tokenize('foo "bar \\" baz"')).toEqual([
+    {
+      kind: 'generic',
+      value: 'foo',
+      line: 1,
+      column: 1,
+    } satisfies Token,
+    {
+      kind: 'generic',
+      value: '"bar \\" baz"',
+      line: 1,
+      column: 5,
+    } satisfies Token,
+  ]);
 });
