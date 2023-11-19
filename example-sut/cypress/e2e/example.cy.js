@@ -65,25 +65,40 @@ describe('example spec', () => {
 
   it('should add a task', () => {
     test `given task list is empty
-            and I visit "${baseUrl}"
-            and I type "${username}" on login form login field
-            and I type "${password}" on password field
-            and I click on login form confirm button
+            and I login
            when I type "Buy milk" on new task title field
             and I click on add task button
            then task with text "Buy milk" should exist
-            and task list should have 1 task`;
+            and task list should have 1 task
+           done
+           
+           In order to login:
+            - I visit "${baseUrl}"
+            - I type "${username}" on login form login field
+            - I type "${password}" on password field
+            - I click on login form confirm button
+           done
+           `;
   });
 
   it('should remove a task', () => {
     test `given task list is empty
-            and I visit "${baseUrl}"
-            and I type "${username}" on login form login field
-            and I type "${password}" on password field
-            and I click on login form confirm button
-            and I type "Buy milk" on new task title field
-            and I click on add task button
+            and I login
+            and I add a task with title "Buy milk"
            when I click on task with text "Buy milk" delete button
-           then task list should have 0 task`;
+           then task list should have 0 task
+           done
+           
+           In order to login:
+            - I visit "${baseUrl}"
+            - I type "${username}" on login form login field
+            - I type "${password}" on password field
+            - I click on login form confirm button
+           done
+           
+           In order to add a task with title {{title}}:
+            - I type "{{title}}" on new task title field
+            - I click on add task button
+           done`;
   });
 })

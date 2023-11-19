@@ -20,6 +20,7 @@ export interface BuiltInActionInstruction extends BaseActionInstruction {
 
 export interface BlockActionInstruction extends BaseActionInstruction {
   kind: 'block-action';
+  namedArguments: Record<string, string>;
   block: Block;
   location: Token;
 }
@@ -49,6 +50,7 @@ export interface BlockAssertion extends BaseAssertionInstruction {
   kind: 'block-assertion';
   block: Block;
   location: Token;
+  namedArguments: Record<string, string>;
 }
 
 export type AssertionInstruction =

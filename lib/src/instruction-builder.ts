@@ -27,6 +27,11 @@ import {
   Selector,
 } from './interfaces/page-object-tree.interface';
 import { Token } from './interfaces/token.interface';
+import {
+  interpolate,
+  isNamedArgument,
+  withoutMoustaches,
+} from './named-arguments';
 
 interface BuildContext {
   previousPath: ResolvedTarget[];
@@ -68,6 +73,7 @@ function buildInstructionsFromStatements(
       statement,
       buildContext,
       blockStack,
+      {},
     );
     instructions.push(...extractedInstructions);
   });
@@ -79,13 +85,18 @@ function extractInstructionsFromStatement(
   statement: Statement,
   buildContext: BuildContext,
   blockStack: Block[],
+  namedArguments: Record<string, string>,
 ): Instruction[] {
   const kind = statement.kind;
 
   if (kind === 'system-level') {
     return [extractSystemLevelInstruction(statement, buildContext)];
   } else if (kind === 'action') {
-    const actionInstruction = extractActionInstruction(statement, buildContext);
+    const actionInstruction = extractActionInstruction(
+      statement,
+      buildContext,
+      namedArguments,
+    );
 
     if (actionInstruction.kind === 'block-action') {
       return extractInstructionsFromBlock(
@@ -119,9 +130,12 @@ function extractInstructionsFromStatement(
 function extractActionInstruction(
   actionStatement: ActionStatement,
   buildContext: BuildContext,
+  namedArguments: Record<string, string>,
 ): ActionInstruction {
   const resolved = extractTargetSelector(actionStatement.target, buildContext);
-  const args = actionStatement.args.map((arg) => unquoted(arg.value));
+  const args = actionStatement.args
+    .map((arg) => unquoted(arg.value))
+    .map((arg) => interpolate(arg, namedArguments));
 
   const selectors = resolved?.selectors ?? null;
   if (resolved?.path) {
@@ -133,12 +147,24 @@ function extractActionInstruction(
   const block = findActionBlock(actionName, buildContext.blocks);
 
   if (block) {
+    const namedArguments: Record<string, string> = block.header
+      .filter((a) => isNamedArgument(a.value))
+      .map((a) => withoutMoustaches(a.value))
+      .reduce(
+        (acc, curr, index) => {
+          acc[curr] = args[index];
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+
     return {
       kind: 'block-action',
       selectors,
       action: actionName,
       args,
       block,
+      namedArguments,
       location: actionStatement.action[0],
     };
   }
@@ -165,6 +191,7 @@ function findActionBlock(actionName: string, blocks: Block[]): Block | null {
   for (const block of blocks) {
     if (block.kind === 'action-block') {
       const blockActionName = block.header
+        .filter((a) => !isNamedArgument(a.value))
         .map((a) => a.value)
         .join(' ')
         .toLowerCase()
@@ -187,6 +214,7 @@ function findAssertionBlock(
   for (const block of blocks) {
     if (block.kind === 'assertion-block') {
       const blockActionName = block.header
+        .filter((a) => !a.value.startsWith('$'))
         .map((a) => a.value)
         .join(' ')
         .toLowerCase()
@@ -415,6 +443,7 @@ function extractAssertionInstruction(
       block: assertionBlock,
       location: statement.firstToken,
       args,
+      namedArguments: {}, // TODO
     };
   }
 
@@ -460,6 +489,7 @@ function extractAssertionInstruction(
 interface BlockHolder {
   block: Block;
   location: Token;
+  namedArguments: Record<string, string>;
 }
 
 function extractInstructionsFromBlock(
@@ -484,10 +514,12 @@ function extractInstructionsFromBlock(
 
   block.body.forEach((statement) => {
     instructions.push(
-      ...extractInstructionsFromStatement(statement, buildContext, [
-        ...blockStack,
-        block,
-      ]),
+      ...extractInstructionsFromStatement(
+        statement,
+        buildContext,
+        [...blockStack, block],
+        blockHolder.namedArguments,
+      ),
     );
   });
 

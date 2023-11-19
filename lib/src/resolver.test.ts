@@ -288,7 +288,7 @@ test('resolve should throw if using its without previous path', () => {
   const tree = {
     welcomeMessage: { foo: {} },
   };
-  expect(() =>
-    resolve(tree, ['its', 'foo'], []),
-  ).toThrow('Cannot use "its" without a previous path');
+  expect(() => resolve(tree, ['its', 'foo'], [])).toThrow(
+    'Cannot use "its" without a previous path',
+  );
 });

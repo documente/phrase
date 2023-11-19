@@ -9,9 +9,7 @@ export function resolve(
   previous: ResolvedTarget[],
 ): ResolvedTarget[] | undefined {
   if (pathSegments[0] === 'its' && pathSegments.length === 1) {
-    throw new Error(
-        `Expected child path after "its" but got nothing.`,
-    );
+    throw new Error(`Expected child path after "its" but got nothing.`);
   }
 
   if (pathSegments[0] === 'its' && previous.length === 0) {
@@ -26,11 +24,15 @@ export function resolve(
 
     if (!previousNode) {
       throw new Error(
-        `Could not find node at path ${previous.map((p) => p.fragments).flat().join(' ')}`,
+        `Could not find node at path ${previous
+          .map((p) => p.fragments)
+          .flat()
+          .join(' ')}`,
       );
     }
 
-    const pathSegmentsWithoutIts = pathSegments[0] === 'its' ? pathSegments.slice(1) : pathSegments;
+    const pathSegmentsWithoutIts =
+      pathSegments[0] === 'its' ? pathSegments.slice(1) : pathSegments;
 
     const match = resolvePathRecursively(previousNode, pathSegmentsWithoutIts);
 
@@ -40,8 +42,11 @@ export function resolve(
   }
 
   if (pathSegments[0] === 'its') {
-    const fullPath = [...previous.map(p => p.fragments).flat(), ...pathSegments.slice(1)];
-    throw new Error(`Cannot find child node at path ${fullPath.join(' ')}`)
+    const fullPath = [
+      ...previous.map((p) => p.fragments).flat(),
+      ...pathSegments.slice(1),
+    ];
+    throw new Error(`Cannot find child node at path ${fullPath.join(' ')}`);
   }
 
   if (previous?.length > 1 && pathSegments[0] !== 'its') {
