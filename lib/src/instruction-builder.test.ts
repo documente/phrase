@@ -4,10 +4,11 @@ import { buildInstructions } from './instruction-builder';
 import {
   ActionInstruction,
   AssertionInstruction,
-  BlockActionInstruction, BuiltInActionInstruction,
+  BlockActionInstruction,
+  BuiltInActionInstruction,
   ResolvedAssertion,
 } from './interfaces/instructions.interface';
-import {BuiltinAction} from './builtin-actions';
+import { BuiltinAction } from './builtin-actions';
 
 test('should throw if action target cannot be resolved', () => {
   const context: Context = { pageObjectTree: {}, systemActions: {} };
@@ -181,4 +182,51 @@ test('should build instructions with an action block', () => {
   expect(secondAction.action).toEqual('click');
   expect(secondAction.args).toEqual([]);
   expect(secondAction.selectors).toEqual(['button']);
+});
+
+test('should reject circular action blocks', () => {
+  expect(() =>
+    buildInstructions(
+      `when I click twice on button then it should be visible
+      done
+      
+      In order to click twice on button:
+      - I click twice on button`,
+      {
+        pageObjectTree: {
+          button: 'button',
+        },
+        systemActions: {},
+      },
+    ),
+  ).toThrow(`Circular action block detected: "click twice"
+Line 5, column 11:
+      - I click twice on button
+          ^`);
+});
+
+test('should reject nested circular action blocks', () => {
+  expect(() =>
+    buildInstructions(
+      `when I click twice on button then it should be visible
+      done
+      
+      In order to click twice on button:
+      - I foobar on button
+      done
+      
+      In order to foobar on button:
+      - I click twice on button
+      done`,
+      {
+        pageObjectTree: {
+          button: 'button',
+        },
+        systemActions: {},
+      },
+    ),
+  ).toThrow(`Circular action block detected: "click twice"
+Line 9, column 11:
+      - I click twice on button
+          ^`);
 });

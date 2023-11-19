@@ -61,6 +61,7 @@ export function buildInstructions(
 function buildInstructionsFromStatements(
   statements: Statement[],
   buildContext: BuildContext,
+  blockStack: Block[] = [],
 ): Instruction[] {
   const instructions: Instruction[] = [];
 
@@ -68,6 +69,7 @@ function buildInstructionsFromStatements(
     const extractedInstructions = extractInstructionsFromStatement(
       statement,
       buildContext,
+      blockStack,
     );
     instructions.push(...extractedInstructions);
   });
@@ -78,6 +80,7 @@ function buildInstructionsFromStatements(
 function extractInstructionsFromStatement(
   statement: Statement,
   buildContext: BuildContext,
+  blockStack: Block[],
 ): Instruction[] {
   const kind = statement.kind;
 
@@ -90,6 +93,8 @@ function extractInstructionsFromStatement(
       return extractInstructionsFromBlockAction(
         actionInstruction,
         buildContext,
+        blockStack,
+        actionInstruction.location,
       );
     } else {
       return [actionInstruction];
@@ -124,6 +129,7 @@ function extractActionInstruction(
       action: actionName,
       args,
       block,
+      location: actionStatement.action[0],
     };
   }
 
@@ -419,12 +425,27 @@ function extractAssertionInstruction(
 function extractInstructionsFromBlockAction(
   actionInstruction: BlockActionInstruction,
   buildContext: BuildContext,
+  blockStack: Block[],
+  callLocation: Token,
 ): Instruction[] {
   const instructions: Instruction[] = [];
 
+  if (blockStack.includes(actionInstruction.block)) {
+    throw new Error(
+      prettyPrintError(
+        `Circular action block detected: "${actionInstruction.action}"`,
+        buildContext.input,
+        callLocation,
+      ),
+    );
+  }
+
   actionInstruction.block.body.forEach((statement) => {
     instructions.push(
-      ...extractInstructionsFromStatement(statement, buildContext),
+      ...extractInstructionsFromStatement(statement, buildContext, [
+        ...blockStack,
+        actionInstruction.block,
+      ]),
     );
   });
 

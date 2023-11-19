@@ -1,4 +1,5 @@
 import { Block } from './statements.interface';
+import { Token } from './token.interface';
 
 export interface ResolvedTarget {
   fragments: string[];
@@ -20,6 +21,7 @@ export interface BuiltInActionInstruction extends BaseActionInstruction {
 export interface BlockActionInstruction extends BaseActionInstruction {
   kind: 'block';
   block: Block;
+  location: Token;
 }
 
 export type ActionInstruction =
