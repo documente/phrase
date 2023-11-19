@@ -118,3 +118,32 @@ test('should throw if pageObjectTree contains invalid selector', () => {
     'Page object node selector must be either a string or a function at path form._selector',
   );
 });
+
+test('should throw if pageObjectTree contains empty string node', () => {
+  const context: Context = {
+    systemActions: {},
+    pageObjectTree: {
+      form: '',
+    },
+  };
+
+  expect(() => validateContext(context)).toThrow(
+    'Page object node must not be empty string at path form',
+  );
+});
+
+test('should throw if pageObjectTree contains empty string selector', () => {
+  const context: Context = {
+    systemActions: {},
+    pageObjectTree: {
+      form: {
+        _selector: '',
+        button: 'button',
+      },
+    },
+  };
+
+  expect(() => validateContext(context)).toThrow(
+    'Page object node selector must not be empty string at path form._selector',
+  );
+});
