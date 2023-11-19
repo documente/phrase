@@ -3,8 +3,14 @@ import {javascript} from "@codemirror/lang-javascript"
 import {buildInstructions} from "../../lib/src/instruction-builder";
 import {validateContext} from "../../lib/src/context-validation";
 
+const localStorageContextKey = 'playground-context';
+const savedContext = localStorage.getItem(localStorageContextKey);
+
+const localStorageTestKey = 'playground-test';
+const savedTest = localStorage.getItem(localStorageTestKey);
+
 const contextEditor = new EditorView({
-  doc: `{
+  doc: savedContext ?? `{
   systemActions: {
     databaseIsSeededWithDefaultData() {/* ... */},
   },
@@ -25,7 +31,7 @@ const contextEditor = new EditorView({
 });
 
 const testEditor = new EditorView({
-  doc: `given database is seeded with default data
+  doc: savedTest ?? `given database is seeded with default data
 when I click on welcome page greet button
 then welcome message should be visible
 and it should have text "Hello, World!"
@@ -41,6 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.querySelector('#run-button')?.addEventListener('click', () => {
     const context = contextEditor.state.doc.toString();
     const test = testEditor.state.doc.toString();
+
+    localStorage.setItem(localStorageContextKey, context);
+    localStorage.setItem(localStorageTestKey, test);
 
     try {
       const contextValue = new Function(`return ${context}`)();
