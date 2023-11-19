@@ -14,12 +14,16 @@ export function resolve(
       previous.map((p) => p.key),
     );
 
-    if (previousNode) {
-      const match = resolvePathRecursively(previousNode, pathSegments);
+    if (!previousNode) {
+      throw new Error(
+          `Could not find node at path ${previous.map((p) => p.key).join('.')}`,
+      );
+    }
 
-      if (match) {
-        return [...previous, ...match];
-      }
+    const match = resolvePathRecursively(previousNode, pathSegments);
+
+    if (match) {
+      return [...previous, ...match];
     }
   }
 
@@ -30,12 +34,10 @@ export function resolve(
       pathToParent.map((p) => p.key),
     );
 
-    if (parentNode) {
-      const match = resolvePathRecursively(parentNode, pathSegments);
+    const match = resolvePathRecursively(parentNode, pathSegments);
 
-      if (match) {
-        return [...pathToParent, ...match];
-      }
+    if (match) {
+      return [...pathToParent, ...match];
     }
   }
 
