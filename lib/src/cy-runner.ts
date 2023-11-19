@@ -1,10 +1,8 @@
 import {
-  AssertionInstruction,
   BuiltInActionInstruction,
   BuiltInAssertion,
   CustomAssertion,
   Instruction,
-  ResolvedTarget,
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
 import { getNode } from './get-node';

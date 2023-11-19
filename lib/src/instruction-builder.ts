@@ -90,7 +90,7 @@ function extractInstructionsFromStatement(
     const actionInstruction = extractActionInstruction(statement, buildContext);
 
     if (actionInstruction.kind === 'block-action') {
-      return extractInstructionsFromActionBlock(
+      return extractInstructionsFromBlock(
         actionInstruction,
         buildContext,
         blockStack,
@@ -105,7 +105,7 @@ function extractInstructionsFromStatement(
     );
 
     if (assertionInstruction.kind === 'block-assertion') {
-      return extractInstructionsFromAssertionBlock(
+      return extractInstructionsFromBlock(
         assertionInstruction,
         buildContext,
         blockStack,
@@ -488,31 +488,36 @@ function extractInstructionsFromActionBlock(
   return instructions;
 }
 
-// TODO refactor with extractInstructionsFromActionBlock
-function extractInstructionsFromAssertionBlock(
-  blockAssertion: BlockAssertion,
+interface BlockHolder {
+  block: Block;
+  location: Token;
+}
+
+function extractInstructionsFromBlock(
+  blockHolder: BlockHolder,
   buildContext: BuildContext,
   blockStack: Block[],
 ): Instruction[] {
   const instructions: Instruction[] = [];
+  const { block, location } = blockHolder;
 
-  if (blockStack.includes(blockAssertion.block)) {
+  if (blockStack.includes(block)) {
     throw new Error(
       prettyPrintError(
-        `Circular action block detected: "${blockAssertion.block.header
+        `Circular block detected: "${block.header
           .map((t) => t.value)
           .join(' ')}"`,
         buildContext.input,
-        blockAssertion.location,
+        location,
       ),
     );
   }
 
-  blockAssertion.block.body.forEach((statement) => {
+  block.body.forEach((statement) => {
     instructions.push(
       ...extractInstructionsFromStatement(statement, buildContext, [
         ...blockStack,
-        blockAssertion.block,
+        block,
       ]),
     );
   });

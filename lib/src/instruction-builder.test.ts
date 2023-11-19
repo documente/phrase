@@ -193,7 +193,7 @@ test('should reject circular action blocks', () => {
         systemActions: {},
       },
     ),
-  ).toThrow(`Circular action block detected: "click twice"
+  ).toThrow(`Circular block detected: "click twice on button"
 Line 5, column 11:
       - I click twice on button
           ^`);
@@ -219,7 +219,7 @@ test('should reject nested circular action blocks', () => {
         systemActions: {},
       },
     ),
-  ).toThrow(`Circular action block detected: "click twice"
+  ).toThrow(`Circular block detected: "click twice on button"
 Line 9, column 11:
       - I click twice on button
           ^`);
@@ -253,4 +253,26 @@ test('should build instructions with an assertion block', () => {
   const resolvedAssertion = assertion as BuiltInAssertion;
   expect(resolvedAssertion.kind).toEqual('builtin-assertion');
   expect(resolvedAssertion.chainer).toEqual('be.visible');
+});
+
+test('should reject nested circular assertion blocks', () => {
+  expect(() =>
+      buildInstructions(
+          `when I click on button then it should be red
+      done
+      
+      For button to be red:
+      - it should be red
+      done`,
+          {
+            pageObjectTree: {
+              button: 'button',
+            },
+            systemActions: {},
+          },
+      ),
+  ).toThrow(`Circular block detected: "be red"
+Line 5, column 19:
+      - it should be red
+                  ^`);
 });
