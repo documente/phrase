@@ -171,6 +171,8 @@ test('should build instructions with an action block', () => {
     },
   );
 
+  expect(instructions.when).toHaveLength(2);
+
   const firstAction = instructions.when[0] as BuiltInActionInstruction;
   expect(firstAction.kind).toEqual('builtin');
   expect(firstAction.action).toEqual('click');

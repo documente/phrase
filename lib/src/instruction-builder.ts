@@ -242,7 +242,7 @@ function buildSelectors(
 
     currentNode = child;
 
-    if (!currentNode) {
+    if (currentNode == null) {
       throw new Error(
         prettyPrintError(
           `Could not resolve node for "${target

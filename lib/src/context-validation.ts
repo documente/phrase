@@ -24,10 +24,16 @@ function validatePageObjectNode(
   node: PageObjectTree | string | Function | undefined,
   path: string[],
 ) {
-  if (!node) {
+  if (node == null) {
     throw new Error(
       'Page object node must not be null or undefined at path ' +
         path.join('.'),
+    );
+  }
+
+  if (node === '') {
+    throw new Error(
+      'Page object node must not be empty string at path ' + path.join('.'),
     );
   }
 
@@ -49,6 +55,14 @@ function validatePageObjectNode(
   ) {
     throw new Error(
       'Page object node selector must be either a string or a function at path ' +
+        path.join('.') +
+        '._selector',
+    );
+  }
+
+  if (node._selector === '') {
+    throw new Error(
+      'Page object node selector must not be empty string at path ' +
         path.join('.') +
         '._selector',
     );
