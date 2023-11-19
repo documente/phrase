@@ -87,6 +87,51 @@ function runAction(actionInstruction: BuiltInActionInstruction): void {
     case 'visit':
       cy.visit(args[0]);
       break;
+    case 'check':
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).check();
+      }
+      break;
+    case 'clear':
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).clear();
+      }
+      break;
+    case 'double click':
+    case 'doubleclick':
+    case 'double-click':
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).dblclick();
+      }
+      break;
+    case 'right click':
+    case 'right-click':
+    case 'rightclick':
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).rightclick();
+      }
+      break;
+    case 'scroll':
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).scrollIntoView();
+      }
+      break;
+    case 'uncheck':
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).uncheck();
+      }
+      break;
+    case 'select':
+      if (targetIsDefined(selectors, action)) {
+        cy.get(selectors.join(' ')).select(args[0]);
+      }
+      break;
+    case 'go back':
+      cy.go('back');
+      break;
+    case 'go forward':
+      cy.go('forward');
+      break;
     default:
       throw new Error(`Unknown action: ${action}`);
   }

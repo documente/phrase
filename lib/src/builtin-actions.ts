@@ -1,9 +1,22 @@
 export enum BuiltinAction {
-  click = 'click',
-  type = 'type',
-  visit = 'visit',
+  click,
+  type,
+  visit,
+  check,
+  clear,
+  'double click',
+  'double-click',
+  doubleclick,
+  'right click',
+  'right-click',
+  rightclick,
+  scroll,
+  uncheck,
+  select,
+  'go back',
+  'go forward',
 }
 
-export function isBuiltinAction(action: string): action is BuiltinAction {
-  return Object.values(BuiltinAction).includes(action as BuiltinAction);
+export function isBuiltinAction(action: string): boolean {
+  return Object.keys(BuiltinAction).includes(action);
 }
