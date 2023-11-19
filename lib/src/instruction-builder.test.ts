@@ -4,11 +4,10 @@ import { buildInstructions } from './instruction-builder';
 import {
   ActionInstruction,
   AssertionInstruction,
-  BlockActionInstruction,
   BuiltInActionInstruction,
+  BuiltInAssertion,
   ResolvedAssertion,
 } from './interfaces/instructions.interface';
-import { BuiltinAction } from './builtin-actions';
 
 test('should throw if action target cannot be resolved', () => {
   const context: Context = { pageObjectTree: {}, systemActions: {} };
@@ -231,4 +230,34 @@ test('should reject nested circular action blocks', () => {
 Line 9, column 11:
       - I click twice on button
           ^`);
+});
+
+test('should build instructions with an assertion block', () => {
+  const instructions = buildInstructions(
+    `when I click on button then it should be shown
+      done
+      
+      For button to be shown:
+      - it should be visible`,
+    {
+      pageObjectTree: {
+        button: 'button',
+      },
+      systemActions: {},
+    },
+  );
+
+  expect(instructions.then).toHaveLength(1);
+
+  const assertion = instructions.then[0] as AssertionInstruction;
+  expect(assertion.kind).toEqual('assertion');
+  expect(assertion.selectors).toEqual(['button']);
+  expect(assertion.args).toEqual([]);
+  expect(assertion.target).toEqual([
+    { arg: undefined, fragments: ['button'], key: 'button' },
+  ]);
+
+  const resolvedAssertion = assertion.assertion as BuiltInAssertion;
+  expect(resolvedAssertion.kind).toEqual('builtin');
+  expect(resolvedAssertion.chainer).toEqual('be.visible');
 });

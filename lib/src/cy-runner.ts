@@ -98,6 +98,10 @@ function runAssertion(
 ): void {
   const { target, assertion, args, selectors } = assertionInstruction;
 
+  if (assertion.kind === 'block') {
+    throw new Error('Block assertions are not supported yet.');
+  }
+
   if (assertion.kind === 'builtin') {
     runKnownAssertion(assertion, selectors, args);
     return;

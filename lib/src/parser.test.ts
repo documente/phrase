@@ -5,7 +5,6 @@ import {
   AssertionStatement,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
-import { tokenize } from './tokenizer';
 
 test('should throw if parsing an empty sentence', () => {
   const parser = new Parser();
@@ -286,17 +285,6 @@ test('should parse a sentence with a user action and a system state change in a 
 });
 
 test('should parse a sentence with an action block', () => {
-  const tokens = tokenize(`
-    when I long press on button
-    then it should be red
-    done
-
-    In order to long press on it:
-    - I press mouse button on it
-    - I wait 1 second
-    - I release mouse button on it
-    done
-  `);
   const parser = new Parser();
   const sentence = parser.parse(`
     when I long press on button
@@ -313,15 +301,32 @@ test('should parse a sentence with an action block', () => {
   expect(sentence.then.length).toEqual(1);
 
   expect(sentence.blocks.length).toEqual(1);
-  expect(sentence.blocks[0].kind).toEqual('action');
+  expect(sentence.blocks[0].kind).toEqual('action-block');
   expect(sentence.blocks[0].header.map((a) => a.value)).toEqual([
-    'In',
-    'order',
-    'to',
     'long',
     'press',
     'on',
     'it',
   ]);
   expect(sentence.blocks[0].body.length).toEqual(3);
+});
+
+test('should parse a sentence with an assertion block', () => {
+  const parser = new Parser();
+  const sentence = parser.parse(`
+    when I click on button
+    then it should be red
+    done
+
+    For element to be red:
+    - it should have class "red"
+    done
+  `);
+
+  expect(sentence.then.length).toEqual(1);
+
+  expect(sentence.blocks.length).toEqual(1);
+  expect(sentence.blocks[0].kind).toEqual('assertion-block');
+  expect(sentence.blocks[0].header.map((a) => a.value)).toEqual(['be', 'red']);
+  expect(sentence.blocks[0].body.length).toEqual(1);
 });

@@ -42,7 +42,16 @@ export interface BuiltInAssertion extends BaseResolvedAssertion {
   chainer: string;
 }
 
-export type ResolvedAssertion = CustomAssertion | BuiltInAssertion;
+export interface BlockAssertion extends BaseResolvedAssertion {
+  kind: 'block';
+  block: Block;
+  location: Token;
+}
+
+export type ResolvedAssertion =
+  | CustomAssertion
+  | BuiltInAssertion
+  | BlockAssertion;
 
 export interface AssertionInstruction {
   kind: 'assertion';

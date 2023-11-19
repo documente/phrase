@@ -5,6 +5,7 @@ import { isArgument } from './arguments';
 import {
   ActionBlock,
   ActionStatement,
+  AssertionBlock,
   AssertionStatement,
   Block,
   ParsedSentence,
@@ -86,13 +87,33 @@ export class Parser {
     const blocks: Block[] = [];
 
     while (!this.isAtEnd()) {
-      const header = this.consumeBlockHeader();
-      const body = this.parseBullets();
-      blocks.push({
-        kind: 'action',
-        header,
-        body,
-      } satisfies ActionBlock);
+      const fullHeader = this.consumeBlockHeader();
+      let header: Token[];
+
+      if (this.isActionBlockHeader(fullHeader)) {
+        header = fullHeader.slice(3);
+        const body = this.parseBullets();
+        blocks.push({
+          kind: 'action-block',
+          header,
+          body,
+        } satisfies ActionBlock);
+      } else if (this.isAssertionBlockHeader(fullHeader)) {
+        const indexOfTo = fullHeader.findIndex(
+          (t) => t.value.toLowerCase() === 'to',
+        );
+        header = fullHeader.slice(indexOfTo + 1);
+        const body = this.parseBullets();
+        blocks.push({
+          kind: 'assertion-block',
+          header,
+          body,
+        } satisfies AssertionBlock);
+      } else {
+        this.error(
+          'Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.',
+        );
+      }
 
       if (this.matchesKind('done')) {
         this.index++;
@@ -102,6 +123,30 @@ export class Parser {
     }
 
     return blocks;
+  }
+
+  private isAssertionBlockHeader(fullHeader: Token[]): boolean {
+    if (fullHeader[0].value.toLowerCase() !== 'for') {
+      return false;
+    }
+
+    const indexOfTo = fullHeader.findIndex(
+      (t) => t.value.toLowerCase() === 'to',
+    );
+
+    if (indexOfTo === -1) {
+      return false;
+    }
+
+    return indexOfTo < fullHeader.length - 1 && indexOfTo > 1;
+  }
+
+  private isActionBlockHeader(fullHeader: Token[]): boolean {
+    return fullHeader
+      .map((token) => token.value)
+      .join(' ')
+      .toLowerCase()
+      .startsWith('in order to');
   }
 
   parseStatements(): Statement[] {
@@ -330,6 +375,10 @@ export class Parser {
     while (!this.isAtEnd() && !this.matchesKind('colon')) {
       blockName.push(this.currentToken);
       this.index++;
+    }
+
+    if (blockName.length === 0) {
+      this.error('Missing block name');
     }
 
     return blockName;

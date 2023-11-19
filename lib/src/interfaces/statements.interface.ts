@@ -33,10 +33,14 @@ interface BaseBlock {
 }
 
 export interface ActionBlock extends BaseBlock {
-  kind: 'action';
+  kind: 'action-block';
 }
 
-export type Block = ActionBlock;
+export interface AssertionBlock extends BaseBlock {
+  kind: 'assertion-block';
+}
+
+export type Block = ActionBlock | AssertionBlock;
 
 export interface ParsedSentence {
   given: Statement[];

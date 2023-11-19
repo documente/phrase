@@ -9,6 +9,7 @@ import {
   ActionInstruction,
   AssertionInstruction,
   BlockActionInstruction,
+  BlockAssertion,
   Instruction,
   Instructions,
   ResolvedAssertion,
@@ -90,7 +91,7 @@ function extractInstructionsFromStatement(
     const actionInstruction = extractActionInstruction(statement, buildContext);
 
     if (actionInstruction.kind === 'block') {
-      return extractInstructionsFromBlockAction(
+      return extractInstructionsFromActionBlock(
         actionInstruction,
         buildContext,
         blockStack,
@@ -100,7 +101,21 @@ function extractInstructionsFromStatement(
       return [actionInstruction];
     }
   } else if (kind === 'assertion') {
-    return [extractAssertionInstruction(statement, buildContext)];
+    const assertionInstruction = extractAssertionInstruction(
+      statement,
+      buildContext,
+    );
+
+    if (assertionInstruction.assertion.kind === 'block') {
+      return extractInstructionsFromAssertionBlock(
+        assertionInstruction,
+        buildContext,
+        blockStack,
+        assertionInstruction.assertion.location,
+      );
+    } else {
+      return [assertionInstruction];
+    }
   } else {
     throw new Error(`Unknown statement kind "${kind}"`);
   }
@@ -153,16 +168,37 @@ function extractActionInstruction(
 
 function findActionBlock(actionName: string, blocks: Block[]): Block | null {
   for (const block of blocks) {
-    if (block.kind === 'action') {
+    if (block.kind === 'action-block') {
       const blockActionName = block.header
         .map((a) => a.value)
         .join(' ')
         .toLowerCase()
-        .replace('in order to ', '')
         .split(' on ')[0]
         .trim();
 
       if (blockActionName === actionName) {
+        return block;
+      }
+    }
+  }
+
+  return null;
+}
+
+function findAssertionBlock(
+  assertionName: string,
+  blocks: Block[],
+): Block | null {
+  for (const block of blocks) {
+    if (block.kind === 'assertion-block') {
+      const blockActionName = block.header
+        .map((a) => a.value)
+        .join(' ')
+        .toLowerCase()
+        .split(' on ')[0]
+        .trim();
+
+      if (blockActionName === assertionName) {
         return block;
       }
     }
@@ -280,11 +316,20 @@ function buildSelectors(
 
 function resolveAssertion(
   target: ResolvedTarget[] | undefined,
-  tree: PageObjectTree,
   assertion: string,
-  input: string,
+  buildContext: BuildContext,
   firstToken: Token,
 ): ResolvedAssertion {
+  const assertionBlock = findAssertionBlock(assertion, buildContext.blocks);
+
+  if (assertionBlock) {
+    // TODO: Implement this
+    return {
+      kind: 'custom',
+      method: 'TODO',
+    };
+  }
+
   const builtinAssertion = findBuiltinAssertion(assertion);
 
   if (builtinAssertion) {
@@ -295,7 +340,11 @@ function resolveAssertion(
   }
 
   if (target) {
-    const customAssertion = findCustomAssertion(assertion, target, tree);
+    const customAssertion = findCustomAssertion(
+      assertion,
+      target,
+      buildContext.testContext.pageObjectTree,
+    );
 
     if (customAssertion) {
       return {
@@ -306,7 +355,11 @@ function resolveAssertion(
   }
 
   throw new Error(
-    prettyPrintError(`Unknown assertion "${assertion}"`, input, firstToken),
+    prettyPrintError(
+      `Unknown assertion "${assertion}"`,
+      buildContext.input,
+      firstToken,
+    ),
   );
 }
 
@@ -406,9 +459,8 @@ function extractAssertionInstruction(
   const assertionName = statement.assertion.map((a) => a.value).join(' ');
   const resolvedAssertion = resolveAssertion(
     resolved?.path,
-    buildContext.testContext.pageObjectTree,
     assertionName,
-    buildContext.input,
+    buildContext,
     statement.firstToken,
   );
   const args = statement.args.map((arg) => unquoted(arg.value));
@@ -422,7 +474,7 @@ function extractAssertionInstruction(
   };
 }
 
-function extractInstructionsFromBlockAction(
+function extractInstructionsFromActionBlock(
   actionInstruction: BlockActionInstruction,
   buildContext: BuildContext,
   blockStack: Block[],
@@ -445,6 +497,39 @@ function extractInstructionsFromBlockAction(
       ...extractInstructionsFromStatement(statement, buildContext, [
         ...blockStack,
         actionInstruction.block,
+      ]),
+    );
+  });
+
+  return instructions;
+}
+
+// TODO refactor with extractInstructionsFromActionBlock
+function extractInstructionsFromAssertionBlock(
+  blockAssertion: BlockAssertion,
+  buildContext: BuildContext,
+  blockStack: Block[],
+  callLocation: Token,
+): Instruction[] {
+  const instructions: Instruction[] = [];
+
+  if (blockStack.includes(blockAssertion.block)) {
+    throw new Error(
+      prettyPrintError(
+        `Circular action block detected: "${blockAssertion.block.header
+          .map((t) => t.value)
+          .join(' ')}"`,
+        buildContext.input,
+        callLocation,
+      ),
+    );
+  }
+
+  blockAssertion.block.body.forEach((statement) => {
+    instructions.push(
+      ...extractInstructionsFromStatement(statement, buildContext, [
+        ...blockStack,
+        blockAssertion.block,
       ]),
     );
   });
