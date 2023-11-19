@@ -150,7 +150,6 @@ test('resolve should ignore previous and find from root', () => {
   expect(result?.map((r) => r.key)).toEqual(['bar', 'baz']);
 });
 
-
 test('resolve should ignore previous and previous parent and find from root', () => {
   const tree = {
     welcome: {
@@ -162,18 +161,18 @@ test('resolve should ignore previous and previous parent and find from root', ()
   };
 
   const result = resolve(
-      tree,
-      ['bar', 'baz'],
-      [
-        {
-          key: 'welcome',
-          fragments: ['welcome'],
-        },
-        {
-          key: 'message',
-          fragments: ['message'],
-        },
-      ],
+    tree,
+    ['bar', 'baz'],
+    [
+      {
+        key: 'welcome',
+        fragments: ['welcome'],
+      },
+      {
+        key: 'message',
+        fragments: ['message'],
+      },
+    ],
   );
   expect(result?.map((r) => r.key)).toEqual(['bar', 'baz']);
 });
@@ -183,12 +182,18 @@ test('resolve should throw if previous node is not found', () => {
     welcomeMessage: { foo: {} },
   };
 
-  expect(() => resolve(tree, ['foo'], [
-    {
-      key: 'welcome',
-      fragments: ['welcome'],
-    }
-  ])).toThrow('Could not find node at path welcome');
+  expect(() =>
+    resolve(
+      tree,
+      ['foo'],
+      [
+        {
+          key: 'welcome',
+          fragments: ['welcome'],
+        },
+      ],
+    ),
+  ).toThrow('Could not find node at path welcome');
 });
 
 test('splitOnQuotedText should group segments with quoted text', () => {

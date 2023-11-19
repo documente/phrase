@@ -16,7 +16,7 @@ export function resolve(
 
     if (!previousNode) {
       throw new Error(
-          `Could not find node at path ${previous.map((p) => p.key).join('.')}`,
+        `Could not find node at path ${previous.map((p) => p.key).join('.')}`,
       );
     }
 

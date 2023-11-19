@@ -44,18 +44,12 @@ export class Parser {
       throw new Error('Empty sentence');
     }
 
-    const parsedSentence: ParsedSentence = {
+    return {
       given: this.parseGiven(),
       when: this.parseWhen(),
       then: this.parseThen(),
       blocks: this.parseBlocks(),
     };
-
-    if (!this.isAtEnd()) {
-      this.error(`Unexpected "${this.currentValue}"`);
-    }
-
-    return parsedSentence;
   }
 
   parseGiven(): Statement[] {
@@ -73,7 +67,7 @@ export class Parser {
   }
 
   parseThen(): Statement[] {
-    this.consume('then', 'Expected "when"');
+    this.consume('then', 'Expected "then"');
     return this.parseStatements();
   }
 
@@ -82,7 +76,7 @@ export class Parser {
       return [];
     }
 
-    this.consumeKind('done', 'Expected "done"');
+    this.index++;
 
     const blocks: Block[] = [];
 
@@ -164,6 +158,10 @@ export class Parser {
       } else {
         break;
       }
+    }
+
+    if (statements.length === 0) {
+      this.error('Missing statement');
     }
 
     return statements;
@@ -329,14 +327,6 @@ export class Parser {
 
   consume(expectedTokenValue: string, errorMessage: string): void {
     if (this.matches(expectedTokenValue)) {
-      this.index++;
-    } else {
-      this.error(errorMessage);
-    }
-  }
-
-  consumeKind(expectedKind: Token['kind'], errorMessage: string): void {
-    if (this.matchesKind(expectedKind)) {
       this.index++;
     } else {
       this.error(errorMessage);

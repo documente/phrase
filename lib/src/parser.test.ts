@@ -330,3 +330,58 @@ test('should parse a sentence with an assertion block', () => {
   expect(sentence.blocks[0].header.map((a) => a.value)).toEqual(['be', 'red']);
   expect(sentence.blocks[0].body.length).toEqual(1);
 });
+
+test('should throw if parsing a sentence with an invalid block header', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    when I click on button
+    then it should be red
+    done
+
+    foo bar:
+    - it should have class "red"
+    done
+  `),
+  ).toThrow(
+    `Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.`,
+  );
+});
+
+test('should reject assertion block header without "to"', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    when I click on button
+    then it should be red
+    done
+
+    for foo:
+    - it should have class "red"
+    done
+  `),
+  ).toThrow(
+    `Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.`,
+  );
+});
+
+test('should throw if parsing a sentence with missing statement', () => {
+  const parser = new Parser();
+  ['given', 'when', `when I click on button then`].forEach((sentence) => {
+    expect(() => parser.parse(sentence)).toThrow(`Missing statement`);
+  });
+});
+
+test('should throw if parsing a sentence with missing block name', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    when I click on button then it should be red
+    done
+
+    :
+    - it should have class "red"
+    done
+  `),
+  ).toThrow(`Missing block name`);
+});
