@@ -230,3 +230,65 @@ test('resolveRecursively should resolve a nested node with quoted text', () => {
   ]);
   expect(result?.map((r) => r.key)).toEqual(['welcomeMessage', 'foo']);
 });
+
+test('resolve should resolve in child of previous node when path starts with its', () => {
+  const tree = {
+    welcomeMessage: { foo: {} },
+  };
+  const result = resolve(
+    tree,
+    ['its', 'foo'],
+    [
+      {
+        key: 'welcomeMessage',
+        fragments: ['welcome', 'message'],
+      },
+    ],
+  );
+  expect(result?.map((r) => r.key)).toEqual(['welcomeMessage', 'foo']);
+});
+
+test('resolve should throw if using its without child path', () => {
+  const tree = {
+    welcomeMessage: { foo: {} },
+  };
+  expect(() =>
+    resolve(
+      tree,
+      ['its'],
+      [
+        {
+          key: 'welcomeMessage',
+          fragments: ['welcome', 'message'],
+        },
+      ],
+    ),
+  ).toThrow('Expected child path after "its" but got nothing');
+});
+
+test('resolve should throw if cannot find child node using its', () => {
+  const tree = {
+    welcomeMessage: { foo: {} },
+  };
+  expect(() =>
+    resolve(
+      tree,
+      ['its', 'bar'],
+      [
+        {
+          key: 'welcomeMessage',
+          fragments: ['welcome', 'message'],
+        },
+      ],
+    ),
+  ).toThrow('Cannot find child node at path welcome message bar');
+});
+
+test('resolve should throw if using its without previous path', () => {
+  const tree = {
+    welcomeMessage: { foo: {} },
+  };
+  expect(() =>
+    resolve(tree, ['its', 'foo'], []),
+  ).toThrow('Cannot use "its" without a previous path');
+});

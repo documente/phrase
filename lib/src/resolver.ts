@@ -8,6 +8,16 @@ export function resolve(
   pathSegments: string[],
   previous: ResolvedTarget[],
 ): ResolvedTarget[] | undefined {
+  if (pathSegments[0] === 'its' && pathSegments.length === 1) {
+    throw new Error(
+        `Expected child path after "its" but got nothing.`,
+    );
+  }
+
+  if (pathSegments[0] === 'its' && previous.length === 0) {
+    throw new Error('Cannot use "its" without a previous path.');
+  }
+
   if (previous?.length > 0) {
     const previousNode = getNode(
       tree,
@@ -16,18 +26,25 @@ export function resolve(
 
     if (!previousNode) {
       throw new Error(
-        `Could not find node at path ${previous.map((p) => p.key).join('.')}`,
+        `Could not find node at path ${previous.map((p) => p.fragments).flat().join(' ')}`,
       );
     }
 
-    const match = resolvePathRecursively(previousNode, pathSegments);
+    const pathSegmentsWithoutIts = pathSegments[0] === 'its' ? pathSegments.slice(1) : pathSegments;
+
+    const match = resolvePathRecursively(previousNode, pathSegmentsWithoutIts);
 
     if (match) {
       return [...previous, ...match];
     }
   }
 
-  if (previous?.length > 1) {
+  if (pathSegments[0] === 'its') {
+    const fullPath = [...previous.map(p => p.fragments).flat(), ...pathSegments.slice(1)];
+    throw new Error(`Cannot find child node at path ${fullPath.join(' ')}`)
+  }
+
+  if (previous?.length > 1 && pathSegments[0] !== 'its') {
     const pathToParent = previous.slice(0, -1);
     const parentNode = getNode(
       tree,
