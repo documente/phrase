@@ -1,4 +1,4 @@
-interface ErrorLocation {
+export interface ErrorLocation {
   line: number;
   column: number;
 }

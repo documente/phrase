@@ -101,4 +101,4 @@ describe('example spec', () => {
             - I click on add task button
            done`;
   });
-})
+});

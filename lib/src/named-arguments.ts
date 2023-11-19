@@ -1,3 +1,6 @@
+import { Token } from './interfaces/token.interface';
+import { ErrorLocation, prettyPrintError } from './error';
+
 export function isNamedArgument(str: string): boolean {
   return str.startsWith('{{') && str.endsWith('}}');
 }
@@ -10,12 +13,24 @@ export function withoutMoustaches(str: string): string {
   return str;
 }
 
-export function interpolate(str: string, args: Record<string, string>): string {
+export function interpolate(
+  str: string,
+  args: Record<string, string>,
+  token: Token,
+  input: string,
+): string {
   return str.replace(/{{(.*?)}}/g, (_, arg) => {
     if (args[arg]) {
       return args[arg];
     }
 
-    return `{{${arg}}}`;
+    const location: ErrorLocation = {
+      line: token.line,
+      column: token.column + token.value.indexOf(`{{${arg}}}`),
+    };
+
+    throw new Error(
+      prettyPrintError(`Unknown argument "${arg}"`, input, location),
+    );
   });
 }

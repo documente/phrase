@@ -133,9 +133,10 @@ function extractActionInstruction(
   namedArguments: Record<string, string>,
 ): ActionInstruction {
   const resolved = extractTargetSelector(actionStatement.target, buildContext);
-  const args = actionStatement.args
-    .map((arg) => unquoted(arg.value))
-    .map((arg) => interpolate(arg, namedArguments));
+  const args = actionStatement.args.map((token) => {
+    const unquotedArg = unquoted(token.value);
+    return interpolate(unquotedArg, namedArguments, token, buildContext.input);
+  });
 
   const selectors = resolved?.selectors ?? null;
   if (resolved?.path) {

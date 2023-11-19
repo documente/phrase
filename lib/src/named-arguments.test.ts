@@ -1,5 +1,9 @@
-import {interpolate, isNamedArgument, withoutMoustaches} from './named-arguments';
-import {expect} from '@jest/globals';
+import {
+  interpolate,
+  isNamedArgument,
+  withoutMoustaches,
+} from './named-arguments';
+import { expect, test } from '@jest/globals';
 
 test('isNamedArgument should return true if string starts and ends with {{}}', () => {
   [
@@ -32,8 +36,44 @@ test('interpolate should replace named arguments with values', () => {
   [
     { input: '{{foo}}', expected: 'bar' },
     { input: '{{foo}} {{baz}}', expected: 'bar qux' },
-    { input: '{{foo}} {{baz}} {{quux}}', expected: 'bar qux {{quux}}' },
   ].forEach(({ input, expected }) => {
-    expect(interpolate(input, args)).toEqual(expected);
+    expect(
+      interpolate(
+        input,
+        args,
+        {
+          line: 0,
+          column: 0,
+          value: input,
+          kind: 'generic',
+        },
+        input,
+      ),
+    ).toEqual(expected);
   });
+});
+
+test('interpolate should throw an error if named argument is not defined', () => {
+  const args = {
+    foo: 'bar',
+    baz: 'qux',
+  };
+
+  const input = 'foo{{foo}}{{quux}}';
+  expect(() =>
+    interpolate(
+      input,
+      args,
+      {
+        line: 1,
+        column: 1,
+        value: input,
+        kind: 'generic',
+      },
+      input,
+    ),
+  ).toThrowError(`Unknown argument "quux"
+Line 1, column 11:
+foo{{foo}}{{quux}}
+          ^`);
 });
