@@ -8,8 +8,6 @@ import { Context } from './interfaces/context.interface';
 import {
   ActionInstruction,
   AssertionInstruction,
-  BlockActionInstruction,
-  BlockAssertion,
   Instruction,
   Instructions,
   ResolvedTarget,
@@ -371,7 +369,7 @@ function extractSystemLevelInstruction(
     .map((a) => a.toLowerCase())
     .join('');
 
-  for (let systemActionsKey in context.testContext.systemActions) {
+  for (const systemActionsKey in context.testContext.systemActions) {
     if (systemActionsKey.toLowerCase() == actionName) {
       const args = statement.args.map((arg) => unquoted(arg.value));
       return {
@@ -457,35 +455,6 @@ function extractAssertionInstruction(
       statement.firstToken,
     ),
   );
-}
-
-function extractInstructionsFromActionBlock(
-  actionInstruction: BlockActionInstruction,
-  buildContext: BuildContext,
-  blockStack: Block[],
-): Instruction[] {
-  const instructions: Instruction[] = [];
-
-  if (blockStack.includes(actionInstruction.block)) {
-    throw new Error(
-      prettyPrintError(
-        `Circular action block detected: "${actionInstruction.action}"`,
-        buildContext.input,
-        actionInstruction.location,
-      ),
-    );
-  }
-
-  actionInstruction.block.body.forEach((statement) => {
-    instructions.push(
-      ...extractInstructionsFromStatement(statement, buildContext, [
-        ...blockStack,
-        actionInstruction.block,
-      ]),
-    );
-  });
-
-  return instructions;
 }
 
 interface BlockHolder {

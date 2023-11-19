@@ -181,7 +181,7 @@ export class Parser {
   private parseAssertionOrSystemStateChangeStatement():
     | SystemLevelStatement
     | AssertionStatement {
-    let { tokensBeforeShould, tokensAfterShould, foundShould } =
+    const { tokensBeforeShould, tokensAfterShould, foundShould } =
       this.extractAssertionOrSystemStateChangeTokens();
 
     if (foundShould) {
@@ -224,7 +224,7 @@ export class Parser {
   }
 
   private buildSystemStateChangeStatement(
-    tokensBeforeShould: any[],
+    tokensBeforeShould: Token[],
   ): SystemLevelStatement {
     const tokens = tokensBeforeShould.filter(
       (token) => !isArgument(token.value),
@@ -238,8 +238,8 @@ export class Parser {
   }
 
   private buildAssertionStatement(
-    tokensAfterShould: any[],
-    tokensBeforeShould: any[],
+    tokensAfterShould: Token[],
+    tokensBeforeShould: Token[],
   ): AssertionStatement {
     const assertion = tokensAfterShould.filter(
       (token) => !isArgument(token.value),

@@ -257,20 +257,20 @@ test('should build instructions with an assertion block', () => {
 
 test('should reject nested circular assertion blocks', () => {
   expect(() =>
-      buildInstructions(
-          `when I click on button then it should be red
+    buildInstructions(
+      `when I click on button then it should be red
       done
       
       For button to be red:
       - it should be red
       done`,
-          {
-            pageObjectTree: {
-              button: 'button',
-            },
-            systemActions: {},
-          },
-      ),
+      {
+        pageObjectTree: {
+          button: 'button',
+        },
+        systemActions: {},
+      },
+    ),
   ).toThrow(`Circular block detected: "be red"
 Line 5, column 19:
       - it should be red

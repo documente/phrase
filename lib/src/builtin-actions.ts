@@ -5,5 +5,5 @@ export enum BuiltinAction {
 }
 
 export function isBuiltinAction(action: string): action is BuiltinAction {
-  return Object.values(BuiltinAction).includes(action as any);
+  return Object.values(BuiltinAction).includes(action as BuiltinAction);
 }

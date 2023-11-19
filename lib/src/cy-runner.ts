@@ -12,7 +12,7 @@ import { buildInstructions } from './instruction-builder';
 import { PageObjectTree } from './interfaces/page-object-tree.interface';
 
 interface TestFunction {
-  (strings: TemplateStringsArray | string, ...values: any[]): void;
+  (strings: TemplateStringsArray | string, ...values: unknown[]): void;
 }
 
 function runSystemLevel(
@@ -122,7 +122,7 @@ function runCustomAssertion(assertion: CustomAssertion, tree: PageObjectTree) {
 function findCustomAssertion(
   assertion: CustomAssertion,
   tree: PageObjectTree,
-): Function {
+): (...args: unknown[]) => void {
   const target = assertion.target;
 
   if (!target) {
@@ -134,5 +134,7 @@ function findCustomAssertion(
     target.map((t) => t.key),
   );
 
-  return node[assertion.method as keyof typeof node] as Function;
+  return node[assertion.method as keyof typeof node] as (
+    ...args: unknown[]
+  ) => void;
 }

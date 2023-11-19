@@ -221,7 +221,7 @@ when I click then dialog and hidden
 });
 
 // TODO: should we allow this?
-test.skip('should throw if parsing a sentence with missing assertion', () => {
+test.skip('should throw if parsing a sentence with missing assertion before and', () => {
   const parser = new Parser();
   expect(() => parser.parse('when I click then dialog should and')).toThrow(
     `Missing assertion

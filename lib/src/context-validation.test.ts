@@ -12,10 +12,10 @@ test('should validate context with valid systemActions and pageObjectTree', () =
       form: {
         _selector: 'form',
         button: 'button',
-        field: (name: string) => {},
+        field: () => {},
         label: {
           _selector: () => 'label',
-          shouldHaveText(self, text: string) {},
+          shouldHaveText() {},
         },
       },
     },
@@ -25,7 +25,7 @@ test('should validate context with valid systemActions and pageObjectTree', () =
 });
 
 test('should throw if pageObjectTree is missing', () => {
-  // @ts-expect-error
+  // @ts-expect-error - testing invalid context
   const context: Context = {
     systemActions: {
       action1: () => {},
@@ -36,7 +36,7 @@ test('should throw if pageObjectTree is missing', () => {
 });
 
 test('should throw if systemActions is missing', () => {
-  // @ts-expect-error
+  // @ts-expect-error - testing invalid context
   const context: Context = {
     pageObjectTree: {
       form: {
@@ -52,7 +52,7 @@ test('should throw if systemActions is missing', () => {
 test('should throw if systemActions contains non-function values', () => {
   const context: Context = {
     systemActions: {
-      // @ts-expect-error
+      // @ts-expect-error - testing invalid context
       action1: 'not a function',
     },
     pageObjectTree: {
@@ -74,7 +74,7 @@ test('should throw if pageObjectTree contains null nodes', () => {
       action1: () => {},
     },
     pageObjectTree: {
-      // @ts-expect-error
+      // @ts-expect-error - testing invalid selector
       form: null,
     },
   };
@@ -90,7 +90,7 @@ test('should throw if pageObjectTree contains number nodes', () => {
       action1: () => {},
     },
     pageObjectTree: {
-      // @ts-expect-error
+      // @ts-expect-error - testing invalid selector
       form: 1,
     },
   };
@@ -107,7 +107,7 @@ test('should throw if pageObjectTree contains invalid selector', () => {
     },
     pageObjectTree: {
       form: {
-        // @ts-expect-error
+        // @ts-expect-error - testing invalid selector
         _selector: 1,
         button: 'button',
       },

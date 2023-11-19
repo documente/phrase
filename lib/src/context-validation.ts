@@ -1,4 +1,7 @@
-import { PageObjectTree } from './interfaces/page-object-tree.interface';
+import {
+  PageObjectTree,
+  SelectorFn,
+} from './interfaces/page-object-tree.interface';
 import { Context } from './interfaces/context.interface';
 
 export function validateContext(context: Context): void {
@@ -21,7 +24,7 @@ export function validateContext(context: Context): void {
 }
 
 function validatePageObjectNode(
-  node: PageObjectTree | string | Function | undefined,
+  node: PageObjectTree | string | SelectorFn | undefined,
   path: string[],
 ) {
   if (node == null) {
