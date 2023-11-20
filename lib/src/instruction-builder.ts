@@ -1,10 +1,10 @@
-import {resolve} from './resolver';
-import {prettyPrintError} from './error';
-import {isBuiltinAction} from './builtin-actions';
-import {unquoted} from './quoted-text';
-import {KnownChainer} from './known-chainers';
-import {getNode} from './get-node';
-import {Context} from './interfaces/context.interface';
+import { resolve } from './resolver';
+import { prettyPrintError } from './error';
+import { isBuiltinAction } from './builtin-actions';
+import { unquoted } from './quoted-text';
+import { KnownChainer } from './known-chainers';
+import { getNode } from './get-node';
+import { Context } from './interfaces/context.interface';
 import {
   ActionInstruction,
   AssertionInstruction,
@@ -13,7 +13,7 @@ import {
   ResolvedTarget,
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
-import {Parser} from './parser';
+import { Parser } from './parser';
 import {
   ActionBlock,
   ActionStatement,
@@ -24,9 +24,16 @@ import {
   Statement,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
-import {PageObjectTree, Selector,} from './interfaces/page-object-tree.interface';
-import {Token} from './interfaces/token.interface';
-import {interpolate, isNamedArgument, withoutMoustaches,} from './named-arguments';
+import {
+  PageObjectTree,
+  Selector,
+} from './interfaces/page-object-tree.interface';
+import { Token } from './interfaces/token.interface';
+import {
+  interpolate,
+  isNamedArgument,
+  withoutMoustaches,
+} from './named-arguments';
 
 interface BuildContext {
   previousPath: ResolvedTarget[];
@@ -122,17 +129,20 @@ function extractInstructionsFromStatement(
   }
 }
 
-function extractNamedArguments(block: ActionBlock | AssertionBlock, args: string[]): Record<string, string> {
+function extractNamedArguments(
+  block: ActionBlock | AssertionBlock,
+  args: string[],
+): Record<string, string> {
   return block.header
-      .filter((a) => isNamedArgument(a.value))
-      .map((a) => withoutMoustaches(a.value))
-      .reduce(
-          (acc, curr, index) => {
-            acc[curr] = args[index];
-            return acc;
-          },
-          {} as Record<string, string>,
-      );
+    .filter((a) => isNamedArgument(a.value))
+    .map((a) => withoutMoustaches(a.value))
+    .reduce(
+      (acc, curr, index) => {
+        acc[curr] = args[index];
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
 }
 
 function extractActionInstruction(
