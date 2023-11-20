@@ -1,10 +1,10 @@
-import { resolve } from './resolver';
-import { prettyPrintError } from './error';
-import { isBuiltinAction } from './builtin-actions';
-import { unquoted } from './quoted-text';
-import { KnownChainer } from './known-chainers';
-import { getNode } from './get-node';
-import { Context } from './interfaces/context.interface';
+import {resolve} from './resolver';
+import {prettyPrintError} from './error';
+import {isBuiltinAction} from './builtin-actions';
+import {unquoted} from './quoted-text';
+import {KnownChainer} from './known-chainers';
+import {getNode} from './get-node';
+import {Context} from './interfaces/context.interface';
 import {
   ActionInstruction,
   AssertionInstruction,
@@ -13,25 +13,20 @@ import {
   ResolvedTarget,
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
-import { Parser } from './parser';
+import {Parser} from './parser';
 import {
+  ActionBlock,
   ActionStatement,
+  AssertionBlock,
   AssertionStatement,
   Block,
   ParsedSentence,
   Statement,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
-import {
-  PageObjectTree,
-  Selector,
-} from './interfaces/page-object-tree.interface';
-import { Token } from './interfaces/token.interface';
-import {
-  interpolate,
-  isNamedArgument,
-  withoutMoustaches,
-} from './named-arguments';
+import {PageObjectTree, Selector,} from './interfaces/page-object-tree.interface';
+import {Token} from './interfaces/token.interface';
+import {interpolate, isNamedArgument, withoutMoustaches,} from './named-arguments';
 
 interface BuildContext {
   previousPath: ResolvedTarget[];
@@ -127,6 +122,19 @@ function extractInstructionsFromStatement(
   }
 }
 
+function extractNamedArguments(block: ActionBlock | AssertionBlock, args: string[]): Record<string, string> {
+  return block.header
+      .filter((a) => isNamedArgument(a.value))
+      .map((a) => withoutMoustaches(a.value))
+      .reduce(
+          (acc, curr, index) => {
+            acc[curr] = args[index];
+            return acc;
+          },
+          {} as Record<string, string>,
+      );
+}
+
 function extractActionInstruction(
   actionStatement: ActionStatement,
   buildContext: BuildContext,
@@ -148,24 +156,13 @@ function extractActionInstruction(
   const block = findActionBlock(actionName, buildContext.blocks);
 
   if (block) {
-    const namedArguments: Record<string, string> = block.header
-      .filter((a) => isNamedArgument(a.value))
-      .map((a) => withoutMoustaches(a.value))
-      .reduce(
-        (acc, curr, index) => {
-          acc[curr] = args[index];
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
-
     return {
       kind: 'block-action',
       selectors,
       action: actionName,
       args,
       block,
-      namedArguments,
+      namedArguments: extractNamedArguments(block, args),
       location: actionStatement.action[0],
     };
   }
@@ -444,7 +441,7 @@ function extractAssertionInstruction(
       block: assertionBlock,
       location: statement.firstToken,
       args,
-      namedArguments: {}, // TODO
+      namedArguments: extractNamedArguments(assertionBlock, args),
     };
   }
 
