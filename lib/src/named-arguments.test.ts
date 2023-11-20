@@ -72,7 +72,7 @@ test('interpolate should throw an error if named argument is not defined', () =>
       },
       input,
     ),
-  ).toThrowError(`Unknown argument "quux"
+  ).toThrow(`Unknown argument "quux"
 Line 1, column 11:
 foo{{foo}}{{quux}}
           ^`);

@@ -12,8 +12,8 @@ const test = withContext({
     welcomeMessage: '.welcome-message',
     newTaskTitleField: '.new-task-title',
     addTaskButton: '.add-task-button',
-    taskWithText: {
-      _selector: (text) => `.task[data-test-title="${text}"]`,
+    'task with text {{text}}': {
+      _selector: `.task[data-test-title="{{text}}"]`,
       title: '.title',
       deleteButton: '.delete-button',
     },

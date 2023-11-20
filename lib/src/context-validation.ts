@@ -24,7 +24,7 @@ export function validateContext(context: Context): void {
 }
 
 function validatePageObjectNode(
-  node: PageObjectTree | string | SelectorFn | undefined,
+  node: PageObjectTree | string | SelectorFn | VoidFunction | undefined,
   path: string[],
 ) {
   if (node == null) {

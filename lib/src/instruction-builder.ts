@@ -15,9 +15,7 @@ import {
 } from './interfaces/instructions.interface';
 import { Parser } from './parser';
 import {
-  ActionBlock,
   ActionStatement,
-  AssertionBlock,
   AssertionStatement,
   Block,
   ParsedSentence,
@@ -130,12 +128,12 @@ function extractInstructionsFromStatement(
 }
 
 function extractNamedArguments(
-  block: ActionBlock | AssertionBlock,
+  fragments: string[],
   args: string[],
 ): Record<string, string> {
-  return block.header
-    .filter((a) => isNamedArgument(a.value))
-    .map((a) => withoutMoustaches(a.value))
+  return fragments
+    .filter((v) => isNamedArgument(v))
+    .map((v) => withoutMoustaches(v))
     .reduce(
       (acc, curr, index) => {
         acc[curr] = args[index];
@@ -172,7 +170,10 @@ function extractActionInstruction(
       action: actionName,
       args,
       block,
-      namedArguments: extractNamedArguments(block, args),
+      namedArguments: extractNamedArguments(
+        block.header.map((token) => token.value),
+        args,
+      ),
       location: actionStatement.action[0],
     };
   }
@@ -329,8 +330,21 @@ function buildSelectors(
       selector = currentNode;
     }
 
+    const unquotedArgs = pathSegment.arg ? [unquoted(pathSegment.arg)] : [];
+
+    const namedArguments = extractNamedArguments(
+      pathSegment.key.split(' '),
+      unquotedArgs,
+    );
+
     if (typeof selector === 'string') {
-      selectors.push(selector);
+      const interpolatedSelector = interpolate(
+        selector,
+        namedArguments,
+        target[0],
+        input,
+      );
+      selectors.push(interpolatedSelector);
     } else if (typeof selector === 'function') {
       const arg = pathSegment.arg;
 
@@ -451,7 +465,10 @@ function extractAssertionInstruction(
       block: assertionBlock,
       location: statement.firstToken,
       args,
-      namedArguments: extractNamedArguments(assertionBlock, args),
+      namedArguments: extractNamedArguments(
+        assertionBlock.header.map((token) => token.value),
+        args,
+      ),
     };
   }
 

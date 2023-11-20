@@ -2,6 +2,7 @@ import { getNode } from './get-node';
 import { isQuoted } from './quoted-text';
 import { PageObjectTree } from './interfaces/page-object-tree.interface';
 import { ResolvedTarget } from './interfaces/instructions.interface';
+import { withNamedArgumentsRemoved } from './named-arguments';
 
 export function resolve(
   tree: PageObjectTree,
@@ -74,9 +75,13 @@ export function resolvePath(
 
   for (let j = pathSegments.length; j > 0; j--) {
     const assembledToken = pathSegments.slice(0, j).join(' ');
-    const matchingKey = keys.find((key) =>
-      decamelize(key).toLowerCase().startsWith(assembledToken.toLowerCase()),
-    );
+    const matchingKey = keys.find((key) => {
+      const keyWithoutNamedArguments = withNamedArgumentsRemoved(key);
+      return (
+        decamelize(keyWithoutNamedArguments).toLowerCase() ==
+        assembledToken.toLowerCase()
+      );
+    });
 
     if (matchingKey) {
       return { key: matchingKey, fragments: pathSegments.slice(0, j) };

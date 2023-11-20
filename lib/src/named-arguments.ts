@@ -13,6 +13,10 @@ export function withoutMoustaches(str: string): string {
   return str;
 }
 
+export function withNamedArgumentsRemoved(str: string): string {
+  return str.replace(/{{(.*?)}}/g, '');
+}
+
 export function interpolate(
   str: string,
   args: Record<string, string>,

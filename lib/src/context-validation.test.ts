@@ -12,7 +12,7 @@ test('should validate context with valid systemActions and pageObjectTree', () =
       form: {
         _selector: 'form',
         button: 'button',
-        field: () => {},
+        field: () => 'field',
         label: {
           _selector: () => 'label',
           shouldHaveText() {},
