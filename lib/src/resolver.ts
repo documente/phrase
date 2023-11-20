@@ -73,9 +73,9 @@ export function resolvePath(
   const keys = Object.keys(tree);
 
   for (let j = pathSegments.length; j > 0; j--) {
-    const assembledToken = pathSegments.slice(0, j).join('');
+    const assembledToken = pathSegments.slice(0, j).join(' ');
     const matchingKey = keys.find((key) =>
-      key.toLowerCase().startsWith(assembledToken.toLowerCase()),
+      decamelize(key).toLowerCase().startsWith(assembledToken.toLowerCase()),
     );
 
     if (matchingKey) {
@@ -146,4 +146,13 @@ export function splitOnQuotedText(pathSegments: string[]): PathSegmentGroup[] {
   }
 
   return groups;
+}
+
+// Splits a camelCase string into single-space separated words.
+export function decamelize(str: string): string {
+  return str
+    .replace(/([^A-Z])([A-Z])/g, '$1 $2')
+    .split(' ')
+    .filter((t) => t.length > 0)
+    .join(' ');
 }
