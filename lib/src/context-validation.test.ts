@@ -147,3 +147,31 @@ test('should throw if pageObjectTree contains empty string selector', () => {
     'Page object node selector must not be empty string at path form._selector',
   );
 });
+
+test('should report ambiguous paths', () => {
+  const context: Context = {
+    systemActions: {},
+    pageObjectTree: {
+      form: {
+        button: 'button',
+      },
+      'form button': {
+        _selector: 'form button',
+      },
+      foo: {
+        bar: {
+          baz: {},
+        },
+        'bar baz': 'bar baz',
+      },
+      fooBar: {
+        baz: {},
+      },
+    },
+  };
+
+  expect(() => validateContext(context)).toThrow(
+    'Ambiguous page object paths detected: "form button", "foo bar", "foo bar baz". ' +
+      'Please use unique page object paths.',
+  );
+});

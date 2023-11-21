@@ -3,6 +3,7 @@ import { isQuoted } from './quoted-text';
 import { PageObjectTree } from './interfaces/page-object-tree.interface';
 import { ResolvedTarget } from './interfaces/instructions.interface';
 import { withNamedArgumentsRemoved } from './named-arguments';
+import { decamelize } from './decamelize';
 
 export function resolve(
   tree: PageObjectTree,
@@ -151,13 +152,4 @@ export function splitOnQuotedText(pathSegments: string[]): PathSegmentGroup[] {
   }
 
   return groups;
-}
-
-// Splits a camelCase string into single-space separated words.
-export function decamelize(str: string): string {
-  return str
-    .replace(/([^A-Z])([A-Z])/g, '$1 $2')
-    .split(' ')
-    .filter((t) => t.length > 0)
-    .join(' ');
 }

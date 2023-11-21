@@ -3,6 +3,7 @@ import {
   SelectorFn,
 } from './interfaces/page-object-tree.interface';
 import { Context } from './interfaces/context.interface';
+import { decamelize } from './decamelize';
 
 export function validateContext(context: Context): void {
   if (!context.pageObjectTree) {
@@ -18,14 +19,19 @@ export function validateContext(context: Context): void {
     }
   }
 
+  const canonicalPaths: string[] = [];
+
   for (const key in context.pageObjectTree) {
-    validatePageObjectNode(context.pageObjectTree[key], [key]);
+    validatePageObjectNode(context.pageObjectTree[key], [key], canonicalPaths);
   }
+
+  reportAmbiguousPaths(canonicalPaths);
 }
 
 function validatePageObjectNode(
   node: PageObjectTree | string | SelectorFn | VoidFunction | undefined,
   path: string[],
+  canonicalPaths: string[],
 ) {
   if (node == null) {
     throw new Error(
@@ -39,6 +45,9 @@ function validatePageObjectNode(
       'Page object node must not be empty string at path ' + path.join('.'),
     );
   }
+
+  const canonicalPath = asCanonicalPath(path);
+  canonicalPaths.push(canonicalPath);
 
   if (typeof node === 'function' || typeof node === 'string') {
     return;
@@ -72,6 +81,39 @@ function validatePageObjectNode(
   }
 
   for (const key in node) {
-    validatePageObjectNode(node[key], [...path, key]);
+    validatePageObjectNode(node[key], [...path, key], canonicalPaths);
+  }
+}
+
+function asCanonicalPath(path: string[]): string {
+  return path
+    .join(' ')
+    .split(' ')
+    .filter((s) => s !== '')
+    .map((s) => decamelize(s))
+    .map((s) => s.toLowerCase())
+    .join(' ');
+}
+
+function reportAmbiguousPaths(canonicalPaths: string[]): void {
+  const pathCounts: { [key: string]: number } = {};
+
+  for (const path of canonicalPaths) {
+    if (pathCounts[path] == null) {
+      pathCounts[path] = 0;
+    }
+    pathCounts[path]++;
+  }
+
+  const ambiguousPaths = Object.keys(pathCounts).filter(
+    (path) => pathCounts[path] > 1,
+  );
+
+  if (ambiguousPaths.length > 0) {
+    throw new Error(
+      'Ambiguous page object paths detected: ' +
+        ambiguousPaths.map((path) => `"${path}"`).join(', ') +
+        '. Please use unique page object paths.',
+    );
   }
 }
