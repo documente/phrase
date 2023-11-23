@@ -1,10 +1,10 @@
+import { expect, test } from '@jest/globals';
 import {
   resolve,
   resolvePath,
   resolvePathRecursively,
   splitOnQuotedText,
 } from './resolver';
-import { expect, test } from '@jest/globals';
 
 test('resolvePath should resolve a root node', () => {
   const tree = {

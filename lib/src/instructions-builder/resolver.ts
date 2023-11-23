@@ -1,9 +1,9 @@
-import { getNode } from './get-node';
-import { isQuoted } from './quoted-text';
-import { PageObjectTree } from './interfaces/page-object-tree.interface';
-import { ResolvedTarget } from './interfaces/instructions.interface';
+import { getNode } from '../get-node';
+import { isQuoted } from '../quoted-text';
+import { PageObjectTree } from '../interfaces/page-object-tree.interface';
+import { ResolvedTarget } from '../interfaces/instructions.interface';
 import { withNamedArgumentsRemoved } from './named-arguments';
-import { decamelize } from './decamelize';
+import { decamelize } from '../decamelize';
 
 export function resolve(
   tree: PageObjectTree,

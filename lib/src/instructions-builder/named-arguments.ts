@@ -1,5 +1,5 @@
-import { CodeLocation, prettyPrintError } from './error';
-import { Token } from './interfaces/token.interface';
+import { CodeLocation, prettyPrintError } from '../error';
+import { Token } from '../interfaces/token.interface';
 
 export function isNamedArgument(str: string): boolean {
   return str.startsWith('{{') && str.endsWith('}}');

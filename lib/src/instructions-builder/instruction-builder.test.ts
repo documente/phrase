@@ -1,12 +1,12 @@
 import { expect, test } from '@jest/globals';
-import { Context } from './interfaces/context.interface';
+import { Context } from '../interfaces/context.interface';
 import { buildInstructions } from './instruction-builder';
 import {
   ActionInstruction,
   AssertionInstruction,
   BuiltInActionInstruction,
   BuiltInAssertion,
-} from './interfaces/instructions.interface';
+} from '../interfaces/instructions.interface';
 
 test('should throw if action target cannot be resolved', () => {
   const context: Context = { pageObjectTree: {}, systemActions: {} };

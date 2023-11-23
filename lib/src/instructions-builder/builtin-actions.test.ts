@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { getMatchResult, QualifiedPatternPart } from './builtin-actions';
-import { Token } from './interfaces/token.interface';
+import { Token } from '../interfaces/token.interface';
 
 test('should detect builtin actions without argument and without target', () => {
   const tokens: Token[] = [

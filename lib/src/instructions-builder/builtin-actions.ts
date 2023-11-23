@@ -1,6 +1,6 @@
 import { isNamedArgument } from './named-arguments';
-import { isArgument } from './arguments';
-import { Token } from './interfaces/token.interface';
+import { isArgument } from '../arguments';
+import { Token } from '../interfaces/token.interface';
 
 export const BuiltinActionCodes = [
   'click',
