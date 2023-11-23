@@ -1,5 +1,6 @@
 import { Block } from './statements.interface';
 import { Token } from './token.interface';
+import {BuiltinActionCode} from '../instructions-builder/builtin-actions';
 
 export interface ResolvedTarget {
   fragments: string[];
@@ -10,12 +11,12 @@ export interface ResolvedTarget {
 interface BaseActionInstruction {
   kind: string;
   selectors: string[] | null;
-  action: string;
   args: string[];
 }
 
 export interface BuiltInActionInstruction extends BaseActionInstruction {
   kind: 'builtin-action';
+  action: BuiltinActionCode;
 }
 
 export interface BlockActionInstruction extends BaseActionInstruction {

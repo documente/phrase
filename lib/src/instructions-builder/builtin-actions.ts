@@ -17,7 +17,7 @@ export const BuiltinActionCodes = [
   'go_forward',
 ] as const;
 
-type BuiltinActionCode = (typeof BuiltinActionCodes)[number];
+export type BuiltinActionCode = (typeof BuiltinActionCodes)[number];
 
 export interface BuiltinActionArgPart {
   kind: 'arg';

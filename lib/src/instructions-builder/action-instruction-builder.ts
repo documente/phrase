@@ -95,7 +95,6 @@ function findActionBlock(
             interpolatedArgs,
           ),
           location: tokens[0],
-          action: block.header.map((token) => token.value).join(' '), // TODO check
         };
       }
     }

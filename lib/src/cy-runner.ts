@@ -97,16 +97,12 @@ function runAction(actionInstruction: BuiltInActionInstruction): void {
         cy.get(selectors.join(' ')).clear();
       }
       break;
-    case 'double click':
-    case 'doubleclick':
-    case 'double-click':
+    case 'double_click':
       if (targetIsDefined(selectors, action)) {
         cy.get(selectors.join(' ')).dblclick();
       }
       break;
-    case 'right click':
-    case 'right-click':
-    case 'rightclick':
+    case 'right_click':
       if (targetIsDefined(selectors, action)) {
         cy.get(selectors.join(' ')).rightclick();
       }
@@ -126,10 +122,10 @@ function runAction(actionInstruction: BuiltInActionInstruction): void {
         cy.get(selectors.join(' ')).select(args[0]);
       }
       break;
-    case 'go back':
+    case 'go_back':
       cy.go('back');
       break;
-    case 'go forward':
+    case 'go_forward':
       cy.go('forward');
       break;
     default:
