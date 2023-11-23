@@ -1,6 +1,6 @@
 import {EditorView, basicSetup} from "codemirror"
 import {javascript} from "@codemirror/lang-javascript"
-import {buildInstructions} from "../../lib/src/instruction-builder";
+import {buildInstructions} from "../../lib/src/instructions-builder/instruction-builder";
 import {validateContext} from "../../lib/src/context-validation";
 
 const localStorageContextKey = 'playground-context';
