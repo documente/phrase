@@ -10,4 +10,5 @@ export enum KnownChainer {
   'be checked' = 'be.checked',
   'be disabled' = 'be.disabled',
   'be enabled' = 'be.enabled',
+  'have length' = 'have.length',
 }

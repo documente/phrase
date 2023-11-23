@@ -19,9 +19,7 @@ const test = withContext({
     },
     taskList: {
       _selector: '.task-list',
-      shouldHave_Task(self, count) {
-        self.children().should('have.length', count);
-      }
+      children: '.task'
     }
   },
   systemActions: {
@@ -78,6 +76,10 @@ describe('example spec', () => {
             - I type "${password}" on password field
             - I click on login form confirm button
            done
+           
+           for $element to have {{count}} task:
+           - its children should have length {{count}}
+           done
            `;
   });
 
@@ -99,6 +101,10 @@ describe('example spec', () => {
            In order to add a task with title {{title}}:
             - I type "{{title}}" on new task title field
             - I click on add task button
+           done
+           
+           for $element to have {{count}} task:
+           - its children should have length {{count}}
            done`;
   });
 });

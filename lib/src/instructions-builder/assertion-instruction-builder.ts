@@ -11,6 +11,7 @@ import { KnownChainer } from '../known-chainers';
 import { PageObjectTree } from '../interfaces/page-object-tree.interface';
 import { getNode } from '../get-node';
 import { extractNamedArguments } from './named-arguments-builder';
+import {isNamedArgument, withNamedArgumentsRemoved} from './named-arguments';
 
 export function extractAssertionInstruction(
   statement: AssertionStatement,
@@ -85,6 +86,7 @@ function findAssertionBlock(
     if (block.kind === 'assertion-block') {
       const blockActionName = block.header
         .filter((a) => !a.value.startsWith('$'))
+        .filter((a) => ! isNamedArgument(a.value))
         .map((a) => a.value)
         .join(' ')
         .toLowerCase()
@@ -101,6 +103,7 @@ function findAssertionBlock(
 }
 
 function findBuiltinAssertion(assertion: string): string | null {
+  assertion = withNamedArgumentsRemoved(assertion).trim();
   const isNegated = assertion.startsWith('not ');
 
   if (isNegated) {
