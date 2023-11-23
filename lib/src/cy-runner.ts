@@ -8,8 +8,8 @@ import {
 import { getNode } from './get-node';
 import { Context } from './interfaces/context.interface';
 import { validateContext } from './context-validation';
-import { buildInstructions } from './instruction-builder';
 import { PageObjectTree } from './interfaces/page-object-tree.interface';
+import { buildInstructions } from './instructions-builder/instruction-builder';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: unknown[]): void;
