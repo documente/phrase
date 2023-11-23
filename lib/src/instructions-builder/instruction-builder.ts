@@ -1,7 +1,7 @@
 import { Context } from '../interfaces/context.interface';
 import {
   Instruction,
-  Instructions,
+  GivenWhenThenInstructions,
 } from '../interfaces/instructions.interface';
 import { Parser } from '../parser';
 import {
@@ -15,7 +15,7 @@ import { extractInstructionsFromStatement } from './generic-instruction-extracto
 export function buildInstructions(
   input: string,
   context: Context,
-): Instructions {
+): GivenWhenThenInstructions {
   const parser = new Parser();
   const parsedSentence: ParsedSentence = parser.parse(input);
 

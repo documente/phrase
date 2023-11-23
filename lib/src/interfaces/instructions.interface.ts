@@ -69,7 +69,7 @@ export type Instruction =
   | AssertionInstruction
   | SystemLevelInstruction;
 
-export interface Instructions {
+export interface GivenWhenThenInstructions {
   given: Instruction[];
   when: Instruction[];
   then: Instruction[];
