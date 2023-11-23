@@ -1,6 +1,5 @@
 import { tokenize } from './tokenizer';
 import { printErrorLineAndContent } from './error';
-import { isQuoted } from './quoted-text';
 import { isArgument } from './arguments';
 import {
   ActionBlock,
@@ -253,31 +252,19 @@ export class Parser {
   }
 
   private parseActionStatement(): ActionStatement {
-    const action = this.consumeActionName();
-    const args = this.consumeQuotedArg();
-
-    let target: Token[] = [];
-    if (this.matches('on')) {
-      this.index++;
-      target = this.consumeTarget();
-    }
-
     return {
       kind: 'action',
-      target,
-      action,
-      args,
+      tokens: this.consumeAction(),
     } satisfies ActionStatement;
   }
 
-  consumeActionName() {
+  consumeAction(): Token[] {
     const action = [];
 
     while (
       !this.isAtEnd() &&
-      !this.matches('on', 'then', 'when', 'and') &&
-      !this.matchesKind('bullet', 'done') &&
-      !isQuoted(this.currentValue)
+      !this.matches('then', 'when', 'and') &&
+      !this.matchesKind('bullet', 'done')
     ) {
       this.reject(['I'], 'Unexpected "I" in action name');
       action.push(this.currentToken);
@@ -297,32 +284,6 @@ export class Parser {
 
   matchesKind(...kinds: Token['kind'][]): boolean {
     return kinds.includes(this.currentKind);
-  }
-
-  consumeQuotedArg(): Token[] {
-    const args = [];
-
-    if (isQuoted(this.currentValue)) {
-      args.push(this.currentToken);
-      this.index++;
-    }
-
-    return args;
-  }
-
-  consumeTarget(): Token[] {
-    const target = [];
-
-    while (
-      !this.isAtEnd() &&
-      !this.matches('when', 'then', 'and', 'should') &&
-      !this.matchesKind('bullet', 'done')
-    ) {
-      target.push(this.currentToken);
-      this.index++;
-    }
-
-    return target;
   }
 
   consume(expectedTokenValue: string, errorMessage: string): void {

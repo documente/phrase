@@ -12,7 +12,7 @@ test('should throw if action target cannot be resolved', () => {
   const context: Context = { pageObjectTree: {}, systemActions: {} };
   expect(() =>
     buildInstructions(
-      'when I click on form button then it should be visible',
+      'when I click form button then it should be visible',
       context,
     ),
   ).toThrow('Could not resolve target path for "form button"');
@@ -34,7 +34,7 @@ test('should throw if action in unknown', () => {
       'when I foobar on form button then it should be visible',
       context,
     ),
-  ).toThrow('Unknown action "foobar"');
+  ).toThrow('Unknown action "foobar on form button"');
 });
 
 test('should build an action without arguments', () => {
@@ -49,7 +49,7 @@ test('should build an action without arguments', () => {
   };
 
   const instructions = buildInstructions(
-    'when I click on form button then it should be visible',
+    'when I click form button then it should be visible',
     context,
   );
   expect(instructions.when).toEqual([
@@ -151,8 +151,8 @@ test('should build instructions with an action block', () => {
   const instructions = buildInstructions(
     `when I click twice on button then it should be visible
       done
-      
-      In order to click twice on button:
+
+      In order to click twice on $button:
       - I click on it
       - I click on it`,
     {
@@ -183,7 +183,7 @@ test('should reject circular action blocks', () => {
     buildInstructions(
       `when I click twice on button then it should be visible
       done
-      
+
       In order to click twice on button:
       - I click twice on button`,
       {
@@ -204,11 +204,11 @@ test('should reject nested circular action blocks', () => {
     buildInstructions(
       `when I click twice on button then it should be visible
       done
-      
+
       In order to click twice on button:
       - I foobar on button
       done
-      
+
       In order to foobar on button:
       - I click twice on button
       done`,
@@ -229,7 +229,7 @@ test('should build instructions with an assertion block', () => {
   const instructions = buildInstructions(
     `when I click on button then it should be shown
       done
-      
+
       For button to be shown:
       - it should be visible`,
     {
@@ -260,7 +260,7 @@ test('should reject nested circular assertion blocks', () => {
     buildInstructions(
       `when I click on button then it should be red
       done
-      
+
       For button to be red:
       - it should be red
       done`,

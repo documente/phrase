@@ -1,5 +1,5 @@
+import { CodeLocation, prettyPrintError } from './error';
 import { Token } from './interfaces/token.interface';
-import { ErrorLocation, prettyPrintError } from './error';
 
 export function isNamedArgument(str: string): boolean {
   return str.startsWith('{{') && str.endsWith('}}');
@@ -28,7 +28,7 @@ export function interpolate(
       return args[arg];
     }
 
-    const location: ErrorLocation = {
+    const location: CodeLocation = {
       line: token.line,
       column: token.column + token.value.indexOf(`{{${arg}}}`),
     };

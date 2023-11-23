@@ -2,9 +2,7 @@ import { Token } from './token.interface';
 
 export interface ActionStatement {
   kind: 'action';
-  target: Token[];
-  action: Token[];
-  args: Token[];
+  tokens: Token[];
 }
 
 export interface AssertionStatement {

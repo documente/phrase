@@ -1,6 +1,5 @@
 import { resolve } from './resolver';
 import { prettyPrintError } from './error';
-import { isBuiltinAction } from './builtin-actions';
 import { unquoted } from './quoted-text';
 import { KnownChainer } from './known-chainers';
 import { getNode } from './get-node';
@@ -8,6 +7,7 @@ import { Context } from './interfaces/context.interface';
 import {
   ActionInstruction,
   AssertionInstruction,
+  BlockActionInstruction,
   Instruction,
   Instructions,
   ResolvedTarget,
@@ -32,6 +32,13 @@ import {
   isNamedArgument,
   withoutMoustaches,
 } from './named-arguments';
+import {
+  asQualifiedPart,
+  BuiltinActionQualifiedPatterns,
+  getMatchResult,
+  MatchResult,
+  QualifiedPatternPart,
+} from './builtin-actions';
 
 interface BuildContext {
   previousPath: ResolvedTarget[];
@@ -148,67 +155,102 @@ function extractActionInstruction(
   buildContext: BuildContext,
   namedArguments: Record<string, string>,
 ): ActionInstruction {
-  const resolved = extractTargetSelector(actionStatement.target, buildContext);
-  const args = actionStatement.args.map((token) => {
-    const unquotedArg = unquoted(token.value);
-    return interpolate(unquotedArg, namedArguments, token, buildContext.input);
-  });
-
-  const selectors = resolved?.selectors ?? null;
-  if (resolved?.path) {
-    buildContext.previousPath = resolved.path;
-  }
-
-  const actionName = actionStatement.action.map((a) => a.value).join(' ');
-
-  const block = findActionBlock(actionName, buildContext.blocks);
+  const block = findActionBlock(
+    actionStatement.tokens,
+    buildContext.blocks,
+    buildContext,
+    namedArguments,
+  );
 
   if (block) {
-    return {
-      kind: 'block-action',
-      selectors,
-      action: actionName,
-      args,
-      block,
-      namedArguments: extractNamedArguments(
-        block.header.map((token) => token.value),
-        args,
-      ),
-      location: actionStatement.action[0],
-    };
+    return block;
   }
 
-  if (isBuiltinAction(actionName)) {
-    return {
-      kind: 'builtin-action',
-      selectors,
-      action: actionName,
-      args,
-    };
+  for (const parts of BuiltinActionQualifiedPatterns.keys()) {
+    const matchResult = getMatchResult(actionStatement.tokens, parts);
+
+    if (matchResult) {
+      const { interpolatedArgs, selectors } = buildArgsAndSelectors(
+        matchResult,
+        buildContext,
+        namedArguments,
+      );
+
+      return {
+        kind: 'builtin-action',
+        selectors,
+        action: BuiltinActionQualifiedPatterns.get(parts)!,
+        args: interpolatedArgs,
+      };
+    }
   }
 
   throw new Error(
     prettyPrintError(
-      `Unknown action "${actionName}"`,
+      `Unknown action "${actionStatement.tokens
+        .map((a) => a.value)
+        .join(' ')}"`,
       buildContext.input,
-      actionStatement.action[0],
+      actionStatement.tokens[0],
     ),
   );
 }
 
-function findActionBlock(actionName: string, blocks: Block[]): Block | null {
+interface ArgsAndSelectors {
+  interpolatedArgs: string[];
+  selectors: string[] | null;
+}
+
+function buildArgsAndSelectors(
+  matchResult: MatchResult,
+  buildContext: BuildContext,
+  namedArguments: Record<string, string>,
+): ArgsAndSelectors {
+  const { target, args } = matchResult;
+
+  const resolved = extractTargetSelector(target, buildContext);
+  const selectors = resolved?.selectors ?? null;
+
+  const interpolatedArgs = args.map((arg) =>
+    interpolate(unquoted(arg.value), namedArguments, arg, buildContext.input),
+  );
+
+  return { interpolatedArgs, selectors };
+}
+
+function findActionBlock(
+  tokens: Token[],
+  blocks: Block[],
+  buildContext: BuildContext,
+  namedArguments: Record<string, string>,
+): BlockActionInstruction | null {
   for (const block of blocks) {
     if (block.kind === 'action-block') {
-      const blockActionName = block.header
-        .filter((a) => !isNamedArgument(a.value))
-        .map((a) => a.value)
-        .join(' ')
-        .toLowerCase()
-        .split(' on ')[0]
-        .trim();
+      const headerQualifiedParts: QualifiedPatternPart[] = block.header.map(
+        (token) => asQualifiedPart(token.value),
+      );
 
-      if (blockActionName === actionName) {
-        return block;
+      const matchResult = getMatchResult(tokens, headerQualifiedParts);
+
+      if (matchResult) {
+        const { interpolatedArgs, selectors } = buildArgsAndSelectors(
+          matchResult,
+          buildContext,
+          namedArguments,
+        );
+
+        return {
+          kind: 'block-action',
+          selectors,
+          block,
+          args: interpolatedArgs,
+          namedArguments: extractNamedArguments(
+            block.header.map((token) => token.value),
+            interpolatedArgs,
+          ),
+          location: tokens[0],
+          action: block.header.map((token) => token.value).join(' '), // TODO check
+        };
       }
     }
   }
@@ -278,6 +320,8 @@ function extractTargetSelector(
     );
   }
 
+  buildContext.previousPath = targetPath;
+
   return {
     selectors: buildSelectors(tree, targetPath, target, input),
     path: targetPath,
@@ -313,9 +357,7 @@ function buildSelectors(
     if (currentNode == null) {
       throw new Error(
         prettyPrintError(
-          `Could not resolve node for "${target
-            .map((t) => t.value)
-            .join(' ')}"`,
+          `Could not resolve node for "${target.join(' ')}"`,
           input,
           target[0],
         ),
@@ -446,11 +488,6 @@ function extractAssertionInstruction(
   buildContext: BuildContext,
 ): AssertionInstruction {
   const resolved = extractTargetSelector(statement.target, buildContext);
-
-  if (resolved?.path) {
-    buildContext.previousPath = resolved.path;
-  }
-
   const selectors = resolved?.selectors ?? null;
   const assertionName = statement.assertion.map((a) => a.value).join(' ');
   const args = statement.args.map((arg) => unquoted(arg.value));

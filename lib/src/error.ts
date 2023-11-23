@@ -1,4 +1,4 @@
-export interface ErrorLocation {
+export interface CodeLocation {
   line: number;
   column: number;
 }
@@ -6,7 +6,7 @@ export interface ErrorLocation {
 export function prettyPrintError(
   errorMessage: string,
   sentence: string,
-  location: ErrorLocation,
+  location: CodeLocation,
 ): string {
   return `${errorMessage}\n${printErrorLineAndContent(
     sentence,

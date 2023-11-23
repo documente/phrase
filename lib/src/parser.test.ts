@@ -28,8 +28,7 @@ test('should parse a sentence with an action without target and without args', (
   expect(sentence.when).toEqual([
     {
       kind: 'action',
-      target: [],
-      action: [
+      tokens: [
         {
           kind: 'generic',
           column: 8,
@@ -37,36 +36,30 @@ test('should parse a sentence with an action without target and without args', (
           value: 'click',
         },
       ],
-      args: [],
     } satisfies ActionStatement,
   ]);
 });
 
 test('should parse a sentence with an action with a target and without args', () => {
   const parser = new Parser();
-  const sentence = parser.parse(
-    'when I click on button then it should be done',
-  );
+  const sentence = parser.parse('when I click button then it should be done');
   expect(sentence.when).toEqual([
     {
       kind: 'action',
-      target: [
-        {
-          kind: 'generic',
-          column: 17,
-          line: 1,
-          value: 'button',
-        },
-      ],
-      action: [
+      tokens: [
         {
           kind: 'generic',
           column: 8,
           line: 1,
           value: 'click',
         },
+        {
+          kind: 'generic',
+          column: 14,
+          line: 1,
+          value: 'button',
+        },
       ],
-      args: [],
     } satisfies ActionStatement,
   ]);
 });
@@ -74,34 +67,36 @@ test('should parse a sentence with an action with a target and without args', ()
 test('should parse a sentence with an action with a target and with args', () => {
   const parser = new Parser();
   const sentence = parser.parse(
-    'when I type "foo" on input then it should be done',
+    'when I type "foo" in input then it should be done',
   );
 
   expect(sentence.when).toEqual([
     {
       kind: 'action',
-      target: [
-        {
-          kind: 'generic',
-          column: 22,
-          line: 1,
-          value: 'input',
-        },
-      ],
-      action: [
+      tokens: [
         {
           kind: 'generic',
           column: 8,
           line: 1,
           value: 'type',
         },
-      ],
-      args: [
         {
           kind: 'generic',
           column: 13,
           line: 1,
           value: '"foo"',
+        },
+        {
+          kind: 'generic',
+          column: 19,
+          line: 1,
+          value: 'in',
+        },
+        {
+          kind: 'generic',
+          column: 22,
+          line: 1,
+          value: 'input',
         },
       ],
     } satisfies ActionStatement,
@@ -111,18 +106,18 @@ test('should parse a sentence with an action with a target and with args', () =>
 test('should parse a sentence with two actions', () => {
   const parser = new Parser();
   const sentence = parser.parse(
-    'when I click on button and I type "foo" on input then it should be done',
+    'when I click button and I type "foo" into input then it should be done',
   );
 
   const firstAction = sentence.when[0] as ActionStatement;
-  expect(firstAction.action[0].value).toEqual('click');
-  expect(firstAction.target[0].value).toEqual('button');
-  expect(firstAction.args.length).toEqual(0);
+  expect(firstAction.tokens[0].value).toEqual('click');
+  expect(firstAction.tokens[1].value).toEqual('button');
 
   const secondAction = sentence.when[1] as ActionStatement;
-  expect(secondAction.action[0].value).toEqual('type');
-  expect(secondAction.target[0].value).toEqual('input');
-  expect(secondAction.args[0].value).toEqual('"foo"');
+  expect(secondAction.tokens[0].value).toEqual('type');
+  expect(secondAction.tokens[1].value).toEqual('"foo"');
+  expect(secondAction.tokens[2].value).toEqual('into');
+  expect(secondAction.tokens[3].value).toEqual('input');
 });
 
 test('should parse an action with quoted text argument', () => {
@@ -132,10 +127,12 @@ test('should parse an action with quoted text argument', () => {
   );
 
   const firstAction = sentence.when[0] as ActionStatement;
-  expect(firstAction.target[0].value).toEqual('button');
-  expect(firstAction.target[1].value).toEqual('with');
-  expect(firstAction.target[2].value).toEqual('text');
-  expect(firstAction.target[3].value).toEqual('"submit"');
+  expect(firstAction.tokens[0].value).toEqual('click');
+  expect(firstAction.tokens[1].value).toEqual('on');
+  expect(firstAction.tokens[2].value).toEqual('button');
+  expect(firstAction.tokens[3].value).toEqual('with');
+  expect(firstAction.tokens[4].value).toEqual('text');
+  expect(firstAction.tokens[5].value).toEqual('"submit"');
 });
 
 test('should throw if parsing a sentence with invalid action', () => {
@@ -261,11 +258,8 @@ test('should parse a sentence with a user action in a given', () => {
     'given I land on Mars when I leave then it should be done',
   );
   expect(
-    (sentence.given[0] as ActionStatement).action.map((a) => a.value),
-  ).toEqual(['land']);
-  expect(
-    (sentence.given[0] as ActionStatement).target.map((a) => a.value),
-  ).toEqual(['Mars']);
+    (sentence.given[0] as ActionStatement).tokens.map((a) => a.value),
+  ).toEqual(['land', 'on', 'Mars']);
 });
 
 test('should parse a sentence with a user action and a system state change in a given', () => {
@@ -274,7 +268,7 @@ test('should parse a sentence with a user action and a system state change in a 
     'given I login and system is "ready" when I leave then it should be done',
   );
   expect(
-    (sentence.given[0] as ActionStatement).action.map((a) => a.value),
+    (sentence.given[0] as ActionStatement).tokens.map((a) => a.value),
   ).toEqual(['login']);
   expect(
     (sentence.given[1] as SystemLevelStatement).tokens.map((a) => a.value),
