@@ -15,6 +15,7 @@ import { extractNamedArguments } from './named-arguments-builder';
 export function extractTargetSelector(
   target: Token[],
   buildContext: BuildContext,
+  namedArguments: Record<string, string>,
 ): TargetSelector | null {
   if (target.length === 0) {
     return null;
@@ -25,7 +26,7 @@ export function extractTargetSelector(
 
   if (target.length === 1 && target[0].value === 'it') {
     return {
-      selectors: buildSelectors(tree, previousPath, target, input),
+      selectors: buildSelectors(tree, previousPath, target, input, namedArguments),
       path: previousPath,
     };
   }
@@ -49,7 +50,7 @@ export function extractTargetSelector(
   buildContext.previousPath = targetPath;
 
   return {
-    selectors: buildSelectors(tree, targetPath, target, input),
+    selectors: buildSelectors(tree, targetPath, target, input, namedArguments),
     path: targetPath,
   };
 }
@@ -59,6 +60,7 @@ function buildSelectors(
   targetPath: ResolvedTarget[],
   target: Token[],
   input: string,
+  namedArguments: Record<string, string>,
 ) {
   const selectors: string[] = [];
   let currentNode: PageObjectTree | Selector = tree;
@@ -98,17 +100,21 @@ function buildSelectors(
       selector = currentNode;
     }
 
-    const unquotedArgs = pathSegment.arg ? [unquoted(pathSegment.arg)] : [];
+    const unquotedArgs = pathSegment.arg ? [unquoted(
+      interpolate(pathSegment.arg, namedArguments, target[0], input))
+    ] : [];
 
-    const namedArguments = extractNamedArguments(
-      pathSegment.key.split(' '),
-      unquotedArgs,
-    );
+    const newNamedArguments = {
+      ...extractNamedArguments(
+        pathSegment.key.split(' '),
+        unquotedArgs,
+      ),
+    };
 
     if (typeof selector === 'string') {
       const interpolatedSelector = interpolate(
         selector,
-        namedArguments,
+        newNamedArguments,
         target[0],
         input,
       );

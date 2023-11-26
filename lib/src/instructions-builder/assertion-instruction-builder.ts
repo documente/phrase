@@ -24,7 +24,7 @@ export function extractAssertionInstruction(
     return assertionBlock;
   }
 
-  const resolved = extractTargetSelector(statement.target, buildContext);
+  const resolved = extractTargetSelector(statement.target, buildContext, namedArguments);
   const selectors = resolved?.selectors ?? null;
   const assertionName = statement.assertion.map((a) => a.value).join(' ');
   const args = statement.args.map((arg) =>
@@ -90,7 +90,7 @@ function findAssertionBlock(
         .trim();
 
       if (blockActionName === assertionName) {
-        const resolved = extractTargetSelector(statement.target, buildContext);
+        const resolved = extractTargetSelector(statement.target, buildContext, namedArguments);
         const selectors = resolved?.selectors ?? null;
 
         const interpolatedArgs = statement.args.map((arg) =>

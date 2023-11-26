@@ -276,3 +276,26 @@ Line 5, column 19:
       - it should be red
                   ^`);
 });
+
+test.only('should handle interpolated arguments in selectors', () => {
+  const instructions = buildInstructions(
+    `when I click button
+then it should contain label "foobar"
+done
+
+for $element to contain label {{content}}:
+- its label with text "{{content}}" should exist
+done`, {
+      pageObjectTree: {
+        button: {
+          _selector: 'button',
+          'label with text {{label}}': 'label[text="{{label}}"]'
+        },
+      },
+      systemActions: {},
+    }
+  );
+
+  const firstBuiltinAssertion: BuiltInAssertion = instructions.then[0] as BuiltInAssertion;
+  expect(firstBuiltinAssertion.selectors).toEqual([ 'button', 'label[text="foobar"]' ]);
+})
