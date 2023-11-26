@@ -1,8 +1,9 @@
 import { AssertionStatement, Block } from '../interfaces/statements.interface';
 import { BuildContext } from '../interfaces/build-context.interface';
 import {
-    AssertionInstruction, BlockAssertionInstruction,
-    ResolvedTarget,
+  AssertionInstruction,
+  BlockAssertionInstruction,
+  ResolvedTarget,
 } from '../interfaces/instructions.interface';
 import { extractTargetSelector } from './target-selector-builder';
 import { unquoted } from '../quoted-text';
@@ -10,21 +11,34 @@ import { prettyPrintError } from '../error';
 import { KnownChainer } from '../known-chainers';
 import { PageObjectTree } from '../interfaces/page-object-tree.interface';
 import { getNode } from '../get-node';
-import {interpolate, isNamedArgument, withNamedArgumentsRemoved} from './named-arguments';
-import { extractNamedArguments } from "./named-arguments-builder";
+import {
+  interpolate,
+  isNamedArgument,
+  withNamedArgumentsRemoved,
+} from './named-arguments';
+import { extractNamedArguments } from './named-arguments-builder';
 
 export function extractAssertionInstruction(
   statement: AssertionStatement,
   buildContext: BuildContext,
   namedArguments: Record<string, string>,
 ): AssertionInstruction {
-  const assertionBlock = findAssertionBlock(statement, buildContext.blocks, buildContext, namedArguments);
+  const assertionBlock = findAssertionBlock(
+    statement,
+    buildContext.blocks,
+    buildContext,
+    namedArguments,
+  );
 
   if (assertionBlock) {
     return assertionBlock;
   }
 
-  const resolved = extractTargetSelector(statement.target, buildContext, namedArguments);
+  const resolved = extractTargetSelector(
+    statement.target,
+    buildContext,
+    namedArguments,
+  );
   const selectors = resolved?.selectors ?? null;
   const assertionName = statement.assertion.map((a) => a.value).join(' ');
   const args = statement.args.map((arg) =>
@@ -82,7 +96,7 @@ function findAssertionBlock(
     if (block.kind === 'assertion-block') {
       const blockActionName = block.header
         .filter((a) => !a.value.startsWith('$'))
-        .filter((a) => ! isNamedArgument(a.value))
+        .filter((a) => !isNamedArgument(a.value))
         .map((a) => a.value)
         .join(' ')
         .toLowerCase()
@@ -90,18 +104,27 @@ function findAssertionBlock(
         .trim();
 
       if (blockActionName === assertionName) {
-        const resolved = extractTargetSelector(statement.target, buildContext, namedArguments);
+        const resolved = extractTargetSelector(
+          statement.target,
+          buildContext,
+          namedArguments,
+        );
         const selectors = resolved?.selectors ?? null;
 
         const interpolatedArgs = statement.args.map((arg) =>
-            interpolate(unquoted(arg.value), namedArguments, arg, buildContext.input),
+          interpolate(
+            unquoted(arg.value),
+            namedArguments,
+            arg,
+            buildContext.input,
+          ),
         );
 
         return {
           kind: 'block-assertion',
           block,
           args: interpolatedArgs,
-          target: resolved?.path!,
+          target: resolved?.path ?? null,
           selectors,
           namedArguments: extractNamedArguments(
             block.header.map((token) => token.value),

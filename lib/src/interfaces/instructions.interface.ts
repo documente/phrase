@@ -1,6 +1,6 @@
 import { Block } from './statements.interface';
 import { Token } from './token.interface';
-import {BuiltinActionCode} from '../instructions-builder/builtin-actions';
+import { BuiltinActionCode } from '../instructions-builder/builtin-actions';
 
 export interface ResolvedTarget {
   fragments: string[];

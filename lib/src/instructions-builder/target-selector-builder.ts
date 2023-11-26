@@ -26,7 +26,13 @@ export function extractTargetSelector(
 
   if (target.length === 1 && target[0].value === 'it') {
     return {
-      selectors: buildSelectors(tree, previousPath, target, input, namedArguments),
+      selectors: buildSelectors(
+        tree,
+        previousPath,
+        target,
+        input,
+        namedArguments,
+      ),
       path: previousPath,
     };
   }
@@ -100,15 +106,16 @@ function buildSelectors(
       selector = currentNode;
     }
 
-    const unquotedArgs = pathSegment.arg ? [unquoted(
-      interpolate(pathSegment.arg, namedArguments, target[0], input))
-    ] : [];
+    const unquotedArgs = pathSegment.arg
+      ? [
+          unquoted(
+            interpolate(pathSegment.arg, namedArguments, target[0], input),
+          ),
+        ]
+      : [];
 
     const newNamedArguments = {
-      ...extractNamedArguments(
-        pathSegment.key.split(' '),
-        unquotedArgs,
-      ),
+      ...extractNamedArguments(pathSegment.key.split(' '), unquotedArgs),
     };
 
     if (typeof selector === 'string') {
