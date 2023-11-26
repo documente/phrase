@@ -1,8 +1,8 @@
 import { AssertionStatement, Block } from '../interfaces/statements.interface';
 import { BuildContext } from '../interfaces/build-context.interface';
 import {
-  AssertionInstruction,
-  ResolvedTarget,
+    AssertionInstruction, BlockAssertionInstruction,
+    ResolvedTarget,
 } from '../interfaces/instructions.interface';
 import { extractTargetSelector } from './target-selector-builder';
 import { unquoted } from '../quoted-text';
@@ -10,34 +10,26 @@ import { prettyPrintError } from '../error';
 import { KnownChainer } from '../known-chainers';
 import { PageObjectTree } from '../interfaces/page-object-tree.interface';
 import { getNode } from '../get-node';
-import { extractNamedArguments } from './named-arguments-builder';
-import {isNamedArgument, withNamedArgumentsRemoved} from './named-arguments';
+import {interpolate, isNamedArgument, withNamedArgumentsRemoved} from './named-arguments';
+import { extractNamedArguments } from "./named-arguments-builder";
 
 export function extractAssertionInstruction(
   statement: AssertionStatement,
   buildContext: BuildContext,
+  namedArguments: Record<string, string>,
 ): AssertionInstruction {
+  const assertionBlock = findAssertionBlock(statement, buildContext.blocks, buildContext, namedArguments);
+
+  if (assertionBlock) {
+    return assertionBlock;
+  }
+
   const resolved = extractTargetSelector(statement.target, buildContext);
   const selectors = resolved?.selectors ?? null;
   const assertionName = statement.assertion.map((a) => a.value).join(' ');
-  const args = statement.args.map((arg) => unquoted(arg.value));
-
-  const assertionBlock = findAssertionBlock(assertionName, buildContext.blocks);
-
-  if (assertionBlock) {
-    return {
-      kind: 'block-assertion',
-      selectors,
-      target: resolved?.path ?? null,
-      block: assertionBlock,
-      location: statement.firstToken,
-      args,
-      namedArguments: extractNamedArguments(
-        assertionBlock.header.map((token) => token.value),
-        args,
-      ),
-    };
-  }
+  const args = statement.args.map((arg) =>
+    interpolate(unquoted(arg.value), namedArguments, arg, buildContext.input),
+  );
 
   const builtinAssertion = findBuiltinAssertion(assertionName);
 
@@ -79,9 +71,13 @@ export function extractAssertionInstruction(
 }
 
 function findAssertionBlock(
-  assertionName: string,
+  statement: AssertionStatement,
   blocks: Block[],
-): Block | null {
+  buildContext: BuildContext,
+  namedArguments: Record<string, string>,
+): BlockAssertionInstruction | null {
+  const assertionName = statement.assertion.map((a) => a.value).join(' ');
+
   for (const block of blocks) {
     if (block.kind === 'assertion-block') {
       const blockActionName = block.header
@@ -94,7 +90,25 @@ function findAssertionBlock(
         .trim();
 
       if (blockActionName === assertionName) {
-        return block;
+        const resolved = extractTargetSelector(statement.target, buildContext);
+        const selectors = resolved?.selectors ?? null;
+
+        const interpolatedArgs = statement.args.map((arg) =>
+            interpolate(unquoted(arg.value), namedArguments, arg, buildContext.input),
+        );
+
+        return {
+          kind: 'block-assertion',
+          block,
+          args: interpolatedArgs,
+          target: resolved?.path!,
+          selectors,
+          namedArguments: extractNamedArguments(
+            block.header.map((token) => token.value),
+            interpolatedArgs,
+          ),
+          location: statement.firstToken,
+        };
       }
     }
   }

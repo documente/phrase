@@ -36,6 +36,7 @@ export function extractInstructionsFromStatement(
     const assertionInstruction = extractAssertionInstruction(
       statement,
       buildContext,
+      namedArguments,
     );
 
     if (assertionInstruction.kind === 'block-assertion') {

@@ -47,7 +47,7 @@ export interface BuiltInAssertion extends BaseAssertionInstruction {
   chainer: string;
 }
 
-export interface BlockAssertion extends BaseAssertionInstruction {
+export interface BlockAssertionInstruction extends BaseAssertionInstruction {
   kind: 'block-assertion';
   block: Block;
   location: Token;
@@ -57,7 +57,7 @@ export interface BlockAssertion extends BaseAssertionInstruction {
 export type AssertionInstruction =
   | CustomAssertion
   | BuiltInAssertion
-  | BlockAssertion;
+  | BlockAssertionInstruction;
 
 export interface SystemLevelInstruction {
   kind: 'system-level';
