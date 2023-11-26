@@ -379,3 +379,17 @@ test('should throw if parsing a sentence with missing block name', () => {
   `),
   ).toThrow(`Missing block name`);
 });
+
+test('should throw if parsing a sentence with bullet in block name', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    when I click on button then it should be red
+    done
+
+    for $element to be red
+    - it should have class "red"
+    done
+  `),
+  ).toThrow(`Unexpected bullet in block header`);
+});
