@@ -300,6 +300,12 @@ export class Parser {
     }
   }
 
+  rejectKind(rejectedKinds: Token['kind'][], errorMessage: string): void {
+    if (this.matchesKind(...rejectedKinds)) {
+      this.error(errorMessage);
+    }
+  }
+
   error(errorMessage: string): void {
     throw new Error(errorMessage + '\n' + this.printErrorLocation());
   }
@@ -324,6 +330,7 @@ export class Parser {
     const blockName = [];
 
     while (!this.isAtEnd() && !this.matchesKind('colon')) {
+      this.rejectKind(['bullet'], 'Unexpected bullet in block header');
       blockName.push(this.currentToken);
       this.index++;
     }
