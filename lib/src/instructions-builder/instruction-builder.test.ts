@@ -6,6 +6,8 @@ import {
   AssertionInstruction,
   BuiltInActionInstruction,
   BuiltInAssertion,
+  CustomAssertion,
+  SystemLevelInstruction,
 } from '../interfaces/instructions.interface';
 
 test('should throw if action target cannot be resolved', () => {
@@ -255,6 +257,53 @@ test('should build instructions with an assertion block', () => {
   expect(resolvedAssertion.chainer).toEqual('be.visible');
 });
 
+test('should build instructions with a custom assertion', () => {
+  const instructions = buildInstructions(
+    `when I click on button then it should be shown`,
+    {
+      pageObjectTree: {
+        button: {
+          _selector: 'button',
+          shouldBeShown: () => {},
+        },
+      },
+      systemActions: {},
+    },
+  );
+
+  expect(instructions.then).toHaveLength(1);
+
+  const customAssertion = instructions.then[0] as CustomAssertion;
+
+  expect(customAssertion.kind).toBe('custom-assertion');
+  expect(customAssertion.method).toBe('shouldBeShown');
+});
+
+it('should build instructions with a builtin negated assertion', () => {
+  const instructions = buildInstructions(
+    'when I click button then it should not exist',
+    {
+      pageObjectTree: { button: 'button' },
+      systemActions: {},
+    },
+  );
+
+  expect(instructions.then.length).toBe(1);
+
+  const builtinAssertion = instructions.then[0] as BuiltInAssertion;
+  expect(builtinAssertion.kind).toBe('builtin-assertion');
+  expect(builtinAssertion.chainer).toBe('not.exist');
+});
+
+test('should reject unknown assertions', () => {
+  expect(() =>
+    buildInstructions(`when I click button then it should foobar`, {
+      pageObjectTree: { button: 'button' },
+      systemActions: {},
+    }),
+  ).toThrow('Unknown assertion "foobar"');
+});
+
 test('should reject nested circular assertion blocks', () => {
   expect(() =>
     buildInstructions(
@@ -303,4 +352,38 @@ done`,
     'button',
     'label[text="foobar"]',
   ]);
+});
+
+test('should build instructions with a system statement', () => {
+  const instructions = buildInstructions(
+    'given stock is empty when I click button then it should be visible',
+    {
+      pageObjectTree: {
+        button: 'button',
+      },
+      systemActions: {
+        stockIsEmpty: () => {},
+      },
+    },
+  );
+
+  expect(instructions.given.length).toBe(1);
+
+  const systemInstruction = instructions.given[0] as SystemLevelInstruction;
+  expect(systemInstruction.kind).toBe('system-level');
+  expect(systemInstruction.key).toBe('stockIsEmpty');
+});
+
+test('should throw if no matching system-level action is found', () => {
+  expect(() =>
+    buildInstructions(
+      'given stock is empty when I click button then it should be visible',
+      {
+        pageObjectTree: {
+          button: 'button',
+        },
+        systemActions: {},
+      },
+    ),
+  ).toThrow('Unknown system-level action "stock is empty"');
 });
