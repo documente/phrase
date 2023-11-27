@@ -3,7 +3,7 @@ import { BuildContext } from '../interfaces/build-context.interface';
 import { SystemLevelInstruction } from '../interfaces/instructions.interface';
 import { unquoted } from '../quoted-text';
 import { prettyPrintError } from '../error';
-import { decamelize } from "../decamelize";
+import { decamelize } from '../decamelize';
 
 export function extractSystemLevelInstruction(
   statement: SystemLevelStatement,

@@ -1,12 +1,11 @@
 import { Context } from '../interfaces/context.interface';
 import {
   Instruction,
-  GivenWhenThenInstructions,
 } from '../interfaces/instructions.interface';
 import { Parser } from '../parser';
 import {
   Block,
-  ParsedSentence,
+  GivenWhenThenStatements,
   Statement,
 } from '../interfaces/statements.interface';
 import { BuildContext } from '../interfaces/build-context.interface';
@@ -15,22 +14,31 @@ import { extractInstructionsFromStatement } from './generic-instruction-extracto
 export function buildInstructions(
   input: string,
   context: Context,
-): GivenWhenThenInstructions {
+): Instruction[] {
   const parser = new Parser();
-  const parsedSentence: ParsedSentence = parser.parse(input);
+  const sections = parser.parse(input);
+  const blocks = sections.filter(
+    (section) => section.kind !== 'given-when-then',
+  ) as Block[];
 
   const buildContext: BuildContext = {
     previousPath: [],
     testContext: context,
-    blocks: parsedSentence.blocks,
+    blocks,
     input,
   };
 
-  return {
-    given: buildInstructionsFromStatements(parsedSentence.given, buildContext),
-    when: buildInstructionsFromStatements(parsedSentence.when, buildContext),
-    then: buildInstructionsFromStatements(parsedSentence.then, buildContext),
-  };
+  return sections
+    .filter((section) => section.kind === 'given-when-then')
+    .map((section) => {
+      const givenWhenThen = section as GivenWhenThenStatements;
+      return [
+        ...buildInstructionsFromStatements(givenWhenThen.given, buildContext),
+        ...buildInstructionsFromStatements(givenWhenThen.when, buildContext),
+        ...buildInstructionsFromStatements(givenWhenThen.then, buildContext),
+      ];
+    })
+    .flat();
 }
 
 function buildInstructionsFromStatements(

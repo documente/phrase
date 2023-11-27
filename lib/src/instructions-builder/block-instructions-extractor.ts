@@ -30,10 +30,14 @@ export function extractInstructionsFromBlock(
     );
   }
 
-  return block.body.map((statement) => extractInstructionsFromStatement(
-    statement,
-    buildContext,
-    [...blockStack, block],
-    blockHolder.namedArguments,
-  )).flat();
+  return block.body
+    .map((statement) =>
+      extractInstructionsFromStatement(
+        statement,
+        buildContext,
+        [...blockStack, block],
+        blockHolder.namedArguments,
+      ),
+    )
+    .flat();
 }

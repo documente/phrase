@@ -32,7 +32,9 @@ test('should throw if pageObjectTree is missing', () => {
     },
   };
 
-  expect(() => validateContext(context, {})).toThrow('pageObjectTree is required');
+  expect(() => validateContext(context, {})).toThrow(
+    'pageObjectTree is required',
+  );
 });
 
 test('should throw if systemActions is missing', () => {
@@ -46,7 +48,9 @@ test('should throw if systemActions is missing', () => {
     },
   };
 
-  expect(() => validateContext(context, {})).toThrow('systemActions is required');
+  expect(() => validateContext(context, {})).toThrow(
+    'systemActions is required',
+  );
 });
 
 test('should throw if systemActions contains non-function values', () => {

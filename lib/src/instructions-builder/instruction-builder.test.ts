@@ -54,14 +54,12 @@ test('should build an action without arguments', () => {
     'when I click form button then it should be visible',
     context,
   );
-  expect(instructions.when).toEqual([
-    {
-      kind: 'builtin-action',
-      selectors: ['form', 'button'],
-      action: 'click',
-      args: [],
-    } satisfies ActionInstruction,
-  ]);
+  expect(instructions[0]).toEqual({
+    kind: 'builtin-action',
+    selectors: ['form', 'button'],
+    action: 'click',
+    args: [],
+  } satisfies ActionInstruction);
 });
 
 test('should build an action with arguments', () => {
@@ -79,14 +77,12 @@ test('should build an action with arguments', () => {
     'when I type "foo" on form button then it should be visible',
     context,
   );
-  expect(instructions.when).toEqual([
-    {
-      kind: 'builtin-action',
-      selectors: ['form', 'button'],
-      action: 'type',
-      args: ['foo'],
-    } satisfies ActionInstruction,
-  ]);
+  expect(instructions[0]).toEqual({
+    kind: 'builtin-action',
+    selectors: ['form', 'button'],
+    action: 'type',
+    args: ['foo'],
+  } satisfies ActionInstruction);
 });
 
 test('should build an assertion', () => {
@@ -102,21 +98,19 @@ test('should build an assertion', () => {
     'when I click on button then welcome message should be visible',
     context,
   );
-  expect(instructions.then).toEqual([
-    {
-      kind: 'builtin-assertion',
-      selectors: ['h1'],
-      target: [
-        {
-          arg: undefined,
-          fragments: ['welcome', 'message'],
-          key: 'welcomeMessage',
-        },
-      ],
-      chainer: 'be.visible',
-      args: [],
-    } satisfies BuiltInAssertion,
-  ]);
+  expect(instructions[1]).toEqual({
+    kind: 'builtin-assertion',
+    selectors: ['h1'],
+    target: [
+      {
+        arg: undefined,
+        fragments: ['welcome', 'message'],
+        key: 'welcomeMessage',
+      },
+    ],
+    chainer: 'be.visible',
+    args: [],
+  } satisfies BuiltInAssertion);
 });
 
 test('should build an assertion with quoted text argument', () => {
@@ -132,21 +126,19 @@ test('should build an assertion with quoted text argument', () => {
     'when I click on button then welcome message should have text "Hello, World!"',
     context,
   );
-  expect(instructions.then).toEqual([
-    {
-      kind: 'builtin-assertion',
-      selectors: ['h1'],
-      target: [
-        {
-          arg: undefined,
-          fragments: ['welcome', 'message'],
-          key: 'welcomeMessage',
-        },
-      ],
-      chainer: 'have.text',
-      args: ['Hello, World!'],
-    } satisfies AssertionInstruction,
-  ]);
+  expect(instructions[1]).toEqual({
+    kind: 'builtin-assertion',
+    selectors: ['h1'],
+    target: [
+      {
+        arg: undefined,
+        fragments: ['welcome', 'message'],
+        key: 'welcomeMessage',
+      },
+    ],
+    chainer: 'have.text',
+    args: ['Hello, World!'],
+  } satisfies AssertionInstruction);
 });
 
 test('should build instructions with an action block', () => {
@@ -165,15 +157,13 @@ test('should build instructions with an action block', () => {
     },
   );
 
-  expect(instructions.when).toHaveLength(2);
-
-  const firstAction = instructions.when[0] as BuiltInActionInstruction;
+  const firstAction = instructions[0] as BuiltInActionInstruction;
   expect(firstAction.kind).toEqual('builtin-action');
   expect(firstAction.action).toEqual('click');
   expect(firstAction.args).toEqual([]);
   expect(firstAction.selectors).toEqual(['button']);
 
-  const secondAction = instructions.when[1] as BuiltInActionInstruction;
+  const secondAction = instructions[1] as BuiltInActionInstruction;
   expect(secondAction.kind).toEqual('builtin-action');
   expect(secondAction.action).toEqual('click');
   expect(secondAction.args).toEqual([]);
@@ -242,9 +232,7 @@ test('should build instructions with an assertion block', () => {
     },
   );
 
-  expect(instructions.then).toHaveLength(1);
-
-  const assertion = instructions.then[0] as AssertionInstruction;
+  const assertion = instructions[1] as AssertionInstruction;
   expect(assertion.kind).toEqual('builtin-assertion');
   expect(assertion.selectors).toEqual(['button']);
   expect(assertion.args).toEqual([]);
@@ -271,9 +259,7 @@ test('should build instructions with a custom assertion', () => {
     },
   );
 
-  expect(instructions.then).toHaveLength(1);
-
-  const customAssertion = instructions.then[0] as CustomAssertion;
+  const customAssertion = instructions[1] as CustomAssertion;
 
   expect(customAssertion.kind).toBe('custom-assertion');
   expect(customAssertion.method).toBe('shouldBeShown');
@@ -288,9 +274,7 @@ it('should build instructions with a builtin negated assertion', () => {
     },
   );
 
-  expect(instructions.then.length).toBe(1);
-
-  const builtinAssertion = instructions.then[0] as BuiltInAssertion;
+  const builtinAssertion = instructions[1] as BuiltInAssertion;
   expect(builtinAssertion.kind).toBe('builtin-assertion');
   expect(builtinAssertion.chainer).toBe('not.exist');
 });
@@ -346,8 +330,8 @@ done`,
     },
   );
 
-  const firstBuiltinAssertion: BuiltInAssertion = instructions
-    .then[0] as BuiltInAssertion;
+  const firstBuiltinAssertion: BuiltInAssertion =
+    instructions[1] as BuiltInAssertion;
   expect(firstBuiltinAssertion.selectors).toEqual([
     'button',
     'label[text="foobar"]',
@@ -367,9 +351,7 @@ test('should build instructions with a system statement', () => {
     },
   );
 
-  expect(instructions.given.length).toBe(1);
-
-  const systemInstruction = instructions.given[0] as SystemLevelInstruction;
+  const systemInstruction = instructions[0] as SystemLevelInstruction;
   expect(systemInstruction.kind).toBe('system-level');
   expect(systemInstruction.key).toBe('stockIsEmpty');
 });

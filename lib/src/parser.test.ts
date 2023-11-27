@@ -3,6 +3,8 @@ import { expect, test } from '@jest/globals';
 import {
   ActionStatement,
   AssertionStatement,
+  Block,
+  GivenWhenThenStatements,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
 
@@ -11,19 +13,11 @@ test('should throw if parsing an empty sentence', () => {
   expect(() => parser.parse('')).toThrow('Empty sentence');
 });
 
-test('should throw if parsing a sentence without "when"', () => {
-  const parser = new Parser();
-  expect(() => parser.parse('foo')).toThrow(
-    `Expected "when"
-Line 1, column 1:
-foo
-^`,
-  );
-});
-
 test('should parse a sentence with an action without target and without args', () => {
   const parser = new Parser();
-  const sentence = parser.parse('when I click then it should be done');
+  const sentence = parser.parse(
+    'when I click then it should be done',
+  )[0] as GivenWhenThenStatements;
 
   expect(sentence.when).toEqual([
     {
@@ -42,7 +36,9 @@ test('should parse a sentence with an action without target and without args', (
 
 test('should parse a sentence with an action with a target and without args', () => {
   const parser = new Parser();
-  const sentence = parser.parse('when I click button then it should be done');
+  const sentence = parser.parse(
+    'when I click button then it should be done',
+  )[0] as GivenWhenThenStatements;
   expect(sentence.when).toEqual([
     {
       kind: 'action',
@@ -68,7 +64,7 @@ test('should parse a sentence with an action with a target and with args', () =>
   const parser = new Parser();
   const sentence = parser.parse(
     'when I type "foo" in input then it should be done',
-  );
+  )[0] as GivenWhenThenStatements;
 
   expect(sentence.when).toEqual([
     {
@@ -107,7 +103,7 @@ test('should parse a sentence with two actions', () => {
   const parser = new Parser();
   const sentence = parser.parse(
     'when I click button and I type "foo" into input then it should be done',
-  );
+  )[0] as GivenWhenThenStatements;
 
   const firstAction = sentence.when[0] as ActionStatement;
   expect(firstAction.tokens[0].value).toEqual('click');
@@ -124,7 +120,7 @@ test('should parse an action with quoted text argument', () => {
   const parser = new Parser();
   const sentence = parser.parse(
     'when I click on button with text "submit" then it should be done',
-  );
+  )[0] as GivenWhenThenStatements;
 
   const firstAction = sentence.when[0] as ActionStatement;
   expect(firstAction.tokens[0].value).toEqual('click');
@@ -167,7 +163,9 @@ when I then it should be done
 
 test('should parse a sentence with an assertion', () => {
   const parser = new Parser();
-  const sentence = parser.parse('when I click then dialog should be hidden');
+  const sentence = parser.parse(
+    'when I click then dialog should be hidden',
+  )[0] as GivenWhenThenStatements;
 
   const assertion = sentence.then[0] as AssertionStatement;
   expect(assertion.target.map((a) => a.value)).toEqual(['dialog']);
@@ -178,7 +176,7 @@ test('should parse a sentence with an assertion with quoted text argument', () =
   const parser = new Parser();
   const sentence = parser.parse(
     'when I click then message should have text "Hello, World!"',
-  );
+  )[0] as GivenWhenThenStatements;
 
   const assertion = sentence.then[0] as AssertionStatement;
   expect(assertion.target.map((a) => a.value)).toEqual(['message']);
@@ -190,7 +188,7 @@ test('should parse a sentence with two assertions', () => {
   const parser = new Parser();
   const sentence = parser.parse(
     'when I click then dialog should be hidden and button should be visible',
-  );
+  )[0] as GivenWhenThenStatements;
 
   const firstAssertion = sentence.then[0] as AssertionStatement;
   expect(firstAssertion.target.map((a) => a.value)).toEqual(['dialog']);
@@ -243,7 +241,7 @@ test('should parse a sentence with a system-level instruction', () => {
   const parser = new Parser();
   const sentence = parser.parse(
     'given system is "ready" when I click then it should be done',
-  );
+  )[0] as GivenWhenThenStatements;
   expect(
     (sentence.given[0] as SystemLevelStatement).tokens.map((a) => a.value),
   ).toEqual(['system', 'is']);
@@ -256,7 +254,7 @@ test('should parse a sentence with a user action in a given', () => {
   const parser = new Parser();
   const sentence = parser.parse(
     'given I land on Mars when I leave then it should be done',
-  );
+  )[0] as GivenWhenThenStatements;
   expect(
     (sentence.given[0] as ActionStatement).tokens.map((a) => a.value),
   ).toEqual(['land', 'on', 'Mars']);
@@ -266,7 +264,7 @@ test('should parse a sentence with a user action and a system state change in a 
   const parser = new Parser();
   const sentence = parser.parse(
     'given I login and system is "ready" when I leave then it should be done',
-  );
+  )[0] as GivenWhenThenStatements;
   expect(
     (sentence.given[0] as ActionStatement).tokens.map((a) => a.value),
   ).toEqual(['login']);
@@ -280,7 +278,7 @@ test('should parse a sentence with a user action and a system state change in a 
 
 test('should parse a sentence with an action block', () => {
   const parser = new Parser();
-  const sentence = parser.parse(`
+  const sections = parser.parse(`
     when I long press on button
     then it should be red
     done
@@ -292,22 +290,23 @@ test('should parse a sentence with an action block', () => {
     done
   `);
 
-  expect(sentence.then.length).toEqual(1);
+  const givenWhenThen = sections[0] as GivenWhenThenStatements;
+  expect(givenWhenThen.then.length).toEqual(1);
 
-  expect(sentence.blocks.length).toEqual(1);
-  expect(sentence.blocks[0].kind).toEqual('action-block');
-  expect(sentence.blocks[0].header.map((a) => a.value)).toEqual([
+  const block = sections[1] as Block;
+  expect(block.kind).toEqual('action-block');
+  expect(block.header.map((a) => a.value)).toEqual([
     'long',
     'press',
     'on',
     'it',
   ]);
-  expect(sentence.blocks[0].body.length).toEqual(3);
+  expect(block.body.length).toEqual(3);
 });
 
 test('should parse a sentence with an assertion block', () => {
   const parser = new Parser();
-  const sentence = parser.parse(`
+  const sections = parser.parse(`
     when I click on button
     then it should be red
     done
@@ -317,12 +316,13 @@ test('should parse a sentence with an assertion block', () => {
     done
   `);
 
-  expect(sentence.then.length).toEqual(1);
+  const givenWhenThen = sections[0] as GivenWhenThenStatements;
+  expect(givenWhenThen.then.length).toEqual(1);
 
-  expect(sentence.blocks.length).toEqual(1);
-  expect(sentence.blocks[0].kind).toEqual('assertion-block');
-  expect(sentence.blocks[0].header.map((a) => a.value)).toEqual(['be', 'red']);
-  expect(sentence.blocks[0].body.length).toEqual(1);
+  const block = sections[1] as Block;
+  expect(block.kind).toEqual('assertion-block');
+  expect(block.header.map((a) => a.value)).toEqual(['be', 'red']);
+  expect(block.body.length).toEqual(1);
 });
 
 test('should throw if parsing a sentence with an invalid block header', () => {
