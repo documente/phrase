@@ -15,7 +15,7 @@ export function validateContext(context: Context, externals: Externals): void {
   }
 
   for (const key in context.systemActions) {
-    const systemAction: any = context.systemActions[key];
+    const systemAction: unknown = context.systemActions[key];
     if (typeof systemAction !== 'function' && typeof systemAction !== 'string') {
       throw new Error(`systemActions.${key} must be a function or a string`);
     }
