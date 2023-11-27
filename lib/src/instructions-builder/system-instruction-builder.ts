@@ -4,7 +4,6 @@ import { SystemLevelInstruction } from '../interfaces/instructions.interface';
 import { unquoted } from '../quoted-text';
 import { prettyPrintError } from '../error';
 import { decamelize } from "../decamelize";
-import { extractFunctionName } from "../function-name";
 
 export function extractSystemLevelInstruction(
   statement: SystemLevelStatement,
