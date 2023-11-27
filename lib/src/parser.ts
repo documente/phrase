@@ -7,11 +7,13 @@ import {
   AssertionBlock,
   AssertionStatement,
   Block,
-  ParsedSentence,
+  GivenWhenThenStatements,
   Statement,
+  StatementSection,
   SystemLevelStatement,
 } from './interfaces/statements.interface';
 import { Token } from './interfaces/token.interface';
+import { match } from 'cypress/types/minimatch/index';
 
 export class Parser {
   sentence = '';
@@ -32,9 +34,9 @@ export class Parser {
 
   /**
    * @param {string} sentence - sentence to parse
-   * @returns {ParsedSentence} parsed sentence
+   * @returns {GivenWhenThenStatements} parsed sentence
    */
-  parse(sentence: string): ParsedSentence {
+  public parse(sentence: string): StatementSection[] {
     this.sentence = sentence;
     this.tokens = tokenize(sentence);
     this.index = 0;
@@ -43,31 +45,59 @@ export class Parser {
       throw new Error('Empty sentence');
     }
 
+    const statementSections: StatementSection[] = [];
+
+    while (!this.isAtEnd()) {
+      if (this.matches('given', 'when')) {
+        statementSections.push(this.parseGivenWhenThen());
+      } else {
+        statementSections.push(this.parseBlock());
+      }
+
+      if (this.matchesKind('done')) {
+        this.index++;
+      } else if (!this.isAtEnd()) {
+        this.error('Expected "done"');
+      }
+    }
+
+    return statementSections;
+  }
+
+  private parseGivenWhenThen(): GivenWhenThenStatements {
     return {
+      kind: 'given-when-then',
       given: this.parseGiven(),
       when: this.parseWhen(),
       then: this.parseThen(),
-      blocks: this.parseBlocks(),
     };
   }
 
-  parseGiven(): Statement[] {
-    if (this.matches('given')) {
-      this.index++;
-      return this.parseStatements();
+  private parseBlock(): Block {
+    const fullHeader = this.consumeBlockHeader();
+
+    if (this.isActionBlockHeader(fullHeader)) {
+      return {
+        kind: 'action-block',
+        header: fullHeader.slice(3),
+        body: this.parseBullets(),
+      } satisfies ActionBlock;
+    } else if (this.isAssertionBlockHeader(fullHeader)) {
+      const indexOfTo = fullHeader.findIndex(
+        (t) => t.value.toLowerCase() === 'to',
+      );
+      return {
+        kind: 'assertion-block',
+        header: fullHeader.slice(indexOfTo + 1),
+        body: this.parseBullets(),
+      } satisfies AssertionBlock;
+    } else {
+      this.error(
+        'Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.',
+      );
     }
 
-    return [];
-  }
-
-  parseWhen(): Statement[] {
-    this.consume('when', 'Expected "when"');
-    return this.parseStatements();
-  }
-
-  parseThen(): Statement[] {
-    this.consume('then', 'Expected "then"');
-    return this.parseStatements();
+    throw new Error('Unreachable code.');
   }
 
   parseBlocks(): Block[] {
@@ -116,6 +146,25 @@ export class Parser {
     }
 
     return blocks;
+  }
+
+  parseGiven(): Statement[] {
+    if (this.matches('given')) {
+      this.index++;
+      return this.parseStatements();
+    }
+
+    return [];
+  }
+
+  parseWhen(): Statement[] {
+    this.consume('when', 'Expected "when"');
+    return this.parseStatements();
+  }
+
+  parseThen(): Statement[] {
+    this.consume('then', 'Expected "then"');
+    return this.parseStatements();
   }
 
   private isAssertionBlockHeader(fullHeader: Token[]): boolean {

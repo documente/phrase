@@ -6,12 +6,12 @@ import {
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
 import { getNode } from './get-node';
-import { Context, Externals } from "./interfaces/context.interface";
+import { Context, Externals } from './interfaces/context.interface';
 import { validateContext } from './context-validation';
 import { PageObjectTree } from './interfaces/page-object-tree.interface';
 import { buildInstructions } from './instructions-builder/instruction-builder';
 import YAML from 'yaml';
-import { extractFunctionName } from "./function-name";
+import { extractFunctionName } from './function-name';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: unknown[]): void;
@@ -31,8 +31,12 @@ function runSystemLevel(
   }
 }
 
-export function withContext(context: Context | string, externals: Externals): TestFunction {
-  const contextObject = typeof context === 'string' ? YAML.parse(context) : context;
+export function withContext(
+  context: Context | string,
+  externals: Externals,
+): TestFunction {
+  const contextObject =
+    typeof context === 'string' ? YAML.parse(context) : context;
 
   validateContext(contextObject, externals);
 
@@ -64,9 +68,7 @@ export function withContext(context: Context | string, externals: Externals): Te
     }
 
     const instructions = buildInstructions(str, contextObject);
-    instructions.given.forEach(runInstruction);
-    instructions.when.forEach(runInstruction);
-    instructions.then.forEach(runInstruction);
+    instructions.forEach(runInstruction);
   };
 }
 

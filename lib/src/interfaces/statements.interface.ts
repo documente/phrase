@@ -40,9 +40,11 @@ export interface AssertionBlock extends BaseBlock {
 
 export type Block = ActionBlock | AssertionBlock;
 
-export interface ParsedSentence {
+export interface GivenWhenThenStatements {
+  kind: 'given-when-then';
   given: Statement[];
   when: Statement[];
   then: Statement[];
-  blocks: Block[];
 }
+
+export type StatementSection = GivenWhenThenStatements | Block;
