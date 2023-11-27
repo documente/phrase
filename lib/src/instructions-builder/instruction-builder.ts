@@ -1,7 +1,6 @@
 import { Context } from '../interfaces/context.interface';
 import {
   Instruction,
-  GivenWhenThenInstructions,
 } from '../interfaces/instructions.interface';
 import { Parser } from '../parser';
 import {

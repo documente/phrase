@@ -13,7 +13,6 @@ import {
   SystemLevelStatement,
 } from './interfaces/statements.interface';
 import { Token } from './interfaces/token.interface';
-import { match } from 'cypress/types/minimatch/index';
 
 export class Parser {
   sentence = '';
