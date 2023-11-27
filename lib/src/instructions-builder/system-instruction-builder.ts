@@ -3,6 +3,8 @@ import { BuildContext } from '../interfaces/build-context.interface';
 import { SystemLevelInstruction } from '../interfaces/instructions.interface';
 import { unquoted } from '../quoted-text';
 import { prettyPrintError } from '../error';
+import { decamelize } from "../decamelize";
+import { extractFunctionName } from "../function-name";
 
 export function extractSystemLevelInstruction(
   statement: SystemLevelStatement,
@@ -11,10 +13,11 @@ export function extractSystemLevelInstruction(
   const actionName = statement.tokens
     .map((a) => a.value)
     .map((a) => a.toLowerCase())
-    .join('');
+    .join(' ');
 
   for (const systemActionsKey in context.testContext.systemActions) {
-    if (systemActionsKey.toLowerCase() == actionName) {
+    const decamelized = decamelize(systemActionsKey);
+    if (decamelized.toLowerCase() == actionName) {
       const args = statement.args.map((arg) => unquoted(arg.value));
       return {
         kind: 'system-level',

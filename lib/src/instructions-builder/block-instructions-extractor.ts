@@ -16,7 +16,6 @@ export function extractInstructionsFromBlock(
   buildContext: BuildContext,
   blockStack: Block[],
 ): Instruction[] {
-  const instructions: Instruction[] = [];
   const { block, location } = blockHolder;
 
   if (blockStack.includes(block)) {
@@ -31,16 +30,10 @@ export function extractInstructionsFromBlock(
     );
   }
 
-  block.body.forEach((statement) => {
-    instructions.push(
-      ...extractInstructionsFromStatement(
-        statement,
-        buildContext,
-        [...blockStack, block],
-        blockHolder.namedArguments,
-      ),
-    );
-  });
-
-  return instructions;
+  return block.body.map((statement) => extractInstructionsFromStatement(
+    statement,
+    buildContext,
+    [...blockStack, block],
+    blockHolder.namedArguments,
+  )).flat();
 }

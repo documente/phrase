@@ -21,7 +21,7 @@ test('should validate context with valid systemActions and pageObjectTree', () =
     },
   };
 
-  expect(() => validateContext(context)).not.toThrow();
+  expect(() => validateContext(context, {})).not.toThrow();
 });
 
 test('should throw if pageObjectTree is missing', () => {
@@ -32,7 +32,7 @@ test('should throw if pageObjectTree is missing', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow('pageObjectTree is required');
+  expect(() => validateContext(context, {})).toThrow('pageObjectTree is required');
 });
 
 test('should throw if systemActions is missing', () => {
@@ -46,14 +46,14 @@ test('should throw if systemActions is missing', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow('systemActions is required');
+  expect(() => validateContext(context, {})).toThrow('systemActions is required');
 });
 
 test('should throw if systemActions contains non-function values', () => {
   const context: Context = {
     systemActions: {
       // @ts-expect-error - testing invalid context
-      action1: 'not a function',
+      action1: 123456,
     },
     pageObjectTree: {
       form: {
@@ -63,7 +63,7 @@ test('should throw if systemActions contains non-function values', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow(
+  expect(() => validateContext(context, {})).toThrow(
     'systemActions.action1 must be a function',
   );
 });
@@ -79,7 +79,7 @@ test('should throw if pageObjectTree contains null nodes', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow(
+  expect(() => validateContext(context, {})).toThrow(
     'Page object node must not be null or undefined at path form',
   );
 });
@@ -95,7 +95,7 @@ test('should throw if pageObjectTree contains number nodes', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow(
+  expect(() => validateContext(context, {})).toThrow(
     'Page object node must be either a string, function or an object at path form',
   );
 });
@@ -114,7 +114,7 @@ test('should throw if pageObjectTree contains invalid selector', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow(
+  expect(() => validateContext(context, {})).toThrow(
     'Page object node selector must be either a string or a function at path form._selector',
   );
 });
@@ -127,7 +127,7 @@ test('should throw if pageObjectTree contains empty string node', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow(
+  expect(() => validateContext(context, {})).toThrow(
     'Page object node must not be empty string at path form',
   );
 });
@@ -143,7 +143,7 @@ test('should throw if pageObjectTree contains empty string selector', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow(
+  expect(() => validateContext(context, {})).toThrow(
     'Page object node selector must not be empty string at path form._selector',
   );
 });
@@ -170,7 +170,7 @@ test('should report ambiguous paths', () => {
     },
   };
 
-  expect(() => validateContext(context)).toThrow(
+  expect(() => validateContext(context, {})).toThrow(
     'Ambiguous page object paths detected: "form button", "foo bar", "foo bar baz". ' +
       'Please use unique page object paths.',
   );

@@ -6,10 +6,12 @@ import {
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
 import { getNode } from './get-node';
-import { Context } from './interfaces/context.interface';
+import { Context, Externals } from "./interfaces/context.interface";
 import { validateContext } from './context-validation';
 import { PageObjectTree } from './interfaces/page-object-tree.interface';
 import { buildInstructions } from './instructions-builder/instruction-builder';
+import YAML from 'yaml';
+import { extractFunctionName } from "./function-name";
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: unknown[]): void;
@@ -18,18 +20,27 @@ interface TestFunction {
 function runSystemLevel(
   instruction: SystemLevelInstruction,
   context: Context,
+  externals: Externals,
 ): void {
-  context.systemActions[instruction.key](...instruction.args);
+  const systemAction = context.systemActions[instruction.key];
+
+  if (typeof systemAction === 'string') {
+    externals[extractFunctionName(systemAction)]();
+  } else {
+    systemAction(...instruction.args);
+  }
 }
 
-export function withContext(context: Context): TestFunction {
-  validateContext(context);
+export function withContext(context: Context | string, externals: Externals): TestFunction {
+  const contextObject = typeof context === 'string' ? YAML.parse(context) : context;
 
-  const tree = context.pageObjectTree;
+  validateContext(contextObject, externals);
+
+  const tree = contextObject.pageObjectTree;
 
   function runInstruction(instruction: Instruction): void {
     if (instruction.kind === 'system-level') {
-      runSystemLevel(instruction, context);
+      runSystemLevel(instruction, contextObject, externals);
     } else if (instruction.kind === 'builtin-action') {
       runAction(instruction);
     } else if (instruction.kind === 'builtin-assertion') {
@@ -52,7 +63,7 @@ export function withContext(context: Context): TestFunction {
       throw new Error('Invalid input');
     }
 
-    const instructions = buildInstructions(str, context);
+    const instructions = buildInstructions(str, contextObject);
     instructions.given.forEach(runInstruction);
     instructions.when.forEach(runInstruction);
     instructions.then.forEach(runInstruction);

@@ -2,10 +2,11 @@ import {
   PageObjectTree,
   SelectorFn,
 } from './interfaces/page-object-tree.interface';
-import { Context } from './interfaces/context.interface';
+import { Context, Externals } from "./interfaces/context.interface";
 import { decamelize } from './decamelize';
+import { extractFunctionName } from "./function-name";
 
-export function validateContext(context: Context): void {
+export function validateContext(context: Context, externals: Externals): void {
   if (!context.pageObjectTree) {
     throw new Error('pageObjectTree is required');
   }
@@ -14,8 +15,17 @@ export function validateContext(context: Context): void {
   }
 
   for (const key in context.systemActions) {
-    if (typeof context.systemActions[key] !== 'function') {
-      throw new Error(`systemActions.${key} must be a function`);
+    const systemAction: any = context.systemActions[key];
+    if (typeof systemAction !== 'function' && typeof systemAction !== 'string') {
+      throw new Error(`systemActions.${key} must be a function or a string`);
+    }
+
+    if (typeof systemAction === 'string') {
+      const functionName = extractFunctionName(systemAction);
+      const systemFunction = externals[functionName];
+      if (typeof systemFunction !== 'function') {
+        throw new Error(`externals['${functionName}'] must be a function.`);
+      }
     }
   }
 
