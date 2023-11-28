@@ -1,17 +1,14 @@
 import {
   BuiltInActionInstruction,
   BuiltInAssertion,
-  CustomAssertion,
   Instruction,
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
-import { getNode } from './get-node';
-import { Context, Externals } from './interfaces/context.interface';
+import { Externals } from './interfaces/externals.interface';
 import { validateContext } from './context-validation';
-import { PageObjectTree } from './interfaces/page-object-tree.interface';
+import { SelectorTree } from './interfaces/selector-tree.interface';
 import { buildInstructions } from './instructions-builder/instruction-builder';
 import YAML from 'yaml';
-import { extractFunctionName } from './function-name';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: unknown[]): void;
@@ -19,38 +16,28 @@ interface TestFunction {
 
 function runSystemLevel(
   instruction: SystemLevelInstruction,
-  context: Context,
   externals: Externals,
 ): void {
-  const systemAction = context.systemActions[instruction.key];
-
-  if (typeof systemAction === 'string') {
-    externals[extractFunctionName(systemAction)]();
-  } else {
-    systemAction(...instruction.args);
-  }
+  const systemAction = externals[instruction.key];
+  systemAction(...instruction.args);
 }
 
 export function withContext(
-  context: Context | string,
+  selectorTree: SelectorTree | string,
   externals: Externals,
 ): TestFunction {
-  const contextObject =
-    typeof context === 'string' ? YAML.parse(context) : context;
+  const tree =
+    typeof selectorTree === 'string' ? YAML.parse(selectorTree) : selectorTree;
 
-  validateContext(contextObject, externals);
-
-  const tree = contextObject.pageObjectTree;
+  validateContext(tree, externals);
 
   function runInstruction(instruction: Instruction): void {
     if (instruction.kind === 'system-level') {
-      runSystemLevel(instruction, contextObject, externals);
+      runSystemLevel(instruction, externals);
     } else if (instruction.kind === 'builtin-action') {
       runAction(instruction);
     } else if (instruction.kind === 'builtin-assertion') {
       runBuiltInAssertion(instruction);
-    } else if (instruction.kind === 'custom-assertion') {
-      runCustomAssertion(instruction, tree);
     }
   }
 
@@ -67,7 +54,7 @@ export function withContext(
       throw new Error('Invalid input');
     }
 
-    const instructions = buildInstructions(str, contextObject);
+    const instructions = buildInstructions(str, tree, externals);
     instructions.forEach(runInstruction);
   };
 }
@@ -154,41 +141,4 @@ function runBuiltInAssertion(assertion: BuiltInAssertion): void {
   }
 
   cy.get(selectors.join(' ')).should(assertion.chainer, ...args);
-}
-
-function runCustomAssertion(assertion: CustomAssertion, tree: PageObjectTree) {
-  const customAssertion = findCustomAssertion(assertion, tree);
-
-  const { selectors, args } = assertion;
-
-  if (customAssertion) {
-    if (!selectors) {
-      throw new Error('Target selectors are required for custom assertions.');
-    }
-
-    customAssertion(cy.get(selectors.join(' ')), ...args);
-    return;
-  }
-
-  throw new Error(`Unknown assertion: ${assertion}`);
-}
-
-function findCustomAssertion(
-  assertion: CustomAssertion,
-  tree: PageObjectTree,
-): (...args: unknown[]) => void {
-  const target = assertion.target;
-
-  if (!target) {
-    throw new Error('Target is required for custom assertions.');
-  }
-
-  const node = getNode(
-    tree,
-    target.map((t) => t.key),
-  );
-
-  return node[assertion.method as keyof typeof node] as (
-    ...args: unknown[]
-  ) => void;
 }

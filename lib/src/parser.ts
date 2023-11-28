@@ -99,54 +99,6 @@ export class Parser {
     throw new Error('Unreachable code.');
   }
 
-  parseBlocks(): Block[] {
-    if (this.isAtEnd() || !this.matchesKind('done')) {
-      return [];
-    }
-
-    this.index++;
-
-    const blocks: Block[] = [];
-
-    while (!this.isAtEnd()) {
-      const fullHeader = this.consumeBlockHeader();
-      let header: Token[];
-
-      if (this.isActionBlockHeader(fullHeader)) {
-        header = fullHeader.slice(3);
-        const body = this.parseBullets();
-        blocks.push({
-          kind: 'action-block',
-          header,
-          body,
-        } satisfies ActionBlock);
-      } else if (this.isAssertionBlockHeader(fullHeader)) {
-        const indexOfTo = fullHeader.findIndex(
-          (t) => t.value.toLowerCase() === 'to',
-        );
-        header = fullHeader.slice(indexOfTo + 1);
-        const body = this.parseBullets();
-        blocks.push({
-          kind: 'assertion-block',
-          header,
-          body,
-        } satisfies AssertionBlock);
-      } else {
-        this.error(
-          'Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.',
-        );
-      }
-
-      if (this.matchesKind('done')) {
-        this.index++;
-      } else {
-        break;
-      }
-    }
-
-    return blocks;
-  }
-
   parseGiven(): Statement[] {
     if (this.matches('given')) {
       this.index++;

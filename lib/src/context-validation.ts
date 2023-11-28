@@ -1,61 +1,47 @@
-import {
-  PageObjectTree,
-  SelectorFn,
-} from './interfaces/page-object-tree.interface';
-import { Context, Externals } from './interfaces/context.interface';
+import { SelectorTree, Selector } from './interfaces/selector-tree.interface';
+import { Externals } from './interfaces/externals.interface';
 import { decamelize } from './decamelize';
-import { extractFunctionName } from './function-name';
 
-export function validateContext(context: Context, externals: Externals): void {
-  if (!context.pageObjectTree) {
-    throw new Error('pageObjectTree is required');
+export function validateContext(
+  selectorTree: SelectorTree,
+  externals?: Externals,
+): void {
+  if (!selectorTree) {
+    throw new Error('Selector tree is required');
   }
-  if (!context.systemActions) {
-    throw new Error('systemActions is required');
-  }
 
-  for (const key in context.systemActions) {
-    const systemAction: unknown = context.systemActions[key];
-    if (
-      typeof systemAction !== 'function' &&
-      typeof systemAction !== 'string'
-    ) {
-      throw new Error(`systemActions.${key} must be a function or a string`);
-    }
+  for (const key in externals) {
+    const externalFn: unknown = externals[key];
 
-    if (typeof systemAction === 'string') {
-      const functionName = extractFunctionName(systemAction);
-      const systemFunction = externals[functionName];
-      if (typeof systemFunction !== 'function') {
-        throw new Error(`externals['${functionName}'] must be a function.`);
-      }
+    if (typeof externalFn !== 'function') {
+      throw new Error(`externals.${key} must be a function`);
     }
   }
 
   const canonicalPaths: string[] = [];
 
-  for (const key in context.pageObjectTree) {
-    validatePageObjectNode(context.pageObjectTree[key], [key], canonicalPaths);
+  for (const key in selectorTree) {
+    validateSelectorNode(selectorTree[key], [key], canonicalPaths);
   }
 
   reportAmbiguousPaths(canonicalPaths);
 }
 
-function validatePageObjectNode(
-  node: PageObjectTree | string | SelectorFn | VoidFunction | undefined,
+function validateSelectorNode(
+  node: SelectorTree | Selector | undefined,
   path: string[],
   canonicalPaths: string[],
 ) {
   if (node == null) {
     throw new Error(
-      'Page object node must not be null or undefined at path ' +
+      'Selector tree node must not be null or undefined at path ' +
         path.join('.'),
     );
   }
 
   if (node === '') {
     throw new Error(
-      'Page object node must not be empty string at path ' + path.join('.'),
+      'Selector tree node must not be empty string at path ' + path.join('.'),
     );
   }
 
@@ -68,7 +54,7 @@ function validatePageObjectNode(
 
   if (typeof node !== 'object') {
     throw new Error(
-      'Page object node must be either a string, function or an object at path ' +
+      'Selector tree node must be either a string, function or an object at path ' +
         path.join('.'),
     );
   }
@@ -79,7 +65,7 @@ function validatePageObjectNode(
     typeof node._selector !== 'function'
   ) {
     throw new Error(
-      'Page object node selector must be either a string or a function at path ' +
+      'Selector tree node selector must be either a string or a function at path ' +
         path.join('.') +
         '._selector',
     );
@@ -87,14 +73,14 @@ function validatePageObjectNode(
 
   if (node._selector === '') {
     throw new Error(
-      'Page object node selector must not be empty string at path ' +
+      'Selector tree node selector must not be empty string at path ' +
         path.join('.') +
         '._selector',
     );
   }
 
   for (const key in node) {
-    validatePageObjectNode(node[key], [...path, key], canonicalPaths);
+    validateSelectorNode(node[key], [...path, key], canonicalPaths);
   }
 }
 
@@ -124,9 +110,9 @@ function reportAmbiguousPaths(canonicalPaths: string[]): void {
 
   if (ambiguousPaths.length > 0) {
     throw new Error(
-      'Ambiguous page object paths detected: ' +
+      'Ambiguous selector tree paths detected: ' +
         ambiguousPaths.map((path) => `"${path}"`).join(', ') +
-        '. Please use unique page object paths.',
+        '. Please use unique selector tree paths.',
     );
   }
 }

@@ -1,58 +1,53 @@
 import { expect, test } from '@jest/globals';
-import { Context } from '../interfaces/context.interface';
 import { buildInstructions } from './instruction-builder';
 import {
   ActionInstruction,
   AssertionInstruction,
   BuiltInActionInstruction,
   BuiltInAssertion,
-  CustomAssertion,
   SystemLevelInstruction,
 } from '../interfaces/instructions.interface';
+import { SelectorTree } from '../interfaces/selector-tree.interface';
 
 test('should throw if action target cannot be resolved', () => {
-  const context: Context = { pageObjectTree: {}, systemActions: {} };
   expect(() =>
     buildInstructions(
       'when I click form button then it should be visible',
-      context,
+      {},
+      {},
     ),
   ).toThrow('Could not resolve target path for "form button"');
 });
 
 test('should throw if action in unknown', () => {
-  const context: Context = {
-    systemActions: {},
-    pageObjectTree: {
-      form: {
-        _selector: 'form',
-        button: 'button',
-      },
+  const tree: SelectorTree = {
+    form: {
+      _selector: 'form',
+      button: 'button',
     },
   };
 
   expect(() =>
     buildInstructions(
       'when I foobar on form button then it should be visible',
-      context,
+      tree,
+      {},
     ),
   ).toThrow('Unknown action "foobar on form button"');
 });
 
 test('should build an action without arguments', () => {
-  const context: Context = {
-    pageObjectTree: {
-      form: {
-        _selector: 'form',
-        button: 'button',
-      },
+  const tree: SelectorTree = {
+    form: {
+      _selector: 'form',
+      button: 'button',
     },
-    systemActions: {},
   };
 
   const instructions = buildInstructions(
     'when I click form button then it should be visible',
-    context,
+    tree,
+    {},
   );
   expect(instructions[0]).toEqual({
     kind: 'builtin-action',
@@ -63,19 +58,17 @@ test('should build an action without arguments', () => {
 });
 
 test('should build an action with arguments', () => {
-  const context: Context = {
-    pageObjectTree: {
-      form: {
-        _selector: 'form',
-        button: 'button',
-      },
+  const tree: SelectorTree = {
+    form: {
+      _selector: 'form',
+      button: 'button',
     },
-    systemActions: {},
   };
 
   const instructions = buildInstructions(
     'when I type "foo" on form button then it should be visible',
-    context,
+    tree,
+    {},
   );
   expect(instructions[0]).toEqual({
     kind: 'builtin-action',
@@ -86,17 +79,15 @@ test('should build an action with arguments', () => {
 });
 
 test('should build an assertion', () => {
-  const context: Context = {
-    pageObjectTree: {
-      button: 'button',
-      welcomeMessage: 'h1',
-    },
-    systemActions: {},
+  const tree: SelectorTree = {
+    button: 'button',
+    welcomeMessage: 'h1',
   };
 
   const instructions = buildInstructions(
     'when I click on button then welcome message should be visible',
-    context,
+    tree,
+    {},
   );
   expect(instructions[1]).toEqual({
     kind: 'builtin-assertion',
@@ -114,17 +105,15 @@ test('should build an assertion', () => {
 });
 
 test('should build an assertion with quoted text argument', () => {
-  const context: Context = {
-    pageObjectTree: {
-      button: 'button',
-      welcomeMessage: 'h1',
-    },
-    systemActions: {},
+  const tree: SelectorTree = {
+    button: 'button',
+    welcomeMessage: 'h1',
   };
 
   const instructions = buildInstructions(
     'when I click on button then welcome message should have text "Hello, World!"',
-    context,
+    tree,
+    {},
   );
   expect(instructions[1]).toEqual({
     kind: 'builtin-assertion',
@@ -149,12 +138,8 @@ test('should build instructions with an action block', () => {
       In order to click twice on $button:
       - I click on it
       - I click on it`,
-    {
-      pageObjectTree: {
-        button: 'button',
-      },
-      systemActions: {},
-    },
+    { button: 'button' },
+    {},
   );
 
   const firstAction = instructions[0] as BuiltInActionInstruction;
@@ -178,12 +163,8 @@ test('should reject circular action blocks', () => {
 
       In order to click twice on button:
       - I click twice on button`,
-      {
-        pageObjectTree: {
-          button: 'button',
-        },
-        systemActions: {},
-      },
+      { button: 'button' },
+      {},
     ),
   ).toThrow(`Circular block detected: "click twice on button"
 Line 5, column 11:
@@ -204,12 +185,8 @@ test('should reject nested circular action blocks', () => {
       In order to foobar on button:
       - I click twice on button
       done`,
-      {
-        pageObjectTree: {
-          button: 'button',
-        },
-        systemActions: {},
-      },
+      { button: 'button' },
+      {},
     ),
   ).toThrow(`Circular block detected: "click twice on button"
 Line 9, column 11:
@@ -224,12 +201,8 @@ test('should build instructions with an assertion block', () => {
 
       For button to be shown:
       - it should be visible`,
-    {
-      pageObjectTree: {
-        button: 'button',
-      },
-      systemActions: {},
-    },
+    { button: 'button' },
+    {},
   );
 
   const assertion = instructions[1] as AssertionInstruction;
@@ -245,33 +218,11 @@ test('should build instructions with an assertion block', () => {
   expect(resolvedAssertion.chainer).toEqual('be.visible');
 });
 
-test('should build instructions with a custom assertion', () => {
-  const instructions = buildInstructions(
-    `when I click on button then it should be shown`,
-    {
-      pageObjectTree: {
-        button: {
-          _selector: 'button',
-          shouldBeShown: () => {},
-        },
-      },
-      systemActions: {},
-    },
-  );
-
-  const customAssertion = instructions[1] as CustomAssertion;
-
-  expect(customAssertion.kind).toBe('custom-assertion');
-  expect(customAssertion.method).toBe('shouldBeShown');
-});
-
 it('should build instructions with a builtin negated assertion', () => {
   const instructions = buildInstructions(
     'when I click button then it should not exist',
-    {
-      pageObjectTree: { button: 'button' },
-      systemActions: {},
-    },
+    { button: 'button' },
+    {},
   );
 
   const builtinAssertion = instructions[1] as BuiltInAssertion;
@@ -281,10 +232,11 @@ it('should build instructions with a builtin negated assertion', () => {
 
 test('should reject unknown assertions', () => {
   expect(() =>
-    buildInstructions(`when I click button then it should foobar`, {
-      pageObjectTree: { button: 'button' },
-      systemActions: {},
-    }),
+    buildInstructions(
+      `when I click button then it should foobar`,
+      { button: 'button' },
+      {},
+    ),
   ).toThrow('Unknown assertion "foobar"');
 });
 
@@ -297,12 +249,8 @@ test('should reject nested circular assertion blocks', () => {
       For button to be red:
       - it should be red
       done`,
-      {
-        pageObjectTree: {
-          button: 'button',
-        },
-        systemActions: {},
-      },
+      { button: 'button' },
+      {},
     ),
   ).toThrow(`Circular block detected: "be red"
 Line 5, column 19:
@@ -320,14 +268,12 @@ for $element to contain label {{content}}:
 - its label with text "{{content}}" should exist
 done`,
     {
-      pageObjectTree: {
-        button: {
-          _selector: 'button',
-          'label with text {{label}}': 'label[text="{{label}}"]',
-        },
+      button: {
+        _selector: 'button',
+        'label with text {{label}}': 'label[text="{{label}}"]',
       },
-      systemActions: {},
     },
+    {},
   );
 
   const firstBuiltinAssertion: BuiltInAssertion =
@@ -341,13 +287,9 @@ done`,
 test('should build instructions with a system statement', () => {
   const instructions = buildInstructions(
     'given stock is empty when I click button then it should be visible',
+    { button: 'button' },
     {
-      pageObjectTree: {
-        button: 'button',
-      },
-      systemActions: {
-        stockIsEmpty: () => {},
-      },
+      stockIsEmpty: () => {},
     },
   );
 
@@ -360,12 +302,8 @@ test('should throw if no matching system-level action is found', () => {
   expect(() =>
     buildInstructions(
       'given stock is empty when I click button then it should be visible',
-      {
-        pageObjectTree: {
-          button: 'button',
-        },
-        systemActions: {},
-      },
+      { button: 'button' },
+      {},
     ),
   ).toThrow('Unknown system-level action "stock is empty"');
 });

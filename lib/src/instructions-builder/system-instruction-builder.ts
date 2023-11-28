@@ -14,13 +14,13 @@ export function extractSystemLevelInstruction(
     .map((a) => a.toLowerCase())
     .join(' ');
 
-  for (const systemActionsKey in context.testContext.systemActions) {
-    const decamelized = decamelize(systemActionsKey);
+  for (const key in context.externals) {
+    const decamelized = decamelize(key);
     if (decamelized.toLowerCase() == actionName) {
       const args = statement.args.map((arg) => unquoted(arg.value));
       return {
         kind: 'system-level',
-        key: systemActionsKey,
+        key,
         args,
       };
     }

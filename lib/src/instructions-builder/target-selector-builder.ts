@@ -2,10 +2,7 @@ import { Token } from '../interfaces/token.interface';
 import { BuildContext } from '../interfaces/build-context.interface';
 import { resolve } from './resolver';
 import { prettyPrintError } from '../error';
-import {
-  PageObjectTree,
-  Selector,
-} from '../interfaces/page-object-tree.interface';
+import { SelectorTree, Selector } from '../interfaces/selector-tree.interface';
 import { ResolvedTarget } from '../interfaces/instructions.interface';
 import { unquoted } from '../quoted-text';
 import { interpolate } from './named-arguments';
@@ -21,13 +18,12 @@ export function extractTargetSelector(
     return null;
   }
 
-  const { testContext, previousPath, input } = buildContext;
-  const tree = testContext.pageObjectTree;
+  const { selectorTree, previousPath, input } = buildContext;
 
   if (target.length === 1 && target[0].value === 'it') {
     return {
       selectors: buildSelectors(
-        tree,
+        selectorTree,
         previousPath,
         target,
         input,
@@ -39,7 +35,7 @@ export function extractTargetSelector(
 
   const targetFragments = target.map((t) => t.value);
 
-  const targetPath = resolve(tree, targetFragments, previousPath);
+  const targetPath = resolve(selectorTree, targetFragments, previousPath);
 
   if (!targetPath) {
     throw new Error(
@@ -56,20 +52,26 @@ export function extractTargetSelector(
   buildContext.previousPath = targetPath;
 
   return {
-    selectors: buildSelectors(tree, targetPath, target, input, namedArguments),
+    selectors: buildSelectors(
+      selectorTree,
+      targetPath,
+      target,
+      input,
+      namedArguments,
+    ),
     path: targetPath,
   };
 }
 
 function buildSelectors(
-  tree: PageObjectTree,
+  tree: SelectorTree,
   targetPath: ResolvedTarget[],
   target: Token[],
   input: string,
   namedArguments: Record<string, string>,
 ) {
   const selectors: string[] = [];
-  let currentNode: PageObjectTree | Selector = tree;
+  let currentNode: SelectorTree | Selector = tree;
 
   targetPath.forEach((pathSegment) => {
     if (
