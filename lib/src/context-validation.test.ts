@@ -2,7 +2,7 @@ import { test, expect } from '@jest/globals';
 import { validateContext } from './context-validation';
 import { SelectorTree } from './interfaces/selector-tree.interface';
 
-test('should validate context with valid systemActions and selector tree', () => {
+test('should validate context with valid externals and selector tree', () => {
   const tree: SelectorTree = {
     form: {
       _selector: 'form',
@@ -22,16 +22,9 @@ test('should throw if selector tree is missing', () => {
   expect(() => validateContext(null, {})).toThrow('Selector tree is required');
 });
 
-test('should throw if systemActions contains non-function values', () => {
-  const tree: SelectorTree = {
-    form: {
-      _selector: 'form',
-      button: 'button',
-    },
-  };
-
+test('should throw if externals contains non-function values', () => {
   expect(() =>
-    validateContext(tree, {
+    validateContext({}, {
       // @ts-expect-error - testing invalid context
       action1: 123456,
     }),
