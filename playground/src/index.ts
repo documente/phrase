@@ -1,7 +1,9 @@
 import {EditorView, basicSetup} from "codemirror"
-import {javascript} from "@codemirror/lang-javascript"
 import {buildInstructions} from "../../lib/src/instructions-builder/instruction-builder";
 import {validateContext} from "../../lib/src/context-validation";
+import * as yamlMode from '@codemirror/legacy-modes/mode/yaml';
+import { StreamLanguage, LanguageSupport } from "@codemirror/language"
+import * as YAML from 'yaml';
 
 const localStorageContextKey = 'playground-context';
 const savedContext = localStorage.getItem(localStorageContextKey);
@@ -9,33 +11,23 @@ const savedContext = localStorage.getItem(localStorageContextKey);
 const localStorageTestKey = 'playground-test';
 const savedTest = localStorage.getItem(localStorageTestKey);
 
-const contextEditor = new EditorView({
-  doc: savedContext ?? `{
-  systemActions: {
-    databaseIsSeededWithDefaultData() {/* ... */},
-  },
-  pageObjectTree: {
-    welcomePage: {
-      _selector: '.welcome',
-      greetButton: 'button',
-      welcomeMessage: {
-        _selector: '.message',
-        shouldHaveFragmentHighlighted(self, fragment) {/* ... */},
-      }
-    }
-  }
-}
+const yamlLanguageSupport = new LanguageSupport(StreamLanguage.define(yamlMode.yaml));
+
+const treeEditor = new EditorView({
+  doc: savedContext ?? `welcomePage:
+  _selector: .welcome
+  greetButton: button
+  welcomeMessage:
+    _selector: .message
 `,
-  extensions: [basicSetup, javascript()],
+  extensions: [basicSetup, yamlLanguageSupport],
   parent: document.body.querySelector("#context-editor")!,
 });
 
 const testEditor = new EditorView({
-  doc: savedTest ?? `given database is seeded with default data
-when I click on welcome page greet button
+  doc: savedTest ?? `When I click on welcome page greet button
 then welcome message should be visible
-and it should have text "Hello, World!"
-and it should have fragment "World!" highlighted`,
+and it should have text "Hello, World!"`,
   extensions: [basicSetup],
   parent: document.body.querySelector("#test-editor")!,
 });
@@ -45,16 +37,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const outputElement = document.querySelector('#output') as HTMLSpanElement;
 
   document.body.querySelector('#run-button')?.addEventListener('click', () => {
-    const context = contextEditor.state.doc.toString();
+    const tree = treeEditor.state.doc.toString();
     const test = testEditor.state.doc.toString();
 
-    localStorage.setItem(localStorageContextKey, context);
+    localStorage.setItem(localStorageContextKey, tree);
     localStorage.setItem(localStorageTestKey, test);
 
     try {
-      const contextValue = new Function(`return ${context}`)();
-      validateContext(contextValue);
-      const instructions = buildInstructions(test, contextValue);
+      const treeObject = YAML.parse(tree);
+      validateContext(treeObject);
+      const instructions = buildInstructions(test, treeObject, {});
       outputElement.innerText = JSON.stringify(instructions, null, 2);
       outputElement.classList.remove('error');
     } catch(error) {
