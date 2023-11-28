@@ -2,7 +2,7 @@ import {EditorView, basicSetup} from "codemirror"
 import {buildInstructions} from "../../lib/src/instructions-builder/instruction-builder";
 import {validateContext} from "../../lib/src/context-validation";
 import * as yamlMode from '@codemirror/legacy-modes/mode/yaml';
-import { StreamLanguage, LanguageSupport } from "@codemirror/language"
+import { StreamLanguage } from "@codemirror/language"
 import * as YAML from 'yaml';
 
 const localStorageContextKey = 'playground-context';
@@ -11,8 +11,6 @@ const savedContext = localStorage.getItem(localStorageContextKey);
 const localStorageTestKey = 'playground-test';
 const savedTest = localStorage.getItem(localStorageTestKey);
 
-const yamlLanguageSupport = new LanguageSupport(StreamLanguage.define(yamlMode.yaml));
-
 const treeEditor = new EditorView({
   doc: savedContext ?? `welcomePage:
   _selector: .welcome
@@ -20,8 +18,8 @@ const treeEditor = new EditorView({
   welcomeMessage:
     _selector: .message
 `,
-  extensions: [basicSetup, yamlLanguageSupport],
-  parent: document.body.querySelector("#context-editor")!,
+  extensions: [basicSetup, StreamLanguage.define(yamlMode.yaml)],
+  parent: document.body.querySelector("#tree-editor")!,
 });
 
 const testEditor = new EditorView({
