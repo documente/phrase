@@ -31,7 +31,7 @@ and it should have text "Hello, World!"`,
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  // We treat this element as a span because there isn't dedicated HTML*Element type for it
+  // We treat this code element as a span because there isn't dedicated HTML*Element type for it
   const outputElement = document.querySelector('#output') as HTMLSpanElement;
 
   document.body.querySelector('#run-button')?.addEventListener('click', () => {
