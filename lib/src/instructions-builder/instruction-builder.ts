@@ -1,7 +1,5 @@
 import { Context } from '../interfaces/context.interface';
-import {
-  Instruction,
-} from '../interfaces/instructions.interface';
+import { Instruction } from '../interfaces/instructions.interface';
 import { Parser } from '../parser';
 import {
   Block,
