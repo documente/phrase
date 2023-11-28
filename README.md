@@ -145,7 +145,7 @@ Example custom assertion:
 When I click on login form confirm button then login form should show login error message
 done
 
-For $element to be show login error message:
+For $element to show login error message:
 - its error message should be visible
 - it should have text "Please check your credentials"
 done
