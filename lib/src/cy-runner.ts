@@ -1,17 +1,14 @@
 import {
   BuiltInActionInstruction,
   BuiltInAssertion,
-  CustomAssertion,
   Instruction,
   SystemLevelInstruction,
 } from './interfaces/instructions.interface';
-import { getNode } from './get-node';
 import { Externals } from './interfaces/externals.interface';
 import { validateContext } from './context-validation';
 import { SelectorTree } from './interfaces/selector-tree.interface';
 import { buildInstructions } from './instructions-builder/instruction-builder';
 import YAML from 'yaml';
-import { extractFunctionName } from './function-name';
 
 interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: unknown[]): void;
@@ -41,8 +38,6 @@ export function withContext(
       runAction(instruction);
     } else if (instruction.kind === 'builtin-assertion') {
       runBuiltInAssertion(instruction);
-    } else if (instruction.kind === 'custom-assertion') {
-      runCustomAssertion(instruction, tree);
     }
   }
 
@@ -146,41 +141,4 @@ function runBuiltInAssertion(assertion: BuiltInAssertion): void {
   }
 
   cy.get(selectors.join(' ')).should(assertion.chainer, ...args);
-}
-
-function runCustomAssertion(assertion: CustomAssertion, tree: SelectorTree) {
-  const customAssertion = findCustomAssertion(assertion, tree);
-
-  const { selectors, args } = assertion;
-
-  if (customAssertion) {
-    if (!selectors) {
-      throw new Error('Target selectors are required for custom assertions.');
-    }
-
-    customAssertion(cy.get(selectors.join(' ')), ...args);
-    return;
-  }
-
-  throw new Error(`Unknown assertion: ${assertion}`);
-}
-
-function findCustomAssertion(
-  assertion: CustomAssertion,
-  tree: SelectorTree,
-): (...args: unknown[]) => void {
-  const target = assertion.target;
-
-  if (!target) {
-    throw new Error('Target is required for custom assertions.');
-  }
-
-  const node = getNode(
-    tree,
-    target.map((t) => t.key),
-  );
-
-  return node[assertion.method as keyof typeof node] as (
-    ...args: unknown[]
-  ) => void;
 }

@@ -3,14 +3,11 @@ import { BuildContext } from '../interfaces/build-context.interface';
 import {
   AssertionInstruction,
   BlockAssertionInstruction,
-  ResolvedTarget,
 } from '../interfaces/instructions.interface';
 import { extractTargetSelector } from './target-selector-builder';
 import { unquoted } from '../quoted-text';
 import { prettyPrintError } from '../error';
 import { KnownChainer } from '../known-chainers';
-import { SelectorTree } from '../interfaces/selector-tree.interface';
-import { getNode } from '../get-node';
 import {
   interpolate,
   isNamedArgument,
@@ -55,24 +52,6 @@ export function extractAssertionInstruction(
       target: resolved?.path ?? null,
       args,
     };
-  }
-
-  if (statement.target) {
-    const customAssertion = findCustomAssertion(
-      assertionName,
-      resolved?.path ?? null,
-      buildContext.selectorTree,
-    );
-
-    if (customAssertion) {
-      return {
-        kind: 'custom-assertion',
-        method: customAssertion,
-        selectors,
-        target: resolved?.path ?? null,
-        args,
-      };
-    }
   }
 
   throw new Error(
@@ -152,40 +131,6 @@ function findBuiltinAssertion(assertion: string): string | null {
   if (isKnown) {
     const resolved = KnownChainer[assertion as keyof typeof KnownChainer];
     return isNegated ? 'not.' + resolved : resolved;
-  }
-
-  return null;
-}
-
-function findCustomAssertion(
-  assertion: string,
-  target: ResolvedTarget[] | null,
-  tree: SelectorTree,
-): string | null {
-  if (!target) {
-    return null;
-  }
-
-  const node = getNode(
-    tree,
-    target.map((t) => t.key),
-  );
-  const assertionTestValue = assertion.split(' ').join('').toLowerCase();
-
-  for (const key in node) {
-    const keyWithoutShould = key
-      .toLowerCase()
-      .split('_')
-      .join('')
-      .replace('should', '');
-    const candidate = node[key];
-
-    if (
-      keyWithoutShould === assertionTestValue &&
-      typeof candidate === 'function'
-    ) {
-      return key;
-    }
   }
 
   return null;

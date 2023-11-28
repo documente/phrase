@@ -37,11 +37,6 @@ interface BaseAssertionInstruction {
   args: string[];
 }
 
-export interface CustomAssertion extends BaseAssertionInstruction {
-  kind: 'custom-assertion';
-  method: string;
-}
-
 export interface BuiltInAssertion extends BaseAssertionInstruction {
   kind: 'builtin-assertion';
   chainer: string;
@@ -54,10 +49,7 @@ export interface BlockAssertionInstruction extends BaseAssertionInstruction {
   namedArguments: Record<string, string>;
 }
 
-export type AssertionInstruction =
-  | CustomAssertion
-  | BuiltInAssertion
-  | BlockAssertionInstruction;
+export type AssertionInstruction = BuiltInAssertion | BlockAssertionInstruction;
 
 export interface SystemLevelInstruction {
   kind: 'system-level';

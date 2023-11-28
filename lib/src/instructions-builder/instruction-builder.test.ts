@@ -5,7 +5,6 @@ import {
   AssertionInstruction,
   BuiltInActionInstruction,
   BuiltInAssertion,
-  CustomAssertion,
   SystemLevelInstruction,
 } from '../interfaces/instructions.interface';
 import { SelectorTree } from '../interfaces/selector-tree.interface';
