@@ -14,7 +14,7 @@ A fluent automated testing library for web applications
 
 ## Project Overview
 
-Phrasé (prononced /fraz-ay/) is a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
+Phrasé (pronounced /fraz-ay/) is a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
 
 - **Readability for the Whole Team**: Test cases should be easily comprehensible by every member of the product team, fostering a ubiquitous language that promotes collaboration.
 - **Rapid Feedback Loop**: Our tooling aims at providing prompt feedback, enabling your team to swiftly identify and address any issues that may arise.
@@ -44,20 +44,20 @@ Learn more about the language structure in the [Language Overview](docs/language
 
 ### System Under Test (SUT) Representation
 
-In the tests, the System Under Test (SUT) is depicted as a tree structure, with each node representing a component of the application. Nodes are assigned names and come with selectors. Additionally, nodes have the capability to define custom actions and assertions.
+In the tests, the System Under Test (SUT) is depicted as a YAML or JSON tree structure, with each node representing a component of the application. Nodes are assigned names and come with selectors.
 
 Here's an illustrative example:
-```javascript
-tree = {
-  welcomePage: {
-    _selector: '.welcome',
-    greetButton: 'button',
-    welcomeMessage: {
-      _selector: '.message',
-      shouldHaveFragmentHighlighted(self, fragment) {/* ... */},
-    }
-  }
-}
+```yaml
+pageObjectTree:
+  welcome page:
+    _selector: #welcome
+    greet button: button
+    welcome message: span.message
+  login form:
+    _selector: [data-test-id="login-form"]
+    login field: input[type="text"]
+    password field: input[type="password"]
+    confirm button: button
 ```
 
 This declarative approach offers inherent flexibility and facilitates test reuse. It eliminates the need for investing time and effort in a Page Object Pattern, mitigating the risk of misalignment with the evolving application under test.
@@ -66,15 +66,12 @@ This declarative approach offers inherent flexibility and facilitates test reuse
 
 Within test sentences, component selection is facilitated by traversing the System Under Test (SUT) tree representation. For instance, consider the following tree:
 
-```javascript
-tree = {
-  foo: {
-    bar: {
-    },
-    baz: {
-    }
-  }
-}
+```yaml
+pageObjectTree:
+  foo:
+    _selector: #foo
+    bar: #bar
+    baz: #baz
 ```
 
 You can select the `bar` component by specifying the path "foo bar".
@@ -111,6 +108,22 @@ The library provides a range of built-in user actions, simplifying the testing p
 
 You can also define custom user actions. This allows testers and developers to define actions that are specific to their application requirements or to encapsulate complex sequences of interactions.
 
+Example custom user action :
+
+```
+When I enter "Hello, World!" in message field
+then welcome message should be visible
+done
+
+In order to enter {{text}} in $element:
+- I click on its button
+- I type "{{text}}" into input
+- I click confirm button
+done
+```
+
+Custom actions are structured with a header following the form `In order to [action name]:`, followed by a bullet list of statements detailing the steps required for the action to complete. These custom actions can also define named parameters using the mustache-like syntax `{{parameter name}}`.
+
 #### System state changes
 
 System state changes are used to define the initial state of the application under test (SUT) or to simulate changes in the system state. These changes can be used to set up the application for testing or to simulate specific scenarios.
@@ -124,7 +137,21 @@ The library builds upon Cypress's built-in assertions such as :
 - should exist
 - should have text
 
-As every application is different, you can also define specific assertions on your components by declaring them in the selector tree.
+As every application is different, you can also define custom assertions or overwrite the existing ones.
+
+Example custom assertion:
+
+```
+When I click on login form confirm button then login form should show login error message
+done
+
+For $element to be show login error message:
+- its error message should be visible
+- it should have text "Please check your credentials"
+done
+```
+
+Custom assertions are built with a header following the form `For $element to [assertion name]:`, followed by a bullet list of statements.
 
 ## Repository structure
 
