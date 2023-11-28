@@ -111,6 +111,22 @@ The library provides a range of built-in user actions, simplifying the testing p
 
 You can also define custom user actions. This allows testers and developers to define actions that are specific to their application requirements or to encapsulate complex sequences of interactions.
 
+Example custom user action :
+
+```
+When I enter "Hello, World!" in message field
+then welcome message should be visible
+done
+
+In order to enter {{text}} in $element:
+- I click on its button
+- I type "{{text}}" into input
+- I click confirm button
+done
+```
+
+Custom actions are structured with a header following the form `In order to [action name]:`, followed by a bullet list of statements detailing the steps required for the action to complete. These custom actions can also define named parameters using the mustache-like syntax `{{parameter name}}`.
+
 #### System state changes
 
 System state changes are used to define the initial state of the application under test (SUT) or to simulate changes in the system state. These changes can be used to set up the application for testing or to simulate specific scenarios.
@@ -124,7 +140,21 @@ The library builds upon Cypress's built-in assertions such as :
 - should exist
 - should have text
 
-As every application is different, you can also define specific assertions on your components by declaring them in the selector tree.
+As every application is different, you can also define custom assertions or overwrite the existing ones.
+
+Example custom assertion:
+
+```
+When I click on login form confirm button then login form should show login error message
+done
+
+For $element to be show login error message:
+- its error message should be visible
+- it should have text "Please check your credentials"
+done
+```
+
+Custom assertions are built with a header following the form `For $element to [assertion name]:`, followed by a bullet list of statements.
 
 ## Repository structure
 
