@@ -327,7 +327,9 @@ export class Parser {
   }
 
   matches(...candidates: string[]): boolean {
-    return candidates.includes(this.currentValue);
+    return candidates
+      .map((candidate) => candidate.toLowerCase())
+      .includes(this.currentValue?.toLowerCase());
   }
 
   matchesKind(...kinds: Token['kind'][]): boolean {
