@@ -1,33 +1,30 @@
 import {withContext} from '../../../lib/dist/cy-runner';
 
 const test = withContext({
-  pageObjectTree: {
-    loginForm: {
-      _selector: '.login-form',
-      loginField: 'input[type="text"]',
-      passwordField: 'input[type="password"]',
-      confirmButton: 'button[type="submit"]',
-    },
-    loginErrorMessage: '.error-message',
-    welcomeMessage: '.welcome-message',
-    newTaskTitleField: '.new-task-title',
-    addTaskButton: '.add-task-button',
-    'task with text {{text}}': {
-      _selector: `.task[data-test-title="{{text}}"]`,
-      title: '.title',
-      deleteButton: '.delete-button',
-    },
-    taskList: {
-      _selector: '.task-list',
-      children: '.task'
-    }
+  loginForm: {
+    _selector: '.login-form',
+    loginField: 'input[type="text"]',
+    passwordField: 'input[type="password"]',
+    confirmButton: 'button[type="submit"]',
   },
-  systemActions: {
-    taskListIsEmpty() {
-      // Quick and dirty way to reset the server state
-      cy.request('DELETE', 'http://localhost:5000/api/all-tasks');
-    }
+  loginErrorMessage: '.error-message',
+  welcomeMessage: '.welcome-message',
+  newTaskTitleField: '.new-task-title',
+  addTaskButton: '.add-task-button',
+  'task with text {{text}}': {
+    _selector: `.task[data-test-title="{{text}}"]`,
+    title: '.title',
+    deleteButton: '.delete-button',
   },
+  taskList: {
+    _selector: '.task-list',
+    children: '.task'
+  },
+}, {
+  taskListIsEmpty() {
+    // Quick and dirty way to reset the server state
+    cy.request('DELETE', 'http://localhost:5000/api/all-tasks');
+  }
 });
 
 const baseUrl = 'http://localhost:3000/';
