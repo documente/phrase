@@ -50,7 +50,7 @@ Here's an illustrative example:
 ```yaml
 pageObjectTree:
   welcome page:
-    _selector: #welcome
+    _selector: "#welcome"
     greet button: button
     welcome message: span.message
   login form:
@@ -69,9 +69,9 @@ Within test sentences, component selection is facilitated by traversing the Syst
 ```yaml
 pageObjectTree:
   foo:
-    _selector: #foo
-    bar: #bar
-    baz: #baz
+    _selector: "#foo"
+    bar: "#bar"
+    baz: "#baz"
 ```
 
 You can select the `bar` component by specifying the path "foo bar".
