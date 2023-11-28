@@ -1,12 +1,12 @@
 import { getNode } from '../get-node';
 import { isQuoted } from '../quoted-text';
-import { PageObjectTree } from '../interfaces/page-object-tree.interface';
+import { SelectorTree } from '../interfaces/selector-tree.interface';
 import { ResolvedTarget } from '../interfaces/instructions.interface';
 import { withNamedArgumentsRemoved } from './named-arguments';
 import { decamelize } from '../decamelize';
 
 export function resolve(
-  tree: PageObjectTree,
+  tree: SelectorTree,
   pathSegments: string[],
   previous: ResolvedTarget[],
 ): ResolvedTarget[] | undefined {
@@ -69,7 +69,7 @@ export function resolve(
 }
 
 export function resolvePath(
-  tree: PageObjectTree,
+  tree: SelectorTree,
   pathSegments: string[],
 ): ResolvedTarget | undefined {
   const keys = Object.keys(tree);
@@ -93,7 +93,7 @@ export function resolvePath(
 }
 
 export function resolvePathRecursively(
-  node: PageObjectTree,
+  node: SelectorTree,
   pathSegments: string[],
   resolvedSoFar: ResolvedTarget[] = [],
 ): ResolvedTarget[] | undefined {
@@ -118,7 +118,7 @@ export function resolvePathRecursively(
   const matchLength = match.fragments.length + (group.arg ? 1 : 0);
 
   return resolvePathRecursively(
-    node[match.key] as PageObjectTree,
+    node[match.key] as SelectorTree,
     pathSegments.slice(matchLength),
     [...resolvedSoFar, matchWithArg],
   );

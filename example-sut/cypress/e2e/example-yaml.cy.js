@@ -2,20 +2,20 @@ import {withContext} from '../../../lib/dist/cy-runner';
 
 const test = withContext(`
 pageObjectTree:
-  loginForm:
+  login form:
     _selector: .login-form
-    loginField: input[type="text"]
-    passwordField: input[type="password"]
-    confirmButton: button[type="submit"]
-  loginErrorMessage: .error-message
-  welcomeMessage: .welcome-message
-  newTaskTitleField: .new-task-title
-  addTaskButton: .add-task-button
+    login field: input[type="text"]
+    password field: input[type="password"]
+    confirm button: button[type="submit"]
+  login error message: .error-message
+  welcome message: .welcome-message
+  new task title field: .new-task-title
+  add task button: .add-task-button
   task with text {{text}}:
     _selector: .task[data-test-title="{{text}}"]
     title: .title
-    deleteButton: .delete-button
-  taskList:
+    delete button: .delete-button
+  task list:
     _selector: .task-list
     children: .task
 systemActions:

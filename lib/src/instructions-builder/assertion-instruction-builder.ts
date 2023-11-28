@@ -9,7 +9,7 @@ import { extractTargetSelector } from './target-selector-builder';
 import { unquoted } from '../quoted-text';
 import { prettyPrintError } from '../error';
 import { KnownChainer } from '../known-chainers';
-import { PageObjectTree } from '../interfaces/page-object-tree.interface';
+import { SelectorTree } from '../interfaces/selector-tree.interface';
 import { getNode } from '../get-node';
 import {
   interpolate,
@@ -61,7 +61,7 @@ export function extractAssertionInstruction(
     const customAssertion = findCustomAssertion(
       assertionName,
       resolved?.path ?? null,
-      buildContext.testContext.pageObjectTree,
+      buildContext.selectorTree,
     );
 
     if (customAssertion) {
@@ -160,7 +160,7 @@ function findBuiltinAssertion(assertion: string): string | null {
 function findCustomAssertion(
   assertion: string,
   target: ResolvedTarget[] | null,
-  tree: PageObjectTree,
+  tree: SelectorTree,
 ): string | null {
   if (!target) {
     return null;

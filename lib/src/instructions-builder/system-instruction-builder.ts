@@ -14,7 +14,7 @@ export function extractSystemLevelInstruction(
     .map((a) => a.toLowerCase())
     .join(' ');
 
-  for (const systemActionsKey in context.testContext.systemActions) {
+  for (const systemActionsKey in context.externals) {
     const decamelized = decamelize(systemActionsKey);
     if (decamelized.toLowerCase() == actionName) {
       const args = statement.args.map((arg) => unquoted(arg.value));

@@ -1,10 +1,10 @@
-import { PageObjectTree } from './interfaces/page-object-tree.interface';
+import { SelectorTree } from './interfaces/selector-tree.interface';
 
 export function getNode(
-  tree: PageObjectTree,
+  tree: SelectorTree,
   pathSegments: string[],
-): PageObjectTree {
-  return pathSegments.reduce((node: PageObjectTree, pathSegment: string) => {
-    return node[pathSegment] as PageObjectTree;
+): SelectorTree {
+  return pathSegments.reduce((node: SelectorTree, pathSegment: string) => {
+    return node[pathSegment] as SelectorTree;
   }, tree);
 }

@@ -1,4 +1,3 @@
-import { Context } from '../interfaces/context.interface';
 import { Instruction } from '../interfaces/instructions.interface';
 import { Parser } from '../parser';
 import {
@@ -8,10 +7,13 @@ import {
 } from '../interfaces/statements.interface';
 import { BuildContext } from '../interfaces/build-context.interface';
 import { extractInstructionsFromStatement } from './generic-instruction-extractor';
+import { SelectorTree } from '../interfaces/selector-tree.interface';
+import { Externals } from '../interfaces/externals.interface';
 
 export function buildInstructions(
   input: string,
-  context: Context,
+  selectorTree: SelectorTree,
+  externals: Externals,
 ): Instruction[] {
   const parser = new Parser();
   const sections = parser.parse(input);
@@ -21,7 +23,8 @@ export function buildInstructions(
 
   const buildContext: BuildContext = {
     previousPath: [],
-    testContext: context,
+    selectorTree,
+    externals,
     blocks,
     input,
   };
