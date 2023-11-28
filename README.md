@@ -44,20 +44,20 @@ Learn more about the language structure in the [Language Overview](docs/language
 
 ### System Under Test (SUT) Representation
 
-In the tests, the System Under Test (SUT) is depicted as a tree structure, with each node representing a component of the application. Nodes are assigned names and come with selectors. Additionally, nodes have the capability to define custom actions and assertions.
+In the tests, the System Under Test (SUT) is depicted as a YAML or JSON tree structure, with each node representing a component of the application. Nodes are assigned names and come with selectors.
 
 Here's an illustrative example:
-```javascript
-tree = {
-  welcomePage: {
-    _selector: '.welcome',
-    greetButton: 'button',
-    welcomeMessage: {
-      _selector: '.message',
-      shouldHaveFragmentHighlighted(self, fragment) {/* ... */},
-    }
-  }
-}
+```yaml
+pageObjectTree:
+  welcome page:
+    _selector: #welcome
+    greet button: button
+    welcome message: span.message
+  login form:
+    _selector: [data-test-id="login-form"]
+    login field: input[type="text"]
+    password field: input[type="password"]
+    confirm button: button
 ```
 
 This declarative approach offers inherent flexibility and facilitates test reuse. It eliminates the need for investing time and effort in a Page Object Pattern, mitigating the risk of misalignment with the evolving application under test.
@@ -66,15 +66,12 @@ This declarative approach offers inherent flexibility and facilitates test reuse
 
 Within test sentences, component selection is facilitated by traversing the System Under Test (SUT) tree representation. For instance, consider the following tree:
 
-```javascript
-tree = {
-  foo: {
-    bar: {
-    },
-    baz: {
-    }
-  }
-}
+```yaml
+pageObjectTree:
+  foo:
+    _selector: #foo
+    bar: #bar
+    baz: #baz
 ```
 
 You can select the `bar` component by specifying the path "foo bar".
