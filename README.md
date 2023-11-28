@@ -14,7 +14,7 @@ A fluent automated testing library for web applications
 
 ## Project Overview
 
-Phrasé (prononced /fraz-ay/) is a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
+Phrasé (pronounced /fraz-ay/) is a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
 
 - **Readability for the Whole Team**: Test cases should be easily comprehensible by every member of the product team, fostering a ubiquitous language that promotes collaboration.
 - **Rapid Feedback Loop**: Our tooling aims at providing prompt feedback, enabling your team to swiftly identify and address any issues that may arise.
