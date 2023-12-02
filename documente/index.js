@@ -25,20 +25,31 @@ const cySpecTemplate = fs.readFileSync(resolve(__dirname, 'cy-spec.mustache'), '
 files.forEach(file => {
   const sourceFileName = basename(file);
   const fileContent = fs.readFileSync(resolve(workingDir, file), 'utf8');
-  const blocks = fileContent.match(/```phrasé[^`]*```/g);
-  blocks.forEach((block, index) => {
+
+  console.log(fileContent);
+
+  const regex = /```phrasé[^`]*```/gm;
+
+  const blocks = fileContent.match(regex);
+
+  console.log(blocks);
+
+  const specs = blocks.map((block, index) => {
     const blockContent = block.replace(/```phrasé([^`]*)```/, '$1');
-    console.log(blockContent);
-    const view = {
-      pathToExternals: relative(resolve(outputDir), resolve(externals)).replace(/\\/g, '/'),
-      selectorTree: selectorsFile,
-      sourceFileName: sourceFileName,
+    return {
+      spec: blockContent.trim(),
       specNumber: index + 1,
-      spec: blockContent,
     };
-    const rendered = Mustache.render(cySpecTemplate, view);
-    const outputFileName = `${sourceFileName.replace(/\.md$/, '')}.generated.cy.js`;
-    const pathToOutputFile = resolve(process.cwd(), workingDir, outputDir, outputFileName);
-    fs.writeFileSync(pathToOutputFile, rendered, 'utf8');
-  })
+  });
+
+  const view = {
+    pathToExternals: relative(resolve(outputDir), resolve(externals)).replace(/\\/g, '/'),
+    selectorTree: selectorsFile,
+    sourceFileName: sourceFileName,
+    specs,
+  };
+  const rendered = Mustache.render(cySpecTemplate, view);
+  const outputFileName = `${sourceFileName.replace(/\.md$/, '')}.generated.cy.js`;
+  const pathToOutputFile = resolve(process.cwd(), workingDir, outputDir, outputFileName);
+  fs.writeFileSync(pathToOutputFile, rendered, 'utf8');
 });

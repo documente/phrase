@@ -8,8 +8,11 @@ const selectorTree = `
 const test = withContext(selectorTree, externals);
 
 describe('specs from {{{sourceFileName}}}', () => {
+{{#specs}}
   it('spec #{{specNumber}}', () => {
     test `
 {{{spec}}}`;
   });
+
+{{/specs}}
 });
