@@ -1,0 +1,15 @@
+import { withContext } from '../../../lib/src/cy-runner';
+import externals from '{{{pathToExternals}}}';
+
+const selectorTree = `
+{{{selectorTree}}}
+`;
+
+const test = withContext(selectorTree, externals);
+
+describe('specs from {{{sourceFileName}}}', () => {
+  it('spec #{{specNumber}}', () => {
+    test `
+{{{spec}}}`;
+  });
+});
