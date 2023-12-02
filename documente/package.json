@@ -1,0 +1,15 @@
+{
+  "name": "documente",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "pckerneis",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "glob": "^10.3.10",
+    "mustache": "^4.2.0",
+    "yaml": "^2.3.4"
+  }
+}
