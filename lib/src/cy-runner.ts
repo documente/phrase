@@ -14,14 +14,6 @@ interface TestFunction {
   (strings: TemplateStringsArray | string, ...values: unknown[]): void;
 }
 
-function runSystemLevel(
-  instruction: SystemLevelInstruction,
-  externals: Externals,
-): void {
-  const systemAction = externals[instruction.key];
-  systemAction(...instruction.args);
-}
-
 export function withContext(
   selectorTree: SelectorTree | string,
   externals: Externals,
@@ -141,4 +133,12 @@ function runBuiltInAssertion(assertion: BuiltInAssertion): void {
   }
 
   cy.get(selectors.join(' ')).should(assertion.chainer, ...args);
+}
+
+function runSystemLevel(
+  instruction: SystemLevelInstruction,
+  externals: Externals,
+): void {
+  const systemAction = externals[instruction.key];
+  systemAction(...instruction.args);
 }

@@ -21,3 +21,34 @@ and I click on login form confirm button
 then login error message should be visible
 and it should have text "Please enter a username and password"
 ```
+
+You can also have reusable blocks such as these :
+
+```phrasé
+In order to login:
+- I visit "http://localhost:3000"
+- I type "user01" on login form login field
+- I type "password" on password field
+- I click on login form confirm button
+done
+
+In order to add a task with title {{title}}:
+- I type "{{title}}" on new task title field
+- I click on add task button
+done
+
+for $element to have {{count}} task:
+- its children should have length {{count}}
+done
+```
+
+You can use these blocks in your test cases like this :
+
+```phrasé
+given task list is empty
+and I login
+and I add a task with title "Buy milk"
+when I click on task with text "Buy milk" delete button
+then task list should have 0 task
+done
+```

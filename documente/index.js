@@ -25,14 +25,8 @@ const cySpecTemplate = fs.readFileSync(resolve(__dirname, 'cy-spec.mustache'), '
 files.forEach(file => {
   const sourceFileName = basename(file);
   const fileContent = fs.readFileSync(resolve(workingDir, file), 'utf8');
-
-  console.log(fileContent);
-
   const regex = /```phrasé[^`]*```/gm;
-
   const blocks = fileContent.match(regex);
-
-  console.log(blocks);
 
   const specs = blocks.map((block, index) => {
     const blockContent = block.replace(/```phrasé([^`]*)```/, '$1');

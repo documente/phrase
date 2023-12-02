@@ -24,10 +24,13 @@ test('should throw if selector tree is missing', () => {
 
 test('should throw if externals contains non-function values', () => {
   expect(() =>
-    validateContext({}, {
-      // @ts-expect-error - testing invalid context
-      action1: 123456,
-    }),
+    validateContext(
+      {},
+      {
+        // @ts-expect-error - testing invalid context
+        action1: 123456,
+      },
+    ),
   ).toThrow('externals.action1 must be a function');
 });
 

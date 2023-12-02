@@ -4,8 +4,8 @@ import { Token } from '../interfaces/token.interface';
 
 test('should detect builtin actions without argument and without target', () => {
   const tokens: Token[] = [
-    { kind: 'generic', value: 'go', line: 1, column: 1 },
-    { kind: 'generic', value: 'back', line: 1, column: 4 },
+    { kind: 'generic', value: 'go', line: 1, column: 1, index: 0 },
+    { kind: 'generic', value: 'back', line: 1, column: 4, index: 0 },
   ];
   const parts: QualifiedPatternPart[] = [{ kind: 'text', value: 'go back' }];
 
@@ -17,11 +17,11 @@ test('should detect builtin actions without argument and without target', () => 
 
 test('should detect builtin actions without argument and with target', () => {
   const tokens: Token[] = [
-    { kind: 'generic', value: 'check', line: 1, column: 1 },
-    { kind: 'generic', value: 'task', line: 1, column: 6 },
-    { kind: 'generic', value: 'with', line: 1, column: 9 },
-    { kind: 'generic', value: 'text', line: 1, column: 14 },
-    { kind: 'generic', value: '"foo"', line: 1, column: 19 },
+    { kind: 'generic', value: 'check', line: 1, column: 1, index: 0 },
+    { kind: 'generic', value: 'task', line: 1, column: 6, index: 0 },
+    { kind: 'generic', value: 'with', line: 1, column: 9, index: 0 },
+    { kind: 'generic', value: 'text', line: 1, column: 14, index: 0 },
+    { kind: 'generic', value: '"foo"', line: 1, column: 19, index: 0 },
   ];
   const parts: QualifiedPatternPart[] = [
     { kind: 'text', value: 'check' },
@@ -39,11 +39,11 @@ test('should detect builtin actions without argument and with target', () => {
 
 test('should detect builtin actions with argument and with target and preposition', () => {
   const tokens: Token[] = [
-    { kind: 'generic', value: 'select', line: 1, column: 1 },
-    { kind: 'generic', value: '"foo"', line: 1, column: 8 },
-    { kind: 'generic', value: 'in', line: 1, column: 14 },
-    { kind: 'generic', value: 'bar', line: 1, column: 17 },
-    { kind: 'generic', value: 'select', line: 1, column: 21 },
+    { kind: 'generic', value: 'select', line: 1, column: 1, index: 0 },
+    { kind: 'generic', value: '"foo"', line: 1, column: 8, index: 0 },
+    { kind: 'generic', value: 'in', line: 1, column: 14, index: 0 },
+    { kind: 'generic', value: 'bar', line: 1, column: 17, index: 0 },
+    { kind: 'generic', value: 'select', line: 1, column: 21, index: 0 },
   ];
   const parts: QualifiedPatternPart[] = [
     { kind: 'text', value: 'select' },
@@ -58,10 +58,10 @@ test('should detect builtin actions with argument and with target and prepositio
 
 test('should not match if argument is not provided', () => {
   const tokens: Token[] = [
-    { kind: 'generic', value: 'select', line: 1, column: 1 },
-    { kind: 'generic', value: 'in', line: 1, column: 8 },
-    { kind: 'generic', value: 'bar', line: 1, column: 11 },
-    { kind: 'generic', value: 'select', line: 1, column: 15 },
+    { kind: 'generic', value: 'select', line: 1, column: 1, index: 0 },
+    { kind: 'generic', value: 'in', line: 1, column: 8, index: 0 },
+    { kind: 'generic', value: 'bar', line: 1, column: 11, index: 0 },
+    { kind: 'generic', value: 'select', line: 1, column: 15, index: 0 },
   ];
   const parts: QualifiedPatternPart[] = [
     { kind: 'text', value: 'select' },

@@ -3,6 +3,7 @@ export interface BaseToken {
   value: string;
   line: number;
   column: number;
+  index: number;
 }
 
 export interface GenericToken extends BaseToken {

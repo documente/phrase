@@ -14,6 +14,7 @@ export function tokenize(sentence: string): Token[] {
   let column = 1;
   let insideDoubleQuotes = false;
   let isAtStartOfLine = true;
+  let i = 0;
 
   const throwError = (message: string) => {
     throw new Error(prettyPrintError(message, sentence, { line, column }));
@@ -39,12 +40,13 @@ export function tokenize(sentence: string): Token[] {
       value: currentToken,
       line,
       column: column - currentToken.length,
+      index: i - currentToken.length,
     });
     currentToken = '';
     isAtStartOfLine = false;
   }
 
-  for (let i = 0; i < sentence.length; i++) {
+  for (i = 0; i < sentence.length; i++) {
     const char = sentence[i];
 
     if (char === ' ' && !insideDoubleQuotes) {

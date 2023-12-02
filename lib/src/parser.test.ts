@@ -28,8 +28,10 @@ test('should parse a sentence with an action without target and without args', (
           column: 8,
           line: 1,
           value: 'click',
+          index: 7,
         },
       ],
+      index: 7,
     } satisfies ActionStatement,
   ]);
 });
@@ -48,14 +50,17 @@ test('should parse a sentence with an action with a target and without args', ()
           column: 8,
           line: 1,
           value: 'click',
+          index: 7,
         },
         {
           kind: 'generic',
           column: 14,
           line: 1,
           value: 'button',
+          index: 13,
         },
       ],
+      index: 7,
     } satisfies ActionStatement,
   ]);
 });
@@ -75,26 +80,31 @@ test('should parse a sentence with an action with a target and with args', () =>
           column: 8,
           line: 1,
           value: 'type',
+          index: 7,
         },
         {
           kind: 'generic',
           column: 13,
           line: 1,
           value: '"foo"',
+          index: 11,
         },
         {
           kind: 'generic',
           column: 19,
           line: 1,
           value: 'in',
+          index: 18,
         },
         {
           kind: 'generic',
           column: 22,
           line: 1,
           value: 'input',
+          index: 21,
         },
       ],
+      index: 7,
     } satisfies ActionStatement,
   ]);
 });

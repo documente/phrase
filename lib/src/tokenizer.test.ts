@@ -13,6 +13,7 @@ test('should tokenize a sentence with one word', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
   ]);
 });
@@ -24,12 +25,14 @@ test('should tokenize a sentence with two words', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'bar',
       line: 1,
       column: 5,
+      index: 4,
     } satisfies Token,
   ]);
 });
@@ -41,12 +44,14 @@ test('should tokenize a sentence with two words and a newline', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'bar',
       line: 2,
       column: 1,
+      index: 4,
     } satisfies Token,
   ]);
 });
@@ -58,18 +63,21 @@ test('should tokenize a sentence with quoted text', () => {
       value: 'message',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'is',
       line: 1,
       column: 9,
+      index: 8,
     } satisfies Token,
     {
       kind: 'generic',
       value: '"Hello, World!"',
       line: 1,
       column: 12,
+      index: 10,
     } satisfies Token,
   ]);
 });
@@ -81,12 +89,14 @@ test('should ignore comments', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'bar',
       line: 1,
       column: 5,
+      index: 4,
     } satisfies Token,
   ]);
 });
@@ -98,18 +108,21 @@ test('should ignore comments with newlines', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'bar',
       line: 1,
       column: 5,
+      index: 4,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'qux',
       line: 2,
       column: 1,
+      index: 13,
     } satisfies Token,
   ]);
 });
@@ -121,18 +134,21 @@ test('should ignore comments with newlines and carriage returns', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'bar',
       line: 1,
       column: 5,
+      index: 4,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'qux',
       line: 2,
       column: 1,
+      index: 14,
     } satisfies Token,
   ]);
 });
@@ -144,12 +160,14 @@ test('should detect a done token', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'done',
       value: 'done',
       line: 2,
       column: 1,
+      index: 4,
     } satisfies Token,
   ]);
 });
@@ -161,18 +179,21 @@ test('should detect a bullet token', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'bullet',
       value: '-',
       line: 2,
       column: 1,
+      index: 4,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'bar',
       line: 2,
       column: 3,
+      index: 6,
     } satisfies Token,
   ]);
 });
@@ -184,12 +205,14 @@ test('should tokenize "done" as a generic token', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: 'done',
       line: 1,
       column: 5,
+      index: 4,
     } satisfies Token,
   ]);
 });
@@ -200,12 +223,14 @@ test('should tokenize "-" as a generic token', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: '-',
       line: 1,
       column: 5,
+      index: 4,
     } satisfies Token,
   ]);
 });
@@ -225,12 +250,14 @@ test('should escape a double quote inside a quoted text', () => {
       value: 'foo',
       line: 1,
       column: 1,
+      index: 0,
     } satisfies Token,
     {
       kind: 'generic',
       value: '"bar \\" baz"',
       line: 1,
       column: 5,
+      index: 3,
     } satisfies Token,
   ]);
 });
