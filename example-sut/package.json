@@ -1,7 +1,7 @@
 {
   "name": "phrase-example-sut",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "documenté.js",
   "license": "LGPL-3.0",
   "private": true,
   "workspaces": [
@@ -11,10 +11,14 @@
     "start": "cd packages/client && npm run build && cd ../server && node server.js",
     "dev": "concurrently \"cd packages/client && npm start\" \"cd packages/server && node server.js\"",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "documenté": "node documenté.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
     "cypress": "^13.5.0"
+  },
+  "dependencies": {
+    "glob": "^10.3.10"
   }
 }

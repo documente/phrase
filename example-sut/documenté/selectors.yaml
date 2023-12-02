@@ -1,0 +1,16 @@
+login form:
+  _selector: .login-form
+  login field: input[type="text"]
+  password field: input[type="password"]
+  confirm button: button[type="submit"]
+login error message: .error-message
+welcome message: .welcome-message
+new task title field: .new-task-title
+add task button: .add-task-button
+task with text {{text}}:
+  _selector: .task[data-test-title="{{text}}"]
+  title: .title
+  delete button: .delete-button
+task list:
+  _selector: .task-list
+  children: .task
