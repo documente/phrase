@@ -5,7 +5,13 @@ const selectorTree = `
 {{{selectorTree}}}
 `;
 
-const test = withContext(selectorTree, externals);
+const { test, add } = withContext(selectorTree, externals);
+
+{{#blocks}}
+add `
+{{{block}}}`;
+
+{{/blocks}}
 
 describe('specs from {{{sourceFileName}}}', () => {
 {{#specs}}

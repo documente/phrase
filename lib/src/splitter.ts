@@ -8,7 +8,7 @@ export interface SplitResult {
 export class Splitter {
   strings: string[] = [];
 
-  register(str: string) {
+  add(str: string) {
     this.strings.push(str);
   }
 

@@ -10,16 +10,33 @@ import { SelectorTree } from './interfaces/selector-tree.interface';
 import { buildInstructions } from './instructions-builder/instruction-builder';
 import YAML from 'yaml';
 
-interface TestFunction {
-  (strings: TemplateStringsArray | string, ...values: unknown[]): void;
+export type TemplateStringsOrStringConsumer = (strings: TemplateStringsArray | string, ...values: unknown[]) => void;
+
+interface TestRunner {
+  add: TemplateStringsOrStringConsumer;
+  test: TemplateStringsOrStringConsumer;
+}
+
+function processTemplateStrings(strings: TemplateStringsArray | string, values: unknown[]): string {
+  if (Array.isArray(strings)) {
+    return strings.reduce((acc, curr, i) => {
+      return acc + curr + (values[i] ?? '');
+    }, '');
+  } else if (typeof strings === 'string') {
+    return strings;
+  } else {
+    throw new Error('Invalid input');
+  }
 }
 
 export function withContext(
   selectorTree: SelectorTree | string,
   externals: Externals,
-): TestFunction {
+): TestRunner {
   const tree =
     typeof selectorTree === 'string' ? YAML.parse(selectorTree) : selectorTree;
+
+  const fragments: string[] = [];
 
   validateContext(tree, externals);
 
@@ -33,21 +50,18 @@ export function withContext(
     }
   }
 
-  return function test(strings, ...values) {
-    let str = null;
+  return {
+    add(strings, ...values) {
+      fragments.push(processTemplateStrings(strings, values));
+    },
+    test(strings, ...values) {
+      let str = processTemplateStrings(strings, values);
 
-    if (Array.isArray(strings)) {
-      str = strings.reduce((acc, curr, i) => {
-        return acc + curr + (values[i] ?? '');
-      }, '');
-    } else if (typeof strings === 'string') {
-      str = strings;
-    } else {
-      throw new Error('Invalid input');
+      str += '\n' + fragments.join('\n');
+
+      const instructions = buildInstructions(str, tree, externals);
+      instructions.forEach(runInstruction);
     }
-
-    const instructions = buildInstructions(str, tree, externals);
-    instructions.forEach(runInstruction);
   };
 }
 
