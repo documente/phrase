@@ -158,7 +158,6 @@ Custom assertions are built with a header following the form `For $element to [a
 Within this repository, you'll find:
 
 - **Testing Library**: The core component providing essential tools for automated testing of web applications.
-- **Example System Under Test (SUT)**: Explore Cypress spec files that demonstrate the library's capabilities on a sample system, offering practical insights for implementation.
 - **Web Playground**: A convenient space for swift validation of test scenarios, empowering users to quickly assess and experiment with various testing scenarios. The playground is accessible live [here](https://pckerneis.github.io/phrase).
 
 ## Contributing
