@@ -5,6 +5,8 @@
   "repository": "https://github.com/documente/phrase.git",
   "author": "pckerneis <pc.kerneis@gmail.com>",
   "license": "GPL-3.0",
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "lint": "npx eslint **/*.ts",
