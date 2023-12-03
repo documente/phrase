@@ -14,7 +14,7 @@ function importConfigFile() {
 }
 
 function extractFromConfig(config) {
-  const {selectors, externals, input, outputDir} = config;
+  const { selectors, externals, input, outputDir } = config;
 
   let inputArray;
 
@@ -38,7 +38,7 @@ function extractFromConfig(config) {
     throw new Error('outputDir must be a string path to a directory');
   }
 
-  return {selectors, externals, outputDir, inputArray};
+  return { selectors, externals, outputDir, inputArray };
 }
 
 function readSelectorsFile(pathToSelectorsFile) {
@@ -97,32 +97,38 @@ function validateInputFiles(inputGlobArray) {
 
 const workingDir = '../example-sut';
 const config = importConfigFile();
-const {selectors, externals, outputDir, inputArray} = extractFromConfig(config);
+const { selectors, externals, outputDir, inputArray } =
+  extractFromConfig(config);
 checkExternalsImport(externals);
-const outputPathToExternals = relative(resolve(outputDir), resolve(externals)).replace(/\\/g, '/')
+const outputPathToExternals = relative(
+  resolve(outputDir),
+  resolve(externals),
+).replace(/\\/g, '/');
 const selectorsFile = readAndParseSelectorsFile(selectors);
 const files = validateInputFiles(inputArray);
-const cySpecTemplate = fs.readFileSync(resolve(__dirname, 'cy-spec.mustache'), 'utf8');
+const cySpecTemplate = fs.readFileSync(
+  resolve(__dirname, 'cy-spec.mustache'),
+  'utf8',
+);
 
 function processDocumentationFile(file) {
   const splitter = new Splitter();
   const sourceFileName = basename(file);
   const fileContent = fs.readFileSync(resolve(workingDir, file), 'utf8');
   const regex = /```phras[ée][^`]*```/gm;
-  fileContent.match(regex)
-      .map((block) => block.replace(/```phras[ée]([^`]*)```/, '$1').trim())
-      .forEach(block => splitter.add(block));
+  fileContent
+    .match(regex)
+    .map((block) => block.replace(/```phras[ée]([^`]*)```/, '$1').trim())
+    .forEach((block) => splitter.add(block));
 
   const splitResult = splitter.split();
 
-  const blocks = splitResult.blocks
-      .map((block) => ({block}));
+  const blocks = splitResult.blocks.map((block) => ({ block }));
 
-  const specs = splitResult.tests
-      .map((spec, index) => ({
-        spec,
-        specNumber: index + 1,
-      }));
+  const specs = splitResult.tests.map((spec, index) => ({
+    spec,
+    specNumber: index + 1,
+  }));
 
   if (specs.length === 0) {
     throw new Error(`No test found in ${file}`);
@@ -136,12 +142,28 @@ function processDocumentationFile(file) {
     blocks,
   };
   const rendered = Mustache.render(cySpecTemplate, view);
-  const outputFileName = `${sourceFileName.replace(/\.md$/, '')}.generated.cy.js`;
-  const pathToOutputFile = resolve(process.cwd(), workingDir, outputDir, outputFileName);
+  const outputFileName = `${sourceFileName.replace(
+    /\.md$/,
+    '',
+  )}.generated.cy.js`;
+  const pathToOutputFile = resolve(
+    process.cwd(),
+    workingDir,
+    outputDir,
+    outputFileName,
+  );
   fs.writeFileSync(pathToOutputFile, rendered, 'utf8');
-  console.log(`Generated ${specs.length} Cypress tests in ${pathToOutputFile}.`);
+  console.log(
+    `Generated ${specs.length} Cypress tests in ${pathToOutputFile}.`,
+  );
 }
 
-files.forEach(file => processDocumentationFile(file));
+files.forEach((file) => processDocumentationFile(file));
 
-console.log(`Generated ${files.length} Cypress spec files in ${resolve(process.cwd(), workingDir, outputDir)}.`);
+console.log(
+  `Generated ${files.length} Cypress spec files in ${resolve(
+    process.cwd(),
+    workingDir,
+    outputDir,
+  )}.`,
+);
