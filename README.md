@@ -159,7 +159,7 @@ Don't forget to give the project a star! Thanks again!
 
 ## License
 
-Distributed under the GNU LGPL3 License.
+Distributed under the GNU GPL3 License.
 
 See `LICENSE` for more information.
 
