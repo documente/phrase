@@ -1,6 +1,6 @@
 {
   "name": "phrase",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0",
   "description": "A fluent automated testing library for web applications",
   "repository": "https://github.com/pckerneis/phrase.git",
   "author": "pckerneis <pc.kerneis@gmail.com>",
