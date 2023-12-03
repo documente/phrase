@@ -23,6 +23,10 @@ export class Parser {
     return this.tokens[this.index];
   }
 
+  get previousToken(): Token {
+    return this.tokens[this.index - 1];
+  }
+
   get currentValue(): string {
     return this.currentToken?.value;
   }
@@ -64,15 +68,22 @@ export class Parser {
   }
 
   private parseGivenWhenThen(): GivenWhenThenStatements {
+    const startIndex = this.currentToken.index;
+    const given = this.parseGiven();
+    const when = this.parseWhen();
+    const then = this.parseThen();
+
     return {
       kind: 'given-when-then',
-      given: this.parseGiven(),
-      when: this.parseWhen(),
-      then: this.parseThen(),
+      given,
+      when,
+      then,
+      source: this.getSource(startIndex),
     };
   }
 
   private parseBlock(): Block {
+    const startIndex = this.currentToken.index;
     const fullHeader = this.consumeBlockHeader();
 
     if (this.isActionBlockHeader(fullHeader)) {
@@ -80,6 +91,7 @@ export class Parser {
         kind: 'action-block',
         header: fullHeader.slice(3),
         body: this.parseBullets(),
+        source: this.getSource(startIndex),
       } satisfies ActionBlock;
     } else if (this.isAssertionBlockHeader(fullHeader)) {
       const indexOfTo = fullHeader.findIndex(
@@ -89,6 +101,7 @@ export class Parser {
         kind: 'assertion-block',
         header: fullHeader.slice(indexOfTo + 1),
         body: this.parseBullets(),
+        source: this.getSource(startIndex),
       } satisfies AssertionBlock;
     } else {
       this.error(
@@ -97,6 +110,15 @@ export class Parser {
     }
 
     throw new Error('Unreachable code.');
+  }
+
+  private getSource(startIndex: number): string {
+    return this.sentence.slice(
+      startIndex,
+      this.matchesKind('done')
+        ? this.currentToken.index + this.currentToken.value.length
+        : this.previousToken.index + this.previousToken.value.length,
+    );
   }
 
   parseGiven(): Statement[] {
@@ -185,6 +207,7 @@ export class Parser {
       return this.buildAssertionStatement(
         tokensAfterShould,
         tokensBeforeShould,
+        tokensBeforeShould[0]?.index ?? tokensAfterShould[0].index,
       );
     } else {
       return this.buildSystemStateChangeStatement(tokensBeforeShould);
@@ -231,12 +254,14 @@ export class Parser {
       kind: 'system-level',
       tokens,
       args,
+      index: tokens[0].index,
     } satisfies SystemLevelStatement;
   }
 
   private buildAssertionStatement(
     tokensAfterShould: Token[],
     tokensBeforeShould: Token[],
+    index: number,
   ): AssertionStatement {
     const assertion = tokensAfterShould.filter(
       (token) => !isArgument(token.value),
@@ -248,13 +273,17 @@ export class Parser {
       assertion,
       args,
       firstToken: tokensAfterShould[0],
+      index,
     } satisfies AssertionStatement;
   }
 
   private parseActionStatement(): ActionStatement {
+    const tokens = this.consumeAction();
+
     return {
       kind: 'action',
-      tokens: this.consumeAction(),
+      tokens,
+      index: tokens[0].index,
     } satisfies ActionStatement;
   }
 

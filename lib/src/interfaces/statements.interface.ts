@@ -3,6 +3,7 @@ import { Token } from './token.interface';
 export interface ActionStatement {
   kind: 'action';
   tokens: Token[];
+  index: number;
 }
 
 export interface AssertionStatement {
@@ -11,12 +12,14 @@ export interface AssertionStatement {
   assertion: Token[];
   args: Token[];
   firstToken: Token;
+  index: number;
 }
 
 export interface SystemLevelStatement {
   kind: 'system-level';
   tokens: Token[];
   args: Token[];
+  index: number;
 }
 
 export type Statement =
@@ -28,6 +31,7 @@ interface BaseBlock {
   kind: string;
   header: Token[];
   body: Statement[];
+  source: string;
 }
 
 export interface ActionBlock extends BaseBlock {
@@ -45,6 +49,7 @@ export interface GivenWhenThenStatements {
   given: Statement[];
   when: Statement[];
   then: Statement[];
+  source: string;
 }
 
 export type StatementSection = GivenWhenThenStatements | Block;

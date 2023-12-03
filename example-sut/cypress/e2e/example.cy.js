@@ -1,6 +1,6 @@
 import {withContext} from '../../../lib/dist/cy-runner';
 
-const test = withContext({
+const { test } = withContext({
   loginForm: {
     _selector: '.login-form',
     loginField: 'input[type="text"]',
