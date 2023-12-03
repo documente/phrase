@@ -108,9 +108,9 @@ function processDocumentationFile(file) {
   const splitter = new Splitter();
   const sourceFileName = basename(file);
   const fileContent = fs.readFileSync(resolve(workingDir, file), 'utf8');
-  const regex = /```phrasé[^`]*```/gm;
+  const regex = /```phras[ée][^`]*```/gm;
   fileContent.match(regex)
-      .map((block) => block.replace(/```phrasé([^`]*)```/, '$1').trim())
+      .map((block) => block.replace(/```phras[ée]([^`]*)```/, '$1').trim())
       .forEach(block => splitter.add(block));
 
   const splitResult = splitter.split();
@@ -139,8 +139,9 @@ function processDocumentationFile(file) {
   const outputFileName = `${sourceFileName.replace(/\.md$/, '')}.generated.cy.js`;
   const pathToOutputFile = resolve(process.cwd(), workingDir, outputDir, outputFileName);
   fs.writeFileSync(pathToOutputFile, rendered, 'utf8');
+  console.log(`Generated ${specs.length} Cypress tests in ${pathToOutputFile}.`);
 }
 
 files.forEach(file => processDocumentationFile(file));
 
-console.log(`Generated ${files.length} Cypress specs in ${outputDir}.`);
+console.log(`Generated ${files.length} Cypress spec files in ${resolve(process.cwd(), workingDir, outputDir)}.`);
