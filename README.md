@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://github.com/pckerneis/phrase">
+    <a href="https://github.com/documente/phrase">
         <img alt="Logo for the Phrasé automated testing library" src="docs/phrase-logo.svg" title="Phrasé logo" width="200"/>
     </a>
 </p>
@@ -9,8 +9,6 @@
 <p align="center">
 A fluent automated testing library for web applications
 </p>
-
-> Try the [Playground](https://pckerneis.github.io/phrase) for a quick glimpse into our testing language!
 
 ## Project Overview
 
@@ -83,8 +81,6 @@ The most recently selected node is preserved, allowing you to omit parts of the 
 - Resolve a node starting from the root and navigating down.
 
 This fluent selection mechanism enhances the ease with which components can be identified and interacted with in your test sentences.
-
-Feel free to try selecting nodes in the [Playground application](https://pckerneis.github.io/phrase) for a hands-on experience with the fluent component selection mechanism.
 
 ### Actions
 
@@ -171,4 +167,4 @@ See `LICENSE` for more information.
 
 Pierre-Clément KERNEIS - pc.kerneis@gmail.com
 
-Project Link: https://github.com/pckerneis/phrase
+Project Link: https://github.com/documente/phrase
