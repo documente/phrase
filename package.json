@@ -1,19 +1,28 @@
 {
-  "name": "phrase",
-  "version": "1.0.0",
+  "name": "@documente/phrase",
+  "version": "1.0.0-beta.2",
   "description": "A fluent automated testing library for web applications",
-  "repository": "https://github.com/documente/phrase.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/documente/phrase.git"
+  },
   "author": "pckerneis <pc.kerneis@gmail.com>",
-  "license": "LGPL-3.0",
+  "license": "GPL-3.0",
+  "module": "./dist/main.mjs",
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "lint": "npx eslint **/*.ts",
     "pretty": "npx prettier . --write",
-    "build": "tsc",
-    "build-watch": "tsc --watch"
+    "build": "tsup src/main.ts --format cjs,esm --dts --clean",
+    "watch": "npm run build -- --watch src"
   },
   "files": [
-    "src"
+    "dist"
   ],
   "devDependencies": {
     "@babel/core": "^7.23.3",
@@ -33,6 +42,7 @@
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
     "ts-node": "^10.9.1",
+    "tsup": "^8.0.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
