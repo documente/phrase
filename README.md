@@ -153,13 +153,6 @@ done
 
 Custom assertions are built with a header following the form `For $element to [assertion name]:`, followed by a bullet list of statements.
 
-## Repository structure
-
-Within this repository, you'll find:
-
-- **Testing Library**: The core component providing essential tools for automated testing of web applications.
-- **Web Playground**: A convenient space for swift validation of test scenarios, empowering users to quickly assess and experiment with various testing scenarios. The playground is accessible live [here](https://pckerneis.github.io/phrase).
-
 ## Contributing
 
 Any contributions you make are *greatly appreciated*.

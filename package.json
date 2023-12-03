@@ -1,7 +1,7 @@
 {
-  "name": "phrase-lib",
+  "name": "phrase",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "A fluent automated testing library for web applications",
   "repository": "https://github.com/pckerneis/phrase.git",
   "author": "pckerneis <pc.kerneis@gmail.com>",
   "license": "LGPL-3.0",
@@ -10,8 +10,7 @@
     "lint": "npx eslint **/*.ts",
     "pretty": "npx prettier . --write",
     "build": "tsc",
-    "build-watch": "tsc --watch",
-    "cy:open": "cypress open"
+    "build-watch": "tsc --watch"
   },
   "files": [
     "src"

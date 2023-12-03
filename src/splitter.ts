@@ -1,5 +1,5 @@
 import { Parser } from './parser';
-import {normalizeEOL} from './normalize-eol';
+import { normalizeEOL } from './normalize-eol';
 
 export interface SplitResult {
   blocks: string[];
