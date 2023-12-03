@@ -22,7 +22,7 @@
     "watch": "npm run build -- --watch src"
   },
   "files": [
-    "src"
+    "dist"
   ],
   "devDependencies": {
     "@babel/core": "^7.23.3",
