@@ -2,7 +2,10 @@
   "name": "@documente/phrase",
   "version": "1.0.0",
   "description": "A fluent automated testing library for web applications",
-  "repository": "https://github.com/documente/phrase.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/documente/phrase.git"
+  },
   "author": "pckerneis <pc.kerneis@gmail.com>",
   "license": "GPL-3.0",
   "main": "./dist/main.js",
