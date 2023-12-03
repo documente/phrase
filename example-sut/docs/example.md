@@ -40,12 +40,6 @@ In order to add a task with title {{title}}:
 done
 ```
 
-```phrasé
-for $element to have {{count}} task:
-- its children should have length {{count}}
-done
-```
-
 You can use these blocks in your test cases like this:
 
 ```phrasé
@@ -56,13 +50,11 @@ and login form should not exist
 done
 ```
 
-You can also call external functions like in this test:
+You can call external functions like in this test:
 
 ```phrasé
 given task list is empty
-and I login
-and I add a task with title "Buy milk"
-when I click on task with text "Buy milk" delete button
+when I login
 then task list should have 0 task
 done
 ```

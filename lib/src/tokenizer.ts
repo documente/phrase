@@ -52,6 +52,8 @@ export function tokenize(sentence: string): Token[] {
     if (char === ' ' && !insideDoubleQuotes) {
       pushToken();
       column++;
+    } else if (char === '\r') {
+      column++;
     } else if (char === '\n') {
       if (insideDoubleQuotes) {
         throwError('Missing closing "');
