@@ -53,7 +53,7 @@ export function tokenize(sentence: string): Token[] {
       pushToken();
       column++;
     } else if (char === '\r') {
-      column++;
+      throwError('Carriage return is not allowed');
     } else if (char === '\n') {
       if (insideDoubleQuotes) {
         throwError('Missing closing "');

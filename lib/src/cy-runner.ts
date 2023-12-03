@@ -9,6 +9,7 @@ import { validateContext } from './context-validation';
 import { SelectorTree } from './interfaces/selector-tree.interface';
 import { buildInstructions } from './instructions-builder/instruction-builder';
 import YAML from 'yaml';
+import {normalizeEOL} from './normalize-eol';
 
 export type TemplateStringsOrStringConsumer = (strings: TemplateStringsArray | string, ...values: unknown[]) => void;
 
@@ -19,11 +20,11 @@ interface TestRunner {
 
 function processTemplateStrings(strings: TemplateStringsArray | string, values: unknown[]): string {
   if (Array.isArray(strings)) {
-    return strings.reduce((acc, curr, i) => {
+    return normalizeEOL(strings.reduce((acc, curr, i) => {
       return acc + curr + (values[i] ?? '');
-    }, '');
+    }, ''));
   } else if (typeof strings === 'string') {
-    return strings;
+    return normalizeEOL(strings);
   } else {
     throw new Error('Invalid input');
   }

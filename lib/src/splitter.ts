@@ -1,4 +1,5 @@
 import { Parser } from './parser';
+import {normalizeEOL} from './normalize-eol';
 
 export interface SplitResult {
   blocks: string[];
@@ -9,7 +10,7 @@ export class Splitter {
   strings: string[] = [];
 
   add(str: string) {
-    this.strings.push(str);
+    this.strings.push(normalizeEOL(str));
   }
 
   split(): SplitResult {
