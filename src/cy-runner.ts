@@ -9,20 +9,28 @@ import { validateContext } from './context-validation';
 import { SelectorTree } from './interfaces/selector-tree.interface';
 import { buildInstructions } from './instructions-builder/instruction-builder';
 import YAML from 'yaml';
-import {normalizeEOL} from './normalize-eol';
+import { normalizeEOL } from './normalize-eol';
 
-export type TemplateStringsOrStringConsumer = (strings: TemplateStringsArray | string, ...values: unknown[]) => void;
+export type TemplateStringsOrStringConsumer = (
+  strings: TemplateStringsArray | string,
+  ...values: unknown[]
+) => void;
 
 interface TestRunner {
   add: TemplateStringsOrStringConsumer;
   test: TemplateStringsOrStringConsumer;
 }
 
-function processTemplateStrings(strings: TemplateStringsArray | string, values: unknown[]): string {
+function processTemplateStrings(
+  strings: TemplateStringsArray | string,
+  values: unknown[],
+): string {
   if (Array.isArray(strings)) {
-    return normalizeEOL(strings.reduce((acc, curr, i) => {
-      return acc + curr + (values[i] ?? '');
-    }, ''));
+    return normalizeEOL(
+      strings.reduce((acc, curr, i) => {
+        return acc + curr + (values[i] ?? '');
+      }, ''),
+    );
   } else if (typeof strings === 'string') {
     return normalizeEOL(strings);
   } else {
@@ -62,7 +70,7 @@ export function withContext(
 
       const instructions = buildInstructions(str, tree, externals);
       instructions.forEach(runInstruction);
-    }
+    },
   };
 }
 

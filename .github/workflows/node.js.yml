@@ -27,13 +27,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
       run: yarn --frozen-lockfile
-      working-directory: ./lib
     - name: Linter check
       run: npm run lint
-      working-directory: ./lib
     - name: TSC build
       run: npm run build
-      working-directory: ./lib
     - name: Run Jest tests
       run: npm test
-      working-directory: ./lib
