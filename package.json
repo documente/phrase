@@ -1,6 +1,6 @@
 {
   "name": "@documente/phrase",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "description": "A fluent automated testing library for web applications",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
   "publishConfig": {
-      "access": "public"
+    "access": "public"
   },
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
