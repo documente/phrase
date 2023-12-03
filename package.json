@@ -11,6 +11,9 @@
   "module": "./dist/main.mjs",
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
+  "publishConfig": {
+      "access": "public"
+  },
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "lint": "npx eslint **/*.ts",
