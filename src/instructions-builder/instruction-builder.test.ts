@@ -99,7 +99,7 @@ test('should build an assertion', () => {
         key: 'welcomeMessage',
       },
     ],
-    chainer: 'be.visible',
+    code: 'be visible',
     args: [],
   } satisfies BuiltInAssertion);
 });
@@ -125,7 +125,7 @@ test('should build an assertion with quoted text argument', () => {
         key: 'welcomeMessage',
       },
     ],
-    chainer: 'have.text',
+    code: 'have text',
     args: ['Hello, World!'],
   } satisfies AssertionInstruction);
 });
@@ -215,7 +215,7 @@ test('should build instructions with an assertion block', () => {
 
   const resolvedAssertion = assertion as BuiltInAssertion;
   expect(resolvedAssertion.kind).toEqual('builtin-assertion');
-  expect(resolvedAssertion.chainer).toEqual('be.visible');
+  expect(resolvedAssertion.code).toEqual('be visible');
 });
 
 it('should build instructions with a builtin negated assertion', () => {
@@ -227,7 +227,7 @@ it('should build instructions with a builtin negated assertion', () => {
 
   const builtinAssertion = instructions[1] as BuiltInAssertion;
   expect(builtinAssertion.kind).toBe('builtin-assertion');
-  expect(builtinAssertion.chainer).toBe('not.exist');
+  expect(builtinAssertion.code).toBe('not exist');
 });
 
 test('should reject unknown assertions', () => {

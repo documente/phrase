@@ -27,11 +27,11 @@ export class Parser {
     return this.tokens[this.index - 1];
   }
 
-  get currentValue(): string {
+  get currentValue(): string | undefined {
     return this.currentToken?.value;
   }
 
-  get currentKind(): Token['kind'] {
+  get currentKind(): Token['kind'] | undefined {
     return this.currentToken?.kind;
   }
 
@@ -263,15 +263,10 @@ export class Parser {
     tokensBeforeShould: Token[],
     index: number,
   ): AssertionStatement {
-    const assertion = tokensAfterShould.filter(
-      (token) => !isArgument(token.value),
-    );
-    const args = tokensAfterShould.filter((token) => isArgument(token.value));
     return {
       kind: 'assertion',
       target: tokensBeforeShould,
-      assertion,
-      args,
+      assertion: tokensAfterShould,
       firstToken: tokensAfterShould[0],
       index,
     } satisfies AssertionStatement;
@@ -314,7 +309,7 @@ export class Parser {
   }
 
   matchesKind(...kinds: Token['kind'][]): boolean {
-    return kinds.includes(this.currentKind);
+    return kinds.includes(this.currentKind!);
   }
 
   consume(expectedTokenValue: string, errorMessage: string): void {

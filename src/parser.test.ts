@@ -190,8 +190,11 @@ test('should parse a sentence with an assertion with quoted text argument', () =
 
   const assertion = sentence.then[0] as AssertionStatement;
   expect(assertion.target.map((a) => a.value)).toEqual(['message']);
-  expect(assertion.assertion.map((a) => a.value)).toEqual(['have', 'text']);
-  expect(assertion.args.map((a) => a.value)).toEqual(['"Hello, World!"']);
+  expect(assertion.assertion.map((a) => a.value)).toEqual([
+    'have',
+    'text',
+    '"Hello, World!"',
+  ]);
 });
 
 test('should parse a sentence with two assertions', () => {

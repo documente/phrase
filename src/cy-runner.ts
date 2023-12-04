@@ -10,6 +10,7 @@ import { SelectorTree } from './interfaces/selector-tree.interface';
 import { buildInstructions } from './instructions-builder/instruction-builder';
 import YAML from 'yaml';
 import { normalizeEOL } from './normalize-eol';
+import { BuiltinAssertionCode } from './instructions-builder/builtin-assertions';
 
 export type TemplateStringsOrStringConsumer = (
   strings: TemplateStringsArray | string,
@@ -148,6 +149,21 @@ function runAction(actionInstruction: BuiltInActionInstruction): void {
   }
 }
 
+const knownChainer: Record<BuiltinAssertionCode, string> = {
+  'have text': 'have.text',
+  'be visible': 'be.visible',
+  'contain text': 'contain.text',
+  'have value': 'have.value',
+  'have class': 'have.class',
+  exist: 'exist',
+  'not exist': 'not.exist',
+  'be checked': 'be.checked',
+  'be unchecked': 'be.unchecked',
+  'be disabled': 'be.disabled',
+  'be enabled': 'be.enabled',
+  'have occurrences': 'have.length',
+};
+
 function runBuiltInAssertion(assertion: BuiltInAssertion): void {
   const { selectors, args } = assertion;
 
@@ -155,7 +171,13 @@ function runBuiltInAssertion(assertion: BuiltInAssertion): void {
     throw new Error('Target selectors are required for built-in assertions.');
   }
 
-  cy.get(selectors.join(' ')).should(assertion.chainer, ...args);
+  const chainer = knownChainer[assertion.code] as string;
+
+  if (chainer == null) {
+    throw new Error(`Unknown assertion: ${assertion.code}`);
+  }
+
+  cy.get(selectors.join(' ')).should(chainer, ...args);
 }
 
 function runSystemLevel(
