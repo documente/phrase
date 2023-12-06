@@ -1,5 +1,4 @@
 export * from './context-validation';
-export * from './cy-runner';
 export * from './instructions-builder/instruction-builder';
 export * from './interfaces/build-context.interface';
 export * from './interfaces/externals.interface';
