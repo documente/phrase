@@ -18,7 +18,8 @@ Phrasé (pronounced /fraz-ay/) is a testing library and accompanying tools desig
 - **Rapid Feedback Loop**: Our tooling aims at providing prompt feedback, enabling your team to swiftly identify and address any issues that may arise.
 - **Adaptability to Change**: We understand that applications and their requirements are dynamic. Changes in your application should not necessitate a complete rewrite of automated tests.
 
-The library is built on the [Cypress](https://www.cypress.io/) automated testing framework and defines a natural language structure based on Behavior-Driven Development (BDD) with Given-When-Then keywords.
+Phrasé is an integral part of the [Documenté](https://github.com/documente/) project,
+a practical initiative that seamlessly integrates automated tests into your user-facing documentation.
 
 ## Core concepts
 
