@@ -12,19 +12,24 @@ A fluent automated testing library for web applications
 
 ## Project Overview
 
-Phrasé (pronounced /fraz-ay/) is a testing library and accompanying tools designed specifically for testing web applications. Our approach is rooted in the following principles:
+Phrasé (pronounced /fraz-ay/) is a user-centric test language and a set of accompanying tools designed specifically for testing web applications.
+It's designed around the following principles:
 
-- **Readability for the Whole Team**: Test cases should be easily comprehensible by every member of the product team, fostering a ubiquitous language that promotes collaboration.
-- **Rapid Feedback Loop**: Our tooling aims at providing prompt feedback, enabling your team to swiftly identify and address any issues that may arise.
-- **Adaptability to Change**: We understand that applications and their requirements are dynamic. Changes in your application should not necessitate a complete rewrite of automated tests.
+- **Readability for All**: Phrasé ensures that test cases are easily understood by both the development team and,
+uniquely, by **end-users**. It fosters a shared language that promotes collaboration.
+- **Agile Response to Evolution**: Recognizing the dynamic nature of applications, Phrasé embraces change without requiring
+a complete overhaul of automated tests.
+- **Swift Progress from Idea to Test**: Phrasé aims at minimizing the cycle between requirement conception and test execution.
+Designers can transform ideas into executable tests for quick feedback and seamless iterations.
 
-The library is built on the [Cypress](https://www.cypress.io/) automated testing framework and defines a natural language structure based on Behavior-Driven Development (BDD) with Given-When-Then keywords.
+Phrasé is an integral part of the [Documenté](https://github.com/documente/) project,
+a practical initiative that seamlessly integrates automated tests into your user-facing documentation.
 
 ## Core concepts
 
 ### Test Scenario Structure
 
-A test scenario is structured as a sentence, resembling natural language. It utilizes keywords such as:
+A test scenario is structured as a sentence, resembling natural language. It utilizes keywords found in Behavior-Driven-Development such as:
 
 - `given` to define prerequisites for the test.
 - `when` to specify user actions on the system, such as clicking a button or entering text.
@@ -33,7 +38,7 @@ A test scenario is structured as a sentence, resembling natural language. It uti
 Here's an example of a test sentence :
 
 ```
-given I visit "http://localhost:3000/myapp"
+given I visit "https://my-awesome-app.io"
 when I click on welcome page greet button
 then welcome message should be visible
 ```
@@ -46,16 +51,15 @@ In the tests, the System Under Test (SUT) is depicted as a YAML or JSON tree str
 
 Here's an illustrative example:
 ```yaml
-pageObjectTree:
-  welcome page:
-    _selector: "#welcome"
-    greet button: button
-    welcome message: span.message
-  login form:
-    _selector: [data-test-id="login-form"]
-    login field: input[type="text"]
-    password field: input[type="password"]
-    confirm button: button
+welcome page:
+  _selector: "#welcome"
+  greet button: button
+  welcome message: span.message
+login form:
+  _selector: [data-test-id="login-form"]
+  login field: input[type="text"]
+  password field: input[type="password"]
+  confirm button: button
 ```
 
 This declarative approach offers inherent flexibility and facilitates test reuse. It eliminates the need for investing time and effort in a Page Object Pattern, mitigating the risk of misalignment with the evolving application under test.
@@ -65,11 +69,10 @@ This declarative approach offers inherent flexibility and facilitates test reuse
 Within test sentences, component selection is facilitated by traversing the System Under Test (SUT) tree representation. For instance, consider the following tree:
 
 ```yaml
-pageObjectTree:
-  foo:
-    _selector: "#foo"
-    bar: "#bar"
-    baz: "#baz"
+foo:
+  _selector: "#foo"
+  bar: "#bar"
+  baz: "#baz"
 ```
 
 You can select the `bar` component by specifying the path "foo bar".

@@ -1,6 +1,7 @@
 import { Block } from './statements.interface';
 import { Token } from './token.interface';
 import { BuiltinActionCode } from '../instructions-builder/builtin-actions';
+import { BuiltinAssertionCode } from '../instructions-builder/builtin-assertions';
 
 export interface ResolvedTarget {
   fragments: string[];
@@ -39,7 +40,7 @@ interface BaseAssertionInstruction {
 
 export interface BuiltInAssertion extends BaseAssertionInstruction {
   kind: 'builtin-assertion';
-  chainer: string;
+  code: BuiltinAssertionCode;
 }
 
 export interface BlockAssertionInstruction extends BaseAssertionInstruction {

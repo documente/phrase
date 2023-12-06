@@ -10,7 +10,6 @@ export interface AssertionStatement {
   kind: 'assertion';
   target: Token[];
   assertion: Token[];
-  args: Token[];
   firstToken: Token;
   index: number;
 }

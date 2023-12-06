@@ -3,17 +3,20 @@ import { BuildContext } from '../interfaces/build-context.interface';
 import {
   AssertionInstruction,
   BlockAssertionInstruction,
+  BuiltInAssertion,
 } from '../interfaces/instructions.interface';
 import { extractTargetSelector } from './target-selector-builder';
 import { unquoted } from '../quoted-text';
 import { prettyPrintError } from '../error';
-import { KnownChainer } from '../known-chainers';
-import {
-  interpolate,
-  isNamedArgument,
-  withNamedArgumentsRemoved,
-} from './named-arguments';
+import { interpolate, isNamedArgument } from './named-arguments';
 import { extractNamedArguments } from './named-arguments-builder';
+import {
+  BuiltinAssertionCode,
+  BuiltinAssertionQualifiedPatterns,
+  getMatchResult,
+} from './builtin-assertions';
+import { TargetSelector } from '../interfaces/target-selector.interface';
+import { isArgument } from '../arguments';
 
 export function extractAssertionInstruction(
   statement: AssertionStatement,
@@ -36,23 +39,19 @@ export function extractAssertionInstruction(
     buildContext,
     namedArguments,
   );
-  const selectors = resolved?.selectors ?? null;
-  const assertionName = statement.assertion.map((a) => a.value).join(' ');
-  const args = statement.args.map((arg) =>
-    interpolate(unquoted(arg.value), namedArguments, arg, buildContext.input),
+
+  const builtinAssertion = findBuiltinAssertion(
+    statement,
+    buildContext,
+    namedArguments,
+    resolved,
   );
 
-  const builtinAssertion = findBuiltinAssertion(assertionName);
-
   if (builtinAssertion) {
-    return {
-      kind: 'builtin-assertion',
-      chainer: builtinAssertion,
-      selectors,
-      target: resolved?.path ?? null,
-      args,
-    };
+    return builtinAssertion;
   }
+
+  const assertionName = statement.assertion.map((a) => a.value).join(' ');
 
   throw new Error(
     prettyPrintError(
@@ -69,7 +68,10 @@ function findAssertionBlock(
   buildContext: BuildContext,
   namedArguments: Record<string, string>,
 ): BlockAssertionInstruction | null {
-  const assertionName = statement.assertion.map((a) => a.value).join(' ');
+  const assertionName = statement.assertion
+    .filter((a) => !isArgument(a.value))
+    .map((a) => a.value)
+    .join(' ');
 
   for (const block of blocks) {
     if (block.kind === 'assertion-block') {
@@ -90,7 +92,9 @@ function findAssertionBlock(
         );
         const selectors = resolved?.selectors ?? null;
 
-        const interpolatedArgs = statement.args.map((arg) =>
+        const args = statement.assertion.filter((a) => isArgument(a.value));
+
+        const interpolatedArgs = args.map((arg) =>
           interpolate(
             unquoted(arg.value),
             namedArguments,
@@ -118,20 +122,34 @@ function findAssertionBlock(
   return null;
 }
 
-function findBuiltinAssertion(assertion: string): string | null {
-  assertion = withNamedArgumentsRemoved(assertion).trim();
-  const isNegated = assertion.startsWith('not ');
+function findBuiltinAssertion(
+  assertion: AssertionStatement,
+  buildContext: BuildContext,
+  namedArguments: Record<string, string>,
+  targetSelector: TargetSelector | null,
+): BuiltInAssertion | null {
+  for (const parts of BuiltinAssertionQualifiedPatterns.keys()) {
+    const matchResult = getMatchResult(assertion.assertion, parts);
 
-  if (isNegated) {
-    assertion = assertion.slice(4);
+    if (matchResult) {
+      const interpolatedArgs = matchResult.args.map((arg) =>
+        interpolate(
+          unquoted(arg.value),
+          namedArguments,
+          arg,
+          buildContext.input,
+        ),
+      );
+
+      return {
+        kind: 'builtin-assertion',
+        args: interpolatedArgs,
+        code: BuiltinAssertionQualifiedPatterns.get(
+          parts,
+        ) as BuiltinAssertionCode,
+        selectors: targetSelector?.selectors ?? null,
+        target: targetSelector?.path ?? null,
+      };
+    }
   }
-
-  const isKnown = Object.keys(KnownChainer).includes(assertion);
-
-  if (isKnown) {
-    const resolved = KnownChainer[assertion as keyof typeof KnownChainer];
-    return isNegated ? 'not.' + resolved : resolved;
-  }
-
-  return null;
 }
