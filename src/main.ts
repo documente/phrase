@@ -8,3 +8,5 @@ export * from './interfaces/statements.interface';
 export * from './interfaces/target-selector.interface';
 export * from './interfaces/token.interface';
 export * from './splitter';
+export * from './normalize-eol';
+export { BuiltinAssertionCode } from './instructions-builder/builtin-assertions';
