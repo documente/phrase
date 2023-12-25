@@ -20,6 +20,18 @@ export function tokenize(sentence: string): Token[] {
     throw new Error(prettyPrintError(message, sentence, { line, column }));
   };
 
+  function isAtEndOfLine() {
+    let j = i;
+
+    while (j < sentence.length) {
+      const char = sentence[j];
+
+      if (char === ' ' || char === '\t') {
+        j++;
+      } else return char === '\n';
+    }
+  }
+
   function pushToken() {
     if (currentToken === '') {
       return;
@@ -27,7 +39,7 @@ export function tokenize(sentence: string): Token[] {
 
     let kind: Token['kind'] = 'generic';
 
-    if (currentToken === 'done' && isAtStartOfLine) {
+    if (currentToken === 'done' && (isAtStartOfLine || isAtEndOfLine())) {
       kind = 'done';
     } else if (currentToken === '-' && isAtStartOfLine) {
       kind = 'bullet';
