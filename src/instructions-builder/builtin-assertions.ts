@@ -5,6 +5,7 @@ import { Token } from '../interfaces/token.interface';
 export const BuiltinAssertionCodes = [
   'have text',
   'be visible',
+  'be hidden',
   'contain text',
   'have value',
   'have class',
@@ -31,6 +32,7 @@ export interface BuiltinAssertionTextPart {
 export const BuiltinAssertionPatterns: Record<string, BuiltinAssertionCode> = {
   'have text {{text}}': 'have text',
   'be visible': 'be visible',
+  'be hidden': 'be hidden',
   'contain text {{text}}': 'contain text',
   'have value {{value}}': 'have value',
   'have class {{value}}': 'have class',
