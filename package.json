@@ -19,7 +19,8 @@
     "lint": "npx eslint **/*.ts",
     "pretty": "npx prettier . --write",
     "build": "tsup src/main.ts --format cjs,esm --dts --clean",
-    "watch": "npm run build -- --watch src"
+    "watch": "npm run build -- --watch src",
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist"
