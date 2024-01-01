@@ -33,6 +33,7 @@ export const BuiltinAssertionPatterns: Record<string, BuiltinAssertionCode> = {
   'be visible': 'be visible',
   'contain text {{text}}': 'contain text',
   'have value {{value}}': 'have value',
+  'have class {{value}}': 'have value',
   exist: 'exist',
   'not exist': 'not exist',
   'be checked': 'be checked',
