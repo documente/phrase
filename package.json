@@ -1,6 +1,6 @@
 {
   "name": "@documente/phrase",
-  "version": "1.0.0-beta.8",
+  "version": "1.0.0-beta.11",
   "description": "A fluent automated testing library for web applications",
   "repository": {
     "type": "git",
@@ -19,7 +19,8 @@
     "lint": "npx eslint **/*.ts",
     "pretty": "npx prettier . --write",
     "build": "tsup src/main.ts --format cjs,esm --dts --clean",
-    "watch": "npm run build -- --watch src"
+    "watch": "npm run build -- --watch src",
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist"
