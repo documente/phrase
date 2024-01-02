@@ -14,6 +14,7 @@ test('should tokenize a sentence with one word', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
   ]);
 });
@@ -26,6 +27,7 @@ test('should tokenize a sentence with two words', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
@@ -33,6 +35,7 @@ test('should tokenize a sentence with two words', () => {
       line: 1,
       column: 5,
       index: 4,
+      isAtStartOfLine: false,
     } satisfies Token,
   ]);
 });
@@ -45,6 +48,7 @@ test('should tokenize a sentence with two words and a newline', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
@@ -52,6 +56,7 @@ test('should tokenize a sentence with two words and a newline', () => {
       line: 2,
       column: 1,
       index: 4,
+      isAtStartOfLine: true,
     } satisfies Token,
   ]);
 });
@@ -64,6 +69,7 @@ test('should tokenize a sentence with quoted text', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
@@ -71,13 +77,15 @@ test('should tokenize a sentence with quoted text', () => {
       line: 1,
       column: 9,
       index: 8,
+      isAtStartOfLine: false,
     } satisfies Token,
     {
       kind: 'generic',
       value: '"Hello, World!"',
       line: 1,
       column: 12,
-      index: 10,
+      index: 11,
+      isAtStartOfLine: false,
     } satisfies Token,
   ]);
 });
@@ -90,6 +98,7 @@ test('should ignore comments', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
@@ -97,6 +106,7 @@ test('should ignore comments', () => {
       line: 1,
       column: 5,
       index: 4,
+      isAtStartOfLine: false,
     } satisfies Token,
   ]);
 });
@@ -109,6 +119,7 @@ test('should ignore comments with newlines', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
@@ -116,6 +127,7 @@ test('should ignore comments with newlines', () => {
       line: 1,
       column: 5,
       index: 4,
+      isAtStartOfLine: false,
     } satisfies Token,
     {
       kind: 'generic',
@@ -123,6 +135,7 @@ test('should ignore comments with newlines', () => {
       line: 2,
       column: 1,
       index: 13,
+      isAtStartOfLine: true,
     } satisfies Token,
   ]);
 });
@@ -135,6 +148,7 @@ test('should ignore comments with newlines and carriage returns', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
@@ -142,6 +156,7 @@ test('should ignore comments with newlines and carriage returns', () => {
       line: 1,
       column: 5,
       index: 4,
+      isAtStartOfLine: false,
     } satisfies Token,
     {
       kind: 'generic',
@@ -149,25 +164,7 @@ test('should ignore comments with newlines and carriage returns', () => {
       line: 2,
       column: 1,
       index: 14,
-    } satisfies Token,
-  ]);
-});
-
-test('should detect a done token', () => {
-  expect(tokenize('foo\ndone')).toEqual([
-    {
-      kind: 'generic',
-      value: 'foo',
-      line: 1,
-      column: 1,
-      index: 0,
-    } satisfies Token,
-    {
-      kind: 'done',
-      value: 'done',
-      line: 2,
-      column: 1,
-      index: 4,
+      isAtStartOfLine: true,
     } satisfies Token,
   ]);
 });
@@ -180,6 +177,7 @@ test('should detect a bullet token', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'bullet',
@@ -187,6 +185,7 @@ test('should detect a bullet token', () => {
       line: 2,
       column: 1,
       index: 4,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
@@ -194,28 +193,11 @@ test('should detect a bullet token', () => {
       line: 2,
       column: 3,
       index: 6,
+      isAtStartOfLine: false,
     } satisfies Token,
   ]);
 });
 
-test('should tokenize "done" as a generic token', () => {
-  expect(tokenize('foo done')).toEqual([
-    {
-      kind: 'generic',
-      value: 'foo',
-      line: 1,
-      column: 1,
-      index: 0,
-    } satisfies Token,
-    {
-      kind: 'generic',
-      value: 'done',
-      line: 1,
-      column: 5,
-      index: 4,
-    } satisfies Token,
-  ]);
-});
 test('should tokenize "-" as a generic token', () => {
   expect(tokenize('foo -')).toEqual([
     {
@@ -224,6 +206,7 @@ test('should tokenize "-" as a generic token', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
@@ -231,6 +214,7 @@ test('should tokenize "-" as a generic token', () => {
       line: 1,
       column: 5,
       index: 4,
+      isAtStartOfLine: false,
     } satisfies Token,
   ]);
 });
@@ -251,13 +235,15 @@ test('should escape a double quote inside a quoted text', () => {
       line: 1,
       column: 1,
       index: 0,
+      isAtStartOfLine: true,
     } satisfies Token,
     {
       kind: 'generic',
       value: '"bar \\" baz"',
       line: 1,
       column: 5,
-      index: 3,
+      index: 4,
+      isAtStartOfLine: false,
     } satisfies Token,
   ]);
 });

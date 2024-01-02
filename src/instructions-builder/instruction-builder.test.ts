@@ -133,7 +133,6 @@ test('should build an assertion with quoted text argument', () => {
 test('should build instructions with an action block', () => {
   const instructions = buildInstructions(
     `when I click twice on button then it should be visible
-      done
 
       In order to click twice on $button:
       - I click on it
@@ -159,7 +158,6 @@ test('should reject circular action blocks', () => {
   expect(() =>
     buildInstructions(
       `when I click twice on button then it should be visible
-      done
 
       In order to click twice on button:
       - I click twice on button`,
@@ -167,7 +165,7 @@ test('should reject circular action blocks', () => {
       {},
     ),
   ).toThrow(`Circular block detected: "click twice on button"
-Line 5, column 11:
+Line 4, column 11:
       - I click twice on button
           ^`);
 });
@@ -176,20 +174,17 @@ test('should reject nested circular action blocks', () => {
   expect(() =>
     buildInstructions(
       `when I click twice on button then it should be visible
-      done
 
       In order to click twice on button:
       - I foobar on button
-      done
 
       In order to foobar on button:
-      - I click twice on button
-      done`,
+      - I click twice on button`,
       { button: 'button' },
       {},
     ),
   ).toThrow(`Circular block detected: "click twice on button"
-Line 9, column 11:
+Line 7, column 11:
       - I click twice on button
           ^`);
 });
@@ -197,7 +192,6 @@ Line 9, column 11:
 test('should build instructions with an assertion block', () => {
   const instructions = buildInstructions(
     `when I click on button then it should be shown
-      done
 
       For button to be shown:
       - it should be visible`,
@@ -218,7 +212,7 @@ test('should build instructions with an assertion block', () => {
   expect(resolvedAssertion.code).toEqual('be visible');
 });
 
-it('should build instructions with a builtin negated assertion', () => {
+test('should build instructions with a builtin negated assertion', () => {
   const instructions = buildInstructions(
     'when I click button then it should not exist',
     { button: 'button' },
@@ -244,16 +238,14 @@ test('should reject nested circular assertion blocks', () => {
   expect(() =>
     buildInstructions(
       `when I click on button then it should be red
-      done
 
       For button to be red:
-      - it should be red
-      done`,
+      - it should be red`,
       { button: 'button' },
       {},
     ),
   ).toThrow(`Circular block detected: "be red"
-Line 5, column 19:
+Line 4, column 19:
       - it should be red
                   ^`);
 });
@@ -262,11 +254,9 @@ test('should handle interpolated arguments in selectors', () => {
   const instructions = buildInstructions(
     `when I click button
 then it should contain label "foobar"
-done
 
 for $element to contain label {{content}}:
-- its label with text "{{content}}" should exist
-done`,
+- its label with text "{{content}}" should exist`,
     {
       button: {
         _selector: 'button',

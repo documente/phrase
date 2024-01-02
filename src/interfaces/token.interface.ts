@@ -4,6 +4,7 @@ export interface BaseToken {
   line: number;
   column: number;
   index: number;
+  isAtStartOfLine: boolean;
 }
 
 export interface GenericToken extends BaseToken {
@@ -14,12 +15,8 @@ export interface BulletToken extends BaseToken {
   kind: 'bullet';
 }
 
-export interface DoneToken extends BaseToken {
-  kind: 'done';
-}
-
 export interface ColonToken extends BaseToken {
   kind: 'colon';
 }
 
-export type Token = GenericToken | BulletToken | DoneToken | ColonToken;
+export type Token = GenericToken | BulletToken | ColonToken;

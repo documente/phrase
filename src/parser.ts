@@ -41,26 +41,30 @@ export class Parser {
    */
   public parse(sentence: string): StatementSection[] {
     this.sentence = sentence;
-    this.tokens = tokenize(sentence);
     this.index = 0;
 
-    if (this.tokens.length === 0) {
+    const tokens = tokenize(sentence);
+
+    if (tokens.length === 0) {
       throw new Error('Empty sentence');
     }
 
+    const tokenSections: Token[][] = this.splitTokensIntoSections(tokens);
+
     const statementSections: StatementSection[] = [];
 
-    while (!this.isAtEnd()) {
+    for (const tokenSection of tokenSections) {
+      this.tokens = tokenSection;
+      this.index = 0;
+
       if (this.matches('given', 'when')) {
         statementSections.push(this.parseGivenWhenThen());
-      } else {
+      } else if (this.matches('for')) {
         statementSections.push(this.parseBlock());
-      }
-
-      if (this.matchesKind('done')) {
-        this.index++;
-      } else if (!this.isAtEnd()) {
-        this.error('Expected "done"');
+      } else if (this.matches(['in', 'order', 'to'])) {
+        statementSections.push(this.parseBlock());
+      } else {
+        this.error('Unexpected section start. A section should start with "Given", "When", "For", or "In order to"');
       }
     }
 
@@ -114,10 +118,8 @@ export class Parser {
 
   private getSource(startIndex: number): string {
     return this.sentence.slice(
-      startIndex,
-      this.matchesKind('done')
-        ? this.currentToken.index + this.currentToken.value.length
-        : this.previousToken.index + this.previousToken.value.length,
+        startIndex,
+        this.previousToken.index + this.previousToken.value.length,
     );
   }
 
@@ -137,7 +139,7 @@ export class Parser {
 
   parseThen(): Statement[] {
     this.consume('then', 'Expected "then"');
-    return this.parseStatements();
+    return this.parseAssertions();
   }
 
   private isAssertionBlockHeader(fullHeader: Token[]): boolean {
@@ -170,7 +172,7 @@ export class Parser {
     while (
       !this.isAtEnd() &&
       !this.matches('given', 'when', 'then') &&
-      !this.matchesKind('bullet', 'done')
+      !this.matchesKind('bullet')
     ) {
       statements.push(this.parseStatement());
 
@@ -183,6 +185,16 @@ export class Parser {
 
     if (statements.length === 0) {
       this.error('Missing statement');
+    }
+
+    return statements;
+  }
+
+  private parseAssertions(): Statement[] {
+    const statements = this.parseStatements();
+
+    if (statements.some((s) => s.kind !== 'assertion')) {
+      this.error('Expected assertion');
     }
 
     return statements;
@@ -226,7 +238,7 @@ export class Parser {
     while (
       !this.isAtEnd() &&
       !this.matches('given', 'when', 'then', 'and') &&
-      !this.matchesKind('bullet', 'done')
+      !this.matchesKind('bullet')
     ) {
       if (this.matches('should')) {
         foundShould = true;
@@ -263,6 +275,10 @@ export class Parser {
     tokensBeforeShould: Token[],
     index: number,
   ): AssertionStatement {
+    if (tokensAfterShould.length === 0) {
+      this.error('Missing assertion');
+    }
+
     return {
       kind: 'assertion',
       target: tokensBeforeShould,
@@ -288,7 +304,7 @@ export class Parser {
     while (
       !this.isAtEnd() &&
       !this.matches('then', 'when', 'and') &&
-      !this.matchesKind('bullet', 'done')
+      !this.matchesKind('bullet')
     ) {
       this.reject(['I'], 'Unexpected "I" in action name');
       action.push(this.currentToken);
@@ -302,10 +318,26 @@ export class Parser {
     return action;
   }
 
-  matches(...candidates: string[]): boolean {
-    return candidates
-      .map((candidate) => candidate.toLowerCase())
-      .includes(this.currentValue?.toLowerCase());
+  matches(...candidates: (string | string[])[]): boolean {
+    const currentValue = this.currentValue;
+
+    if (!currentValue) {
+      return false;
+    }
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate)) {
+        if (this.nextTokensMatch(candidate)) {
+          return true;
+        }
+      } else {
+        if (candidate.toLowerCase() === currentValue.toLowerCase()) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
   matchesKind(...kinds: Token['kind'][]): boolean {
@@ -371,7 +403,7 @@ export class Parser {
   parseBullets(): Statement[] {
     const statements: Statement[] = [];
 
-    while (!this.isAtEnd() && !this.matches('done')) {
+    while (!this.isAtEnd()) {
       if (this.matchesKind('bullet')) {
         this.index++;
         statements.push(this.parseStatement());
@@ -381,5 +413,55 @@ export class Parser {
     }
 
     return statements;
+  }
+
+  private nextTokensMatch(values: string[]): boolean {
+    for (let i = 0; i < values.length; i++) {
+      if (this.tokens[this.index + i].value.toLowerCase() !== values[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private splitTokensIntoSections(tokens: Token[]): Token[][] {
+    this.tokens = tokens;
+
+    if (!this.isSectionStart()) {
+      this.error('Missing section start. A section should start with "Given", "When", "For", or "In order to"');
+    }
+
+    const tokenSections: Token[][] = [];
+    let currentSection: Token[] = [];
+
+    while (!this.isAtEnd()) {
+      if (this.isSectionStart()) {
+        if (currentSection.length > 0) {
+          tokenSections.push(currentSection);
+          currentSection = [];
+        }
+      }
+
+      currentSection.push(this.currentToken);
+      this.index++;
+    }
+
+    if (currentSection.length > 0) {
+      tokenSections.push(currentSection);
+    }
+
+    return tokenSections;
+  }
+
+  private isSectionStart(): boolean {
+    const currentToken = this.currentToken;
+
+    if (!currentToken) {
+      return false;
+    }
+
+    return currentToken.isAtStartOfLine
+        && this.matches('given', 'when', 'for', ['in', 'order', 'to']);
   }
 }
