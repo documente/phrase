@@ -368,9 +368,9 @@ test('should reject assertion block header without "to"', () => {
   );
 });
 
-test.skip('should throw if parsing a sentence with missing statement', () => {
+test('should throw if parsing a sentence with missing statement', () => {
   const parser = new Parser();
-  ['given', `when I click on button then`].forEach((sentence) => {
+  ['given', 'when', 'when I click on button then'].forEach((sentence) => {
     expect(() => parser.parse(sentence)).toThrow(`Missing statement`);
   });
 });

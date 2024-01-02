@@ -41,6 +41,7 @@ export class Parser {
    */
   public parse(sentence: string): StatementSection[] {
     this.sentence = sentence;
+    this.index = 0;
 
     const tokens = tokenize(sentence);
 
