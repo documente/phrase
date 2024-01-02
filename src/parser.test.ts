@@ -225,18 +225,16 @@ test('should parse a sentence with two assertions', () => {
   ]);
 });
 
-// TODO: should we allow this?
-test.skip('should throw if parsing a sentence with invalid assertion', () => {
+test('should throw if parsing a sentence with invalid assertion', () => {
   const parser = new Parser();
   expect(() => parser.parse('when I click then dialog and hidden'))
-    .toThrow(`Expected "should"
-Line 1, column 26:
+    .toThrow(`Expected assertion
+Line 1, column 36:
 when I click then dialog and hidden
-                         ^`);
+                                   ^`);
 });
 
-// TODO: should we allow this?
-test.skip('should throw if parsing a sentence with missing assertion before and', () => {
+test('should throw if parsing a sentence with missing assertion before and', () => {
   const parser = new Parser();
   expect(() => parser.parse('when I click then dialog should and')).toThrow(
     `Missing assertion
@@ -246,11 +244,10 @@ when I click then dialog should and
   );
 });
 
-// TODO: should we allow this?
-test.skip('should throw if parsing a sentence with missing assertion', () => {
+test('should throw if parsing a sentence with missing assertion', () => {
   const parser = new Parser();
   expect(() => parser.parse('when I click then')).toThrow(
-    `Missing assertion
+    `Missing statement
 Line 1, column 18:
 when I click then
                  ^`,

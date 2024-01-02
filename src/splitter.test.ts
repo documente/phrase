@@ -5,7 +5,7 @@ test('should split blocks and tests', () => {
   const splitter = new Splitter();
 
   splitter.add(`
-when I click button then message is visible
+when I click button then message should be visible
 
 in order to foo:
 - I click on button
@@ -16,14 +16,14 @@ in order to foo:
   expect(result.blocks[0]).toEqual(`in order to foo:
 - I click on button`);
   expect(result.tests).toHaveLength(1);
-  expect(result.tests[0]).toEqual(`when I click button then message is visible`);
+  expect(result.tests[0]).toEqual(`when I click button then message should be visible`);
 });
 
 test('should split blocks and tests with Windows-style end of lines', () => {
   const splitter = new Splitter();
 
   splitter.add(
-    'when I click button then message is visible\r\nin order to foo:\r\n- I click on button\r\n',
+    'when I click button then message should be visible\r\nin order to foo:\r\n- I click on button\r\n',
   );
 
   const result = splitter.split();
@@ -33,6 +33,6 @@ test('should split blocks and tests with Windows-style end of lines', () => {
   );
   expect(result.tests).toHaveLength(1);
   expect(result.tests[0]).toEqual(
-    'when I click button then message is visible',
+    'when I click button then message should be visible',
   );
 });

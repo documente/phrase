@@ -58,8 +58,12 @@ export class Parser {
 
       if (this.matches('given', 'when')) {
         statementSections.push(this.parseGivenWhenThen());
-      } else {
+      } else if (this.matches('for')) {
         statementSections.push(this.parseBlock());
+      } else if (this.matches(['in', 'order', 'to'])) {
+        statementSections.push(this.parseBlock());
+      } else {
+        this.error('Unexpected section start. A section should start with "Given", "When", "For", or "In order to"');
       }
     }
 
@@ -134,7 +138,7 @@ export class Parser {
 
   parseThen(): Statement[] {
     this.consume('then', 'Expected "then"');
-    return this.parseStatements();
+    return this.parseAssertions();
   }
 
   private isAssertionBlockHeader(fullHeader: Token[]): boolean {
@@ -180,6 +184,16 @@ export class Parser {
 
     if (statements.length === 0) {
       this.error('Missing statement');
+    }
+
+    return statements;
+  }
+
+  private parseAssertions(): Statement[] {
+    const statements = this.parseStatements();
+
+    if (statements.some((s) => s.kind !== 'assertion')) {
+      this.error('Expected assertion');
     }
 
     return statements;
@@ -260,6 +274,10 @@ export class Parser {
     tokensBeforeShould: Token[],
     index: number,
   ): AssertionStatement {
+    if (tokensAfterShould.length === 0) {
+      this.error('Missing assertion');
+    }
+
     return {
       kind: 'assertion',
       target: tokensBeforeShould,
