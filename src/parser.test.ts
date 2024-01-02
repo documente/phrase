@@ -91,7 +91,7 @@ test('should parse a sentence with an action with a target and with args', () =>
           column: 13,
           line: 1,
           value: '"foo"',
-          index: 11,
+          index: 12,
           isAtStartOfLine: false,
         },
         {

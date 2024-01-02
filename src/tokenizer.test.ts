@@ -84,7 +84,7 @@ test('should tokenize a sentence with quoted text', () => {
       value: '"Hello, World!"',
       line: 1,
       column: 12,
-      index: 10,
+      index: 11,
       isAtStartOfLine: false,
     } satisfies Token,
   ]);
@@ -242,7 +242,7 @@ test('should escape a double quote inside a quoted text', () => {
       value: '"bar \\" baz"',
       line: 1,
       column: 5,
-      index: 3,
+      index: 4,
       isAtStartOfLine: false,
     } satisfies Token,
   ]);
