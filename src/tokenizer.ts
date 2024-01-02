@@ -39,9 +39,7 @@ export function tokenize(sentence: string): Token[] {
 
     let kind: Token['kind'] = 'generic';
 
-    if (currentToken === 'done' && (isAtStartOfLine || isAtEndOfLine())) {
-      kind = 'done';
-    } else if (currentToken === '-' && isAtStartOfLine) {
+    if (currentToken === '-' && isAtStartOfLine) {
       kind = 'bullet';
     } else if (currentToken === ':') {
       kind = 'colon';
@@ -53,6 +51,7 @@ export function tokenize(sentence: string): Token[] {
       line,
       column: column - currentToken.length,
       index: i - currentToken.length,
+      isAtStartOfLine,
     });
     currentToken = '';
     isAtStartOfLine = false;

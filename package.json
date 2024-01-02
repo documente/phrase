@@ -15,7 +15,8 @@
     "access": "public"
   },
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --coverage",
+    "test-watch": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --watch",
     "lint": "npx eslint **/*.ts",
     "pretty": "npx prettier . --write",
     "build": "tsup src/main.ts --format cjs,esm --dts --clean",
