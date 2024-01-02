@@ -14,23 +14,12 @@ export function tokenize(sentence: string): Token[] {
   let column = 1;
   let insideDoubleQuotes = false;
   let isAtStartOfLine = true;
+  let hasJustFinishedQuotedString = false;
   let i = 0;
 
   const throwError = (message: string) => {
     throw new Error(prettyPrintError(message, sentence, { line, column }));
   };
-
-  function isAtEndOfLine() {
-    let j = i;
-
-    while (j < sentence.length) {
-      const char = sentence[j];
-
-      if (char === ' ' || char === '\t') {
-        j++;
-      } else return char === '\n';
-    }
-  }
 
   function pushToken() {
     if (currentToken === '') {
@@ -53,11 +42,17 @@ export function tokenize(sentence: string): Token[] {
       index: i - currentToken.length,
       isAtStartOfLine,
     });
+
     currentToken = '';
     isAtStartOfLine = false;
   }
 
   for (i = 0; i < sentence.length; i++) {
+    if (hasJustFinishedQuotedString) {
+      hasJustFinishedQuotedString = false;
+      pushToken();
+    }
+
     const char = sentence[i];
 
     if (char === ' ' && !insideDoubleQuotes) {
@@ -79,7 +74,7 @@ export function tokenize(sentence: string): Token[] {
       column++;
 
       if (insideDoubleQuotes) {
-        pushToken();
+        hasJustFinishedQuotedString = true;
       }
 
       insideDoubleQuotes = !insideDoubleQuotes;
@@ -116,5 +111,6 @@ export function tokenize(sentence: string): Token[] {
   }
 
   pushToken();
+
   return tokens;
 }
