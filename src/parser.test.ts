@@ -398,3 +398,99 @@ test('should throw if parsing a sentence with bullet in block name', () => {
   `),
   ).toThrow(`Unexpected bullet in block header`);
 });
+
+test('should correctly parse a multiline given-when-then statement', () => {
+  const parser = new Parser();
+  const parsed = parser.parse(`
+    given I login
+    when I click on button
+    then it should be red
+  `);
+
+  expect(parsed).toHaveLength(1);
+});
+
+test('should correctly parse 2 multiline given-when-then statements', () => {
+  const parser = new Parser();
+  const parsed = parser.parse(`
+    given I login
+    when I click on button
+    then it should be red
+    given I login
+    when I click on button
+    then it should be red
+  `);
+
+  expect(parsed).toHaveLength(2);
+});
+
+test('should correctly parse a given-when-then statement and a when-then statement', () => {
+  const parser = new Parser();
+  const parsed = parser.parse(`
+    given I login
+    when I click on button
+    then it should be red
+    when I click on button
+    then it should be red
+  `);
+
+  expect(parsed).toHaveLength(2);
+});
+
+test('should correctly parse a multi line and single line (given-)when-then statement', () => {
+  const parser = new Parser();
+  const parsed = parser.parse(`
+    given I login
+    when I click on button
+    then it should be red
+    given I login when I click on button then it should be red
+    when I click on button then it should be red
+    when I click on button
+    then it should be red
+  `);
+
+  expect(parsed).toHaveLength(4);
+});
+
+test('should reject given-then statement', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    given I login
+    then it should be red
+  `),
+  ).toThrow(`Unexpected delimiter. Expected WHEN`);
+});
+
+test('should reject block missing assertion name', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    For $element to:
+    - it should have class "red"
+  `),
+  ).toThrow(
+    `Missing assertion name. Block header must follow "For ... to ..." structure.`,
+  );
+});
+
+test('should reject block missing action name', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    In order to:
+    - I click button
+  `),
+  ).toThrow(
+    `Missing action name. Block header must follow "In order to ..." structure.`,
+  );
+});
+
+test('should reject statement with only given', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    given I login
+    `),
+  ).toThrow(`Expected "when"`);
+});

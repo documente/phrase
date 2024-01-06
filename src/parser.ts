@@ -57,14 +57,19 @@ export class Parser {
       this.tokens = tokenSection;
       this.index = 0;
 
-      if (this.matches('given', 'when')) {
-        statementSections.push(this.parseGivenWhenThen());
-      } else if (this.matches('for')) {
-        statementSections.push(this.parseBlock());
-      } else if (this.matches(['in', 'order', 'to'])) {
-        statementSections.push(this.parseBlock());
-      } else {
-        this.error('Unexpected section start. A section should start with "Given", "When", "For", or "In order to"');
+      const delimiter = this.getCurrentAsDelimiter();
+
+      switch (delimiter) {
+        case Delimiter.GIVEN:
+        case Delimiter.WHEN:
+          statementSections.push(this.parseGivenWhenThen());
+          break;
+        case Delimiter.FOR:
+        case Delimiter.IN_ORDER_TO:
+          statementSections.push(this.parseBlock());
+          break;
+        default:
+          throw new Error('Unreachable code.');
       }
     }
 
@@ -91,35 +96,48 @@ export class Parser {
     const fullHeader = this.consumeBlockHeader();
 
     if (this.isActionBlockHeader(fullHeader)) {
+      if (fullHeader.length <= 3) {
+        this.error(
+          'Missing action name. Block header must follow "In order to ..." structure.',
+        );
+      }
+
       return {
         kind: 'action-block',
         header: fullHeader.slice(3),
         body: this.parseBullets(),
         source: this.getSource(startIndex),
       } satisfies ActionBlock;
-    } else if (this.isAssertionBlockHeader(fullHeader)) {
+    } else {
       const indexOfTo = fullHeader.findIndex(
         (t) => t.value.toLowerCase() === 'to',
       );
+
+      if (indexOfTo === -1) {
+        this.error(
+          'Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.',
+        );
+      }
+
+      if (fullHeader.length <= indexOfTo + 1) {
+        this.error(
+          'Missing assertion name. Block header must follow "For ... to ..." structure.',
+        );
+      }
+
       return {
         kind: 'assertion-block',
         header: fullHeader.slice(indexOfTo + 1),
         body: this.parseBullets(),
         source: this.getSource(startIndex),
       } satisfies AssertionBlock;
-    } else {
-      this.error(
-        'Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.',
-      );
     }
-
-    throw new Error('Unreachable code.');
   }
 
   private getSource(startIndex: number): string {
     return this.sentence.slice(
-        startIndex,
-        this.previousToken.index + this.previousToken.value.length,
+      startIndex,
+      this.previousToken.index + this.previousToken.value.length,
     );
   }
 
@@ -140,22 +158,6 @@ export class Parser {
   parseThen(): Statement[] {
     this.consume('then', 'Expected "then"');
     return this.parseAssertions();
-  }
-
-  private isAssertionBlockHeader(fullHeader: Token[]): boolean {
-    if (fullHeader[0].value.toLowerCase() !== 'for') {
-      return false;
-    }
-
-    const indexOfTo = fullHeader.findIndex(
-      (t) => t.value.toLowerCase() === 'to',
-    );
-
-    if (indexOfTo === -1) {
-      return false;
-    }
-
-    return indexOfTo < fullHeader.length - 1 && indexOfTo > 1;
   }
 
   private isActionBlockHeader(fullHeader: Token[]): boolean {
@@ -428,19 +430,46 @@ export class Parser {
   private splitTokensIntoSections(tokens: Token[]): Token[][] {
     this.tokens = tokens;
 
-    if (!this.isSectionStart()) {
-      this.error('Missing section start. A section should start with "Given", "When", "For", or "In order to"');
+    if (!this.isPotentialSectionStart()) {
+      this.error(
+        'Missing section start. A section should start with "Given", "When", "For", or "In order to"',
+      );
     }
 
     const tokenSections: Token[][] = [];
     let currentSection: Token[] = [];
 
+    let previousDelimiter: Delimiter | null = null;
+
     while (!this.isAtEnd()) {
-      if (this.isSectionStart()) {
-        if (currentSection.length > 0) {
-          tokenSections.push(currentSection);
+      const currentDelimiter = this.getCurrentAsDelimiter();
+
+      if (currentDelimiter != null) {
+        if (previousDelimiter != null) {
+          const validDelimiters = delimiterTransitions[
+            previousDelimiter
+          ] as Readonly<Delimiter[]>;
+
+          if (!validDelimiters.includes(currentDelimiter)) {
+            this.error(
+              `Unexpected delimiter. Expected ${validDelimiters.join(', ')}`,
+            );
+          }
+        }
+
+        const isGivenToWhen =
+          previousDelimiter === Delimiter.GIVEN &&
+          currentDelimiter === Delimiter.WHEN;
+
+        if (this.isPotentialSectionStart() && !isGivenToWhen) {
+          if (currentSection.length > 0) {
+            tokenSections.push(currentSection);
+          }
+
           currentSection = [];
         }
+
+        previousDelimiter = currentDelimiter;
       }
 
       currentSection.push(this.currentToken);
@@ -454,14 +483,54 @@ export class Parser {
     return tokenSections;
   }
 
-  private isSectionStart(): boolean {
-    const currentToken = this.currentToken;
+  private getCurrentAsDelimiter(): Delimiter | null {
+    if (this.currentToken == null) {
+      return null;
+    } else if (this.matches('given')) {
+      return Delimiter.GIVEN;
+    } else if (this.matches('when')) {
+      return Delimiter.WHEN;
+    } else if (this.matches('then')) {
+      return Delimiter.THEN;
+    } else if (this.matches('for')) {
+      return Delimiter.FOR;
+    } else if (this.matches(['in', 'order', 'to'])) {
+      return Delimiter.IN_ORDER_TO;
+    } else {
+      return null;
+    }
+  }
 
-    if (!currentToken) {
+  private isPotentialSectionStart(): boolean {
+    const currentDelimiter = this.getCurrentAsDelimiter();
+
+    if (currentDelimiter == null) {
       return false;
     }
 
-    return currentToken.isAtStartOfLine
-        && this.matches('given', 'when', 'for', ['in', 'order', 'to']);
+    return ALL_STARTER_DELIMITERS.includes(currentDelimiter);
   }
 }
+
+enum Delimiter {
+  GIVEN = 'GIVEN',
+  WHEN = 'WHEN',
+  THEN = 'THEN',
+  FOR = 'FOR',
+  IN_ORDER_TO = 'IN_ORDER_TO',
+}
+
+const ALL_STARTER_DELIMITERS: Delimiter[] = [
+  Delimiter.GIVEN,
+  Delimiter.WHEN,
+  Delimiter.FOR,
+  Delimiter.IN_ORDER_TO,
+];
+
+const delimiterTransitions: Record<Delimiter, Readonly<Delimiter[]>> = {
+  GIVEN: [Delimiter.WHEN],
+  WHEN: [Delimiter.THEN],
+  THEN: ALL_STARTER_DELIMITERS,
+  FOR: ALL_STARTER_DELIMITERS,
+  IN_ORDER_TO: ALL_STARTER_DELIMITERS,
+};

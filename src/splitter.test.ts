@@ -16,7 +16,9 @@ in order to foo:
   expect(result.blocks[0]).toEqual(`in order to foo:
 - I click on button`);
   expect(result.tests).toHaveLength(1);
-  expect(result.tests[0]).toEqual(`when I click button then message should be visible`);
+  expect(result.tests[0]).toEqual(
+    `when I click button then message should be visible`,
+  );
 });
 
 test('should split blocks and tests with Windows-style end of lines', () => {
@@ -28,9 +30,7 @@ test('should split blocks and tests with Windows-style end of lines', () => {
 
   const result = splitter.split();
   expect(result.blocks).toHaveLength(1);
-  expect(result.blocks[0]).toEqual(
-    'in order to foo:\n- I click on button',
-  );
+  expect(result.blocks[0]).toEqual('in order to foo:\n- I click on button');
   expect(result.tests).toHaveLength(1);
   expect(result.tests[0]).toEqual(
     'when I click button then message should be visible',
