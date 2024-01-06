@@ -398,3 +398,56 @@ test('should throw if parsing a sentence with bullet in block name', () => {
   `),
   ).toThrow(`Unexpected bullet in block header`);
 });
+
+test('should correctly parse a multiline given-when-then statement', () => {
+  const parser = new Parser();
+  const parsed = parser.parse(`
+    given I login
+    when I click on button
+    then it should be red
+  `);
+
+  expect(parsed).toHaveLength(1);
+});
+
+test('should correctly parse 2 multiline given-when-then statements', () => {
+  const parser = new Parser();
+  const parsed = parser.parse(`
+    given I login
+    when I click on button
+    then it should be red
+    given I login
+    when I click on button
+    then it should be red
+  `);
+
+  expect(parsed).toHaveLength(2);
+});
+
+test('should correctly parse a given-when-then statement and a when-then statement', () => {
+  const parser = new Parser();
+  const parsed = parser.parse(`
+    given I login
+    when I click on button
+    then it should be red
+    when I click on button
+    then it should be red
+  `);
+
+  expect(parsed).toHaveLength(2);
+});
+
+test('should correctly parse a multi line and single line (given-)when-then statement', () => {
+  const parser = new Parser();
+  const parsed = parser.parse(`
+    given I login
+    when I click on button
+    then it should be red
+    given I login when I click on button then it should be red
+    when I click on button then it should be red
+    when I click on button
+    then it should be red
+  `);
+
+  expect(parsed).toHaveLength(4);
+});
