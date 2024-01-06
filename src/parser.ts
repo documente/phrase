@@ -57,16 +57,19 @@ export class Parser {
       this.tokens = tokenSection;
       this.index = 0;
 
-      if (this.matches('given', 'when')) {
-        statementSections.push(this.parseGivenWhenThen());
-      } else if (this.matches('for')) {
-        statementSections.push(this.parseBlock());
-      } else if (this.matches(['in', 'order', 'to'])) {
-        statementSections.push(this.parseBlock());
-      } else {
-        this.error(
-          'Unexpected section start. A section should start with "Given", "When", "For", or "In order to"',
-        );
+      const delimiter = this.getCurrentAsDelimiter();
+
+      switch (delimiter) {
+        case Delimiter.GIVEN:
+        case Delimiter.WHEN:
+          statementSections.push(this.parseGivenWhenThen());
+          break;
+        case Delimiter.FOR:
+        case Delimiter.IN_ORDER_TO:
+          statementSections.push(this.parseBlock());
+          break;
+        default:
+          throw new Error('Unreachable code.');
       }
     }
 
@@ -93,29 +96,42 @@ export class Parser {
     const fullHeader = this.consumeBlockHeader();
 
     if (this.isActionBlockHeader(fullHeader)) {
+      if (fullHeader.length <= 3) {
+        this.error(
+          'Missing action name. Block header must follow "In order to ..." structure.',
+        );
+      }
+
       return {
         kind: 'action-block',
         header: fullHeader.slice(3),
         body: this.parseBullets(),
         source: this.getSource(startIndex),
       } satisfies ActionBlock;
-    } else if (this.isAssertionBlockHeader(fullHeader)) {
+    } else {
       const indexOfTo = fullHeader.findIndex(
         (t) => t.value.toLowerCase() === 'to',
       );
+
+      if (indexOfTo === -1) {
+        this.error(
+          'Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.',
+        );
+      }
+
+      if (fullHeader.length <= indexOfTo + 1) {
+        this.error(
+          'Missing assertion name. Block header must follow "For ... to ..." structure.',
+        );
+      }
+
       return {
         kind: 'assertion-block',
         header: fullHeader.slice(indexOfTo + 1),
         body: this.parseBullets(),
         source: this.getSource(startIndex),
       } satisfies AssertionBlock;
-    } else {
-      this.error(
-        'Unexpected block header. Block header must start with "In order to" or follow "For ... to ..." structure.',
-      );
     }
-
-    throw new Error('Unreachable code.');
   }
 
   private getSource(startIndex: number): string {
@@ -142,22 +158,6 @@ export class Parser {
   parseThen(): Statement[] {
     this.consume('then', 'Expected "then"');
     return this.parseAssertions();
-  }
-
-  private isAssertionBlockHeader(fullHeader: Token[]): boolean {
-    if (fullHeader[0].value.toLowerCase() !== 'for') {
-      return false;
-    }
-
-    const indexOfTo = fullHeader.findIndex(
-      (t) => t.value.toLowerCase() === 'to',
-    );
-
-    if (indexOfTo === -1) {
-      return false;
-    }
-
-    return indexOfTo < fullHeader.length - 1 && indexOfTo > 1;
   }
 
   private isActionBlockHeader(fullHeader: Token[]): boolean {

@@ -451,3 +451,46 @@ test('should correctly parse a multi line and single line (given-)when-then stat
 
   expect(parsed).toHaveLength(4);
 });
+
+test('should reject given-then statement', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    given I login
+    then it should be red
+  `),
+  ).toThrow(`Unexpected delimiter. Expected WHEN`);
+});
+
+test('should reject block missing assertion name', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    For $element to:
+    - it should have class "red"
+  `),
+  ).toThrow(
+    `Missing assertion name. Block header must follow "For ... to ..." structure.`,
+  );
+});
+
+test('should reject block missing action name', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    In order to:
+    - I click button
+  `),
+  ).toThrow(
+    `Missing action name. Block header must follow "In order to ..." structure.`,
+  );
+});
+
+test('should reject statement with only given', () => {
+  const parser = new Parser();
+  expect(() =>
+    parser.parse(`
+    given I login
+    `),
+  ).toThrow(`Expected "when"`);
+});
