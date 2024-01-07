@@ -29,7 +29,6 @@ test('should parse a sentence with an action without target and without args', (
           line: 1,
           value: 'click',
           index: 7,
-          isAtStartOfLine: false,
         },
       ],
       index: 7,
@@ -52,7 +51,6 @@ test('should parse a sentence with an action with a target and without args', ()
           line: 1,
           value: 'click',
           index: 7,
-          isAtStartOfLine: false,
         },
         {
           kind: 'generic',
@@ -60,7 +58,6 @@ test('should parse a sentence with an action with a target and without args', ()
           line: 1,
           value: 'button',
           index: 13,
-          isAtStartOfLine: false,
         },
       ],
       index: 7,
@@ -84,7 +81,6 @@ test('should parse a sentence with an action with a target and with args', () =>
           line: 1,
           value: 'type',
           index: 7,
-          isAtStartOfLine: false,
         },
         {
           kind: 'generic',
@@ -92,7 +88,6 @@ test('should parse a sentence with an action with a target and with args', () =>
           line: 1,
           value: '"foo"',
           index: 12,
-          isAtStartOfLine: false,
         },
         {
           kind: 'generic',
@@ -100,7 +95,6 @@ test('should parse a sentence with an action with a target and with args', () =>
           line: 1,
           value: 'in',
           index: 18,
-          isAtStartOfLine: false,
         },
         {
           kind: 'generic',
@@ -108,7 +102,6 @@ test('should parse a sentence with an action with a target and with args', () =>
           line: 1,
           value: 'input',
           index: 21,
-          isAtStartOfLine: false,
         },
       ],
       index: 7,

@@ -119,7 +119,7 @@ function buildArgsAndSelectors(
   const selectors = resolved?.selectors ?? null;
 
   const interpolatedArgs = args.map((arg) =>
-    interpolate(unquoted(arg.value), namedArguments, arg, buildContext.input),
+    interpolate(unquoted(arg.value), namedArguments, arg, buildContext),
   );
 
   return { interpolatedArgs, selectors };

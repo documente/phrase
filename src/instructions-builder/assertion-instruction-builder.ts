@@ -95,12 +95,7 @@ function findAssertionBlock(
         const args = statement.assertion.filter((a) => isArgument(a.value));
 
         const interpolatedArgs = args.map((arg) =>
-          interpolate(
-            unquoted(arg.value),
-            namedArguments,
-            arg,
-            buildContext.input,
-          ),
+          interpolate(unquoted(arg.value), namedArguments, arg, buildContext),
         );
 
         return {
@@ -133,12 +128,7 @@ function findBuiltinAssertion(
 
     if (matchResult) {
       const interpolatedArgs = matchResult.args.map((arg) =>
-        interpolate(
-          unquoted(arg.value),
-          namedArguments,
-          arg,
-          buildContext.input,
-        ),
+        interpolate(unquoted(arg.value), namedArguments, arg, buildContext),
       );
 
       return {
@@ -152,4 +142,6 @@ function findBuiltinAssertion(
       };
     }
   }
+
+  return null;
 }

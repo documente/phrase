@@ -26,7 +26,7 @@ export function extractTargetSelector(
         selectorTree,
         previousPath,
         target,
-        input,
+        buildContext,
         namedArguments,
       ),
       path: previousPath,
@@ -56,7 +56,7 @@ export function extractTargetSelector(
       selectorTree,
       targetPath,
       target,
-      input,
+      buildContext,
       namedArguments,
     ),
     path: targetPath,
@@ -67,7 +67,7 @@ function buildSelectors(
   tree: SelectorTree,
   targetPath: ResolvedTarget[],
   target: Token[],
-  input: string,
+  buildContext: BuildContext,
   namedArguments: Record<string, string>,
 ) {
   const selectors: string[] = [];
@@ -94,7 +94,7 @@ function buildSelectors(
       throw new Error(
         prettyPrintError(
           `Could not resolve node for "${target.join(' ')}"`,
-          input,
+          buildContext.input,
           target[0],
         ),
       );
@@ -111,7 +111,12 @@ function buildSelectors(
     const unquotedArgs = pathSegment.arg
       ? [
           unquoted(
-            interpolate(pathSegment.arg, namedArguments, target[0], input),
+            interpolate(
+              pathSegment.arg,
+              namedArguments,
+              target[0],
+              buildContext,
+            ),
           ),
         ]
       : [];
@@ -125,7 +130,7 @@ function buildSelectors(
         selector,
         newNamedArguments,
         target[0],
-        input,
+        buildContext,
       );
       selectors.push(interpolatedSelector);
     } else if (typeof selector === 'function') {

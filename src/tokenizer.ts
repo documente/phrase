@@ -40,7 +40,6 @@ export function tokenize(sentence: string): Token[] {
       line,
       column: column - currentToken.length,
       index: i - currentToken.length,
-      isAtStartOfLine,
     });
 
     currentToken = '';

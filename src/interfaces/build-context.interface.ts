@@ -9,4 +9,5 @@ export interface BuildContext {
   externals: Externals;
   blocks: Block[];
   input: string;
+  envVars: Record<string, string>;
 }
