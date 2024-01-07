@@ -3,21 +3,57 @@ import { isArgument } from '../arguments';
 import { Token } from '../interfaces/token.interface';
 
 export const BuiltinActionCodes = [
-  'click',
-  'type',
   'visit',
-  'check',
-  'clear',
+
+  'click',
   'double_click',
   'right_click',
-  'scroll',
+
+  'type',
+  'clear',
+
+  'check',
   'uncheck',
+
   'select',
+
+  'scroll',
+
   'go_back',
   'go_forward',
 ] as const;
 
 export type BuiltinActionCode = (typeof BuiltinActionCodes)[number];
+
+export const BuiltinActionPatterns: Record<string, BuiltinActionCode> = {
+  'visit {{url}}': 'visit',
+  'click on $target': 'click',
+  'click $target': 'click',
+  'double click on $target': 'double_click',
+  'double click $target': 'double_click',
+  'double-click on $target': 'double_click',
+  'double-click $target': 'double_click',
+  'doubleclick on $target': 'double_click',
+  'doubleclick $target': 'double_click',
+  'right click on $target': 'right_click',
+  'right click $target': 'right_click',
+  'right-click on $target': 'right_click',
+  'right-click $target': 'right_click',
+  'rightclick on $target': 'right_click',
+  'rightclick $target': 'right_click',
+  'type {{text}} on $target': 'type',
+  'type {{text}} into $target': 'type',
+  'type {{text}} in $target': 'type',
+  'clear $target': 'clear',
+  'check $target': 'check',
+  'uncheck $target': 'uncheck',
+  'select {{item}} in $target': 'select',
+  'select {{item}} from $target': 'select',
+  'scroll to $target': 'scroll',
+  'scroll $target into view': 'scroll',
+  'go back': 'go_back',
+  'go forward': 'go_forward',
+};
 
 export interface BuiltinActionArgPart {
   kind: 'arg';
@@ -31,34 +67,6 @@ export interface BuiltinActionTextPart {
   kind: 'text';
   value: string;
 }
-
-export const BuiltinActionPatterns: Record<string, BuiltinActionCode> = {
-  'click on $target': 'click',
-  'click $target': 'click',
-  'type {{text}} on $target': 'type',
-  'type {{text}} into $target': 'type',
-  'type {{text}} in $target': 'type',
-  'visit {{url}}': 'visit',
-  'check $target': 'check',
-  'clear $target': 'clear',
-  'double click on $target': 'double_click',
-  'double click $target': 'double_click',
-  'double-click on $target': 'double_click',
-  'double-click $target': 'double_click',
-  'doubleclick on $target': 'double_click',
-  'doubleclick $target': 'double_click',
-  'right click on $target': 'right_click',
-  'right click $target': 'right_click',
-  'right-click on $target': 'right_click',
-  'right-click $target': 'right_click',
-  'rightclick on $target': 'right_click',
-  'rightclick $target': 'right_click',
-  'scroll to $target': 'scroll',
-  'uncheck $target': 'uncheck',
-  'select {{item}} in $target': 'select',
-  'go back': 'go_back',
-  'go forward': 'go_forward',
-};
 
 export type QualifiedPatternPart =
   | BuiltinActionArgPart

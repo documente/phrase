@@ -3,19 +3,19 @@ import { isArgument } from '../arguments';
 import { Token } from '../interfaces/token.interface';
 
 export const BuiltinAssertionCodes = [
-  'have text',
+  'exist',
+  'not exist',
+  'have occurrences',
   'be visible',
   'be hidden',
+  'have text',
   'contain text',
   'have value',
   'have class',
-  'exist',
-  'not exist',
   'be checked',
   'be unchecked',
   'be disabled',
   'be enabled',
-  'have occurrences',
 ] as const;
 
 export type BuiltinAssertionCode = (typeof BuiltinAssertionCodes)[number];
@@ -30,20 +30,21 @@ export interface BuiltinAssertionTextPart {
 }
 
 export const BuiltinAssertionPatterns: Record<string, BuiltinAssertionCode> = {
-  'have text {{text}}': 'have text',
+  exist: 'exist',
+  'not exist': 'not exist',
+  'have {{count}} occurrences': 'have occurrences',
+  'have {{count}} occurrence': 'have occurrences',
+  'have {{count}} occurrence(s)': 'have occurrences',
   'be visible': 'be visible',
   'be hidden': 'be hidden',
+  'have text {{text}}': 'have text',
   'contain text {{text}}': 'contain text',
   'have value {{value}}': 'have value',
   'have class {{value}}': 'have class',
-  exist: 'exist',
-  'not exist': 'not exist',
   'be checked': 'be checked',
   'be unchecked': 'be unchecked',
   'be disabled': 'be disabled',
   'be enabled': 'be enabled',
-  'have {{count}} occurrences': 'have occurrences',
-  'have {{count}} occurrence': 'have occurrences',
 };
 
 export type QualifiedPatternPart =

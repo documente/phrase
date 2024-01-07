@@ -131,7 +131,7 @@ System state changes are used to define the initial state of the application und
 
 Assertions refer to statements or conditions that validate the expected outcomes of specific actions or interactions within your test scenarios. These statements act as checkpoints, ensuring that the application under test behaves as anticipated.
 
-The library builds upon Cypress's built-in assertions such as :
+The library provides built-in assertions such as :
 - should be visible
 - should exist
 - should have text
