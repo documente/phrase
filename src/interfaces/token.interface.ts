@@ -4,7 +4,6 @@ export interface BaseToken {
   line: number;
   column: number;
   index: number;
-  isAtStartOfLine: boolean;
 }
 
 export interface GenericToken extends BaseToken {

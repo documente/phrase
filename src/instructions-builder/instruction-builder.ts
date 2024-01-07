@@ -14,6 +14,7 @@ export function buildInstructions(
   input: string,
   selectorTree: SelectorTree,
   externals: Externals,
+  envVars: Record<string, string>,
 ): Instruction[] {
   const parser = new Parser();
   const sections = parser.parse(input);
@@ -27,6 +28,7 @@ export function buildInstructions(
     externals,
     blocks,
     input,
+    envVars,
   };
 
   return sections

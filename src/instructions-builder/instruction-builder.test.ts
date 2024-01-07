@@ -15,6 +15,7 @@ test('should throw if action target cannot be resolved', () => {
       'when I click form button then it should be visible',
       {},
       {},
+      {},
     ),
   ).toThrow('Could not resolve target path for "form button"');
 });
@@ -32,6 +33,7 @@ test('should throw if action in unknown', () => {
       'when I foobar on form button then it should be visible',
       tree,
       {},
+      {},
     ),
   ).toThrow('Unknown action "foobar on form button"');
 });
@@ -47,6 +49,7 @@ test('should build an action without arguments', () => {
   const instructions = buildInstructions(
     'when I click form button then it should be visible',
     tree,
+    {},
     {},
   );
   expect(instructions[0]).toEqual({
@@ -69,6 +72,7 @@ test('should build an action with arguments', () => {
     'when I type "foo" on form button then it should be visible',
     tree,
     {},
+    {},
   );
   expect(instructions[0]).toEqual({
     kind: 'builtin-action',
@@ -87,6 +91,7 @@ test('should build an assertion', () => {
   const instructions = buildInstructions(
     'when I click on button then welcome message should be visible',
     tree,
+    {},
     {},
   );
   expect(instructions[1]).toEqual({
@@ -114,6 +119,7 @@ test('should build an assertion with quoted text argument', () => {
     'when I click on button then welcome message should have text "Hello, World!"',
     tree,
     {},
+    {},
   );
   expect(instructions[1]).toEqual({
     kind: 'builtin-assertion',
@@ -139,6 +145,7 @@ test('should build instructions with an action block', () => {
       - I click on it`,
     { button: 'button' },
     {},
+    {},
   );
 
   const firstAction = instructions[0] as BuiltInActionInstruction;
@@ -163,6 +170,7 @@ test('should reject circular action blocks', () => {
       - I click twice on button`,
       { button: 'button' },
       {},
+      {},
     ),
   ).toThrow(`Circular block detected: "click twice on button"
 Line 4, column 11:
@@ -182,6 +190,7 @@ test('should reject nested circular action blocks', () => {
       - I click twice on button`,
       { button: 'button' },
       {},
+      {},
     ),
   ).toThrow(`Circular block detected: "click twice on button"
 Line 7, column 11:
@@ -196,6 +205,7 @@ test('should build instructions with an assertion block', () => {
       For button to be shown:
       - it should be visible`,
     { button: 'button' },
+    {},
     {},
   );
 
@@ -217,6 +227,7 @@ test('should build instructions with a builtin negated assertion', () => {
     'when I click button then it should not exist',
     { button: 'button' },
     {},
+    {},
   );
 
   const builtinAssertion = instructions[1] as BuiltInAssertion;
@@ -230,6 +241,7 @@ test('should reject unknown assertions', () => {
       `when I click button then it should foobar`,
       { button: 'button' },
       {},
+      {},
     ),
   ).toThrow('Unknown assertion "foobar"');
 });
@@ -242,6 +254,7 @@ test('should reject nested circular assertion blocks', () => {
       For button to be red:
       - it should be red`,
       { button: 'button' },
+      {},
       {},
     ),
   ).toThrow(`Circular block detected: "be red"
@@ -264,6 +277,7 @@ for $element to contain label {{content}}:
       },
     },
     {},
+    {},
   );
 
   const firstBuiltinAssertion: BuiltInAssertion =
@@ -281,6 +295,7 @@ test('should build instructions with a system statement', () => {
     {
       stockIsEmpty: () => {},
     },
+    {},
   );
 
   const systemInstruction = instructions[0] as SystemLevelInstruction;
@@ -293,6 +308,7 @@ test('should throw if no matching system-level action is found', () => {
     buildInstructions(
       'given stock is empty when I click button then it should be visible',
       { button: 'button' },
+      {},
       {},
     ),
   ).toThrow('Unknown system-level action "stock is empty"');
