@@ -1,6 +1,6 @@
 {
   "name": "@documente/phrase",
-  "version": "1.0.0-beta.14",
+  "version": "1.0.0-beta.15",
   "description": "A fluent automated testing library for web applications",
   "repository": {
     "type": "git",
